@@ -790,11 +790,7 @@ function concatStrings() {
   }
   for (var i=0; i<data.length; i++) {
     concatStr += data[i];
-    if (i == 1 && data.length > 1) {
-      concatStr += ', ';
-    } else if (i < data.length -1) {
-      concatStr += ' ';
-    }
+    concatStr += ' ';
   }
   return data.length ? concatStr : "";
 }
