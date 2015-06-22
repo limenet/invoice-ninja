@@ -86,7 +86,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('view_archive/{entity_type}/{visible}', 'AccountController@setTrashVisible');
     Route::get('hide_message', 'HomeController@hideMessage');
     Route::get('force_inline_pdf', 'UserController@forcePDFJS');
-    
+
     Route::get('api/users', array('as'=>'api.users', 'uses'=>'UserController@getDatatable'));
     Route::resource('users', 'UserController');
     Route::post('users/delete', 'UserController@delete');
@@ -135,7 +135,7 @@ Route::group(['middleware' => 'auth'], function() {
 
     Route::get('invoices/invoice_history/{invoice_id}', 'InvoiceController@invoiceHistory');
     Route::get('quotes/quote_history/{invoice_id}', 'InvoiceController@invoiceHistory');
-    
+
     Route::resource('invoices', 'InvoiceController');
     Route::get('api/invoices/{client_id?}', array('as'=>'api.invoices', 'uses'=>'InvoiceController@getDatatable'));
     Route::get('invoices/create/{client_id?}', 'InvoiceController@create');
@@ -359,7 +359,7 @@ define('NINJA_GATEWAY_ID', GATEWAY_STRIPE);
 define('NINJA_GATEWAY_CONFIG', '');
 define('NINJA_WEB_URL', 'https://www.invoiceninja.com');
 define('NINJA_APP_URL', 'https://app.invoiceninja.com');
-define('NINJA_VERSION', '2.2.2');
+define('NINJA_VERSION', '2.2.2.1');
 define('NINJA_DATE', '2000-01-01');
 define('NINJA_FROM_EMAIL', 'maildelivery@invoiceninja.com');
 define('RELEASES_URL', 'https://github.com/hillelcoren/invoice-ninja/releases/');
@@ -439,20 +439,20 @@ Event::listen('illuminate.query', function($query, $bindings, $time, $name)
 
     // Format binding data for sql insertion
     foreach ($bindings as $i => $binding)
-    {   
+    {
         if ($binding instanceof \DateTime)
-        {   
+        {
             $bindings[$i] = $binding->format('\'Y-m-d H:i:s\'');
         }
         else if (is_string($binding))
-        {   
+        {
             $bindings[$i] = "'$binding'";
-        }   
-    }       
+        }
+    }
 
     // Insert bindings into query
     $query = str_replace(array('%', '?'), array('%%', '%s'), $query);
-    $query = vsprintf($query, $bindings); 
+    $query = vsprintf($query, $bindings);
 
     Log::info($query, $data);
 });
