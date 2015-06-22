@@ -24,8 +24,8 @@ function generatePDF(invoice, javascript, force, cb) {
   } else {
     doc = GetPdf(invoice, javascript);
     doc.getDataUrl = function(cb) {
-      cb( this.output("datauristring"));  
-    };    
+      cb( this.output("datauristring"));
+    };
   }
   return doc;
 }
@@ -104,7 +104,7 @@ function GetPdf(invoice, javascript){
     if (!invoice.is_pro) top -= 25;
     var footer = doc.splitTextToSize(processVariables(invoice.invoice_footer), 500);
     var numLines = footer.length - 1;
-    doc.text(layout.marginLeft, top - (numLines * 8), footer);    
+    doc.text(layout.marginLeft, top - (numLines * 8), footer);
   }
 
   return doc;
@@ -640,7 +640,7 @@ function displayAccount(doc, invoice, x, y, layout) {
 
   var data2 = [
     concatStrings(account.address1, account.address2),
-    concatStrings(account.city, account.state, account.postal_code),
+    concatStrings(account.postal_code, account.city, account.state),
     account.country ? account.country.name : false,
     invoice.account.custom_value1 ? invoice.account['custom_label1'] + ' ' + invoice.account.custom_value1 : false,
     invoice.account.custom_value2 ? invoice.account['custom_label2'] + ' ' + invoice.account.custom_value2 : false,
@@ -674,7 +674,7 @@ function displayClient(doc, invoice, x, y, layout) {
     client.id_number,
     client.vat_number,
     concatStrings(client.address1, client.address2),
-    concatStrings(client.city, client.state, client.postal_code),
+    concatStrings(client.postal_code, client.city, client.state),
     client.country ? client.country.name : false,
     invoice.contact && getClientDisplayName(client) != invoice.contact.email ? invoice.contact.email : false,
     invoice.client.custom_value1 ? invoice.account['custom_client_label1'] + ' ' + invoice.client.custom_value1 : false,
@@ -790,7 +790,7 @@ function concatStrings() {
   }
   for (var i=0; i<data.length; i++) {
     concatStr += data[i];
-    if (i == 0 && data.length > 1) {
+    if (i == 1 && data.length > 1) {
       concatStr += ', ';
     } else if (i < data.length -1) {
       concatStr += ' ';
@@ -891,7 +891,7 @@ function displayNotesAndTerms(doc, layout, invoice, y)
 
   if (invoice.terms) {
     var terms = doc.splitTextToSize(processVariables(invoice.terms), 260);
-    doc.setFontType("bold");    
+    doc.setFontType("bold");
     doc.text(layout.marginLeft, y, invoiceLabels.terms);
     y += 16;
     doc.setFontType("normal");
