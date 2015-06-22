@@ -60,14 +60,14 @@
             @if ($client->address2)
                 {{ $client->address2 }}<br/>
             @endif
+            @if ($client->postal_code)
+                {{ $client->postal_code }}
+            @endif
             @if ($client->city)
-                {{ $client->city }},
+                {{ $client->city }}
             @endif
             @if ($client->state)
                 {{ $client->state }}
-            @endif
-            @if ($client->postal_code)
-                {{ $client->postal_code }}
             @endif
             @if ($client->country)
                 <br/>{{ $client->country->name }}
@@ -87,13 +87,13 @@
             @if ($client->private_notes)
                 <p><i>{{ $client->private_notes }}</i></p>
             @endif
-		  	
+
   	        @if ($client->client_industry)
                 {{ $client->client_industry->name }}<br/>
             @endif
             @if ($client->client_size)
                 {{ $client->client_size->name }}<br/>
-            @endif            
+            @endif
 
 		  	@if ($client->website)
 		  	   <p>{!! $client->getWebsite() !!}</p>
@@ -113,7 +113,7 @@
                 @endif
                 @if ($contact->phone)
                     <i class="fa fa-phone" style="width: 20px"></i>{!! Utils::formatPhoneNumber($contact->phone) !!}
-                @endif		  		
+                @endif
 		  	@endforeach
 		</div>
 
