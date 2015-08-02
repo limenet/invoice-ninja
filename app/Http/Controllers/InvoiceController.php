@@ -86,11 +86,12 @@ class InvoiceController extends BaseController
         }
 
         $invitation = Invitation::with('account')->where('invitation_key', '=', $invitationKey)->first();
-        $color = $invitation->account->primary_color ? $invitation->account->primary_color : '#0b4d78';
+        $account = $invitation->account;
+        $color = $account->primary_color ? $account->primary_color : '#0b4d78';
         
         $data = [
             'color' => $color,
-            'hideLogo' => Session::get('white_label'),
+            'hideLogo' => $account->isWhiteLabel(),
             'title' => trans('texts.invoices'),
             'entityType' => ENTITY_INVOICE,
             'columns' => Utils::trans(['invoice_number', 'invoice_date', 'invoice_total', 'balance_due', 'due_date']),
@@ -205,7 +206,6 @@ class InvoiceController extends BaseController
 
         Session::set($invitationKey, true);
         Session::set('invitation_key', $invitationKey);
-        Session::set('white_label', $account->isWhiteLabel());
 
         $account->loadLocalizationSettings();
 
@@ -213,6 +213,10 @@ class InvoiceController extends BaseController
         $invoice->due_date = Utils::fromSqlDate($invoice->due_date);
         $invoice->is_pro = $account->isPro();
         
+        if ($invoice->invoice_design_id == CUSTOM_DESIGN) {
+            $invoice->invoice_design->javascript = $account->custom_design;
+        }
+
         $contact = $invitation->contact;
         $contact->setVisible([
             'first_name',
@@ -236,6 +240,11 @@ class InvoiceController extends BaseController
             }
         }
 
+        $paymentURL = '';
+        if (count($paymentTypes)) {
+            $paymentURL = $paymentTypes[0]['url'];
+        }
+
         $data = array(
             'isConverted' => $invoice->quote_invoice_id ? true : false,
             'showBreadcrumbs' => false,
@@ -244,7 +253,8 @@ class InvoiceController extends BaseController
             'invitation' => $invitation,
             'invoiceLabels' => $account->getInvoiceLabels(),
             'contact' => $contact,
-            'paymentTypes' => $paymentTypes
+            'paymentTypes' => $paymentTypes,
+            'paymentURL' => $paymentURL
         );
 
         return View::make('invoices.view', $data);
@@ -319,7 +329,6 @@ class InvoiceController extends BaseController
         $data = array(
                 'entityType' => $entityType,
                 'showBreadcrumbs' => $clone,
-                'account' => $invoice->account,
                 'invoice' => $invoice,
                 'data' => false,
                 'method' => $method,
@@ -354,7 +363,6 @@ class InvoiceController extends BaseController
     {
         $client = null;
         $invoiceNumber = Auth::user()->account->getNextInvoiceNumber();
-        $account = Account::with('country')->findOrFail(Auth::user()->account_id);
 
         if ($clientPublicId) {
             $client = Client::scope($clientPublicId)->firstOrFail();
@@ -362,17 +370,15 @@ class InvoiceController extends BaseController
 
         $data = array(
                 'entityType' => ENTITY_INVOICE,
-                'account' => $account,
                 'invoice' => null,
                 'data' => Input::old('data'),
                 'invoiceNumber' => $invoiceNumber,
                 'method' => 'POST',
                 'url' => 'invoices',
                 'title' => trans('texts.new_invoice'),
-                'client' => $client,
-                'tasks' => Session::get('tasks') ? json_encode(Session::get('tasks')) : null);
+                'client' => $client);
         $data = array_merge($data, self::getViewModel());
-
+        
         return View::make('invoices.edit', $data);
     }
 
@@ -390,7 +396,7 @@ class InvoiceController extends BaseController
         }
 
         return [
-            'account' => Auth::user()->account,
+            'account' => Auth::user()->account->load('country'),
             'products' => Product::scope()->orderBy('id')->get(array('product_key', 'notes', 'cost', 'qty')),
             'countries' => Cache::get('countries'),
             'clients' => Client::scope()->with('contacts', 'country')->orderBy('name')->get(),
@@ -399,7 +405,7 @@ class InvoiceController extends BaseController
             'sizes' => Cache::get('sizes'),
             'paymentTerms' => Cache::get('paymentTerms'),
             'industries' => Cache::get('industries'),
-            'invoiceDesigns' => InvoiceDesign::availableDesigns(),
+            'invoiceDesigns' => InvoiceDesign::getDesigns(),
             'frequencies' => array(
                 1 => 'Weekly',
                 2 => 'Two weeks',
@@ -411,7 +417,7 @@ class InvoiceController extends BaseController
             ),
             'recurringHelp' => $recurringHelp,
             'invoiceLabels' => Auth::user()->account->getInvoiceLabels(),
-
+            'tasks' => Session::get('tasks') ? json_encode(Session::get('tasks')) : null,
         ];
 
     }
@@ -505,9 +511,13 @@ class InvoiceController extends BaseController
                 return $this->convertQuote($publicId);
             } elseif ($action == 'email') {
                 if (Auth::user()->confirmed && !Auth::user()->isDemo()) {
-                    $message = trans("texts.emailed_{$entityType}");
-                    $this->mailer->sendInvoice($invoice);
-                    Session::flash('message', $message);
+                    $response = $this->mailer->sendInvoice($invoice);
+                    if ($response === true) {
+                        $message = trans("texts.emailed_{$entityType}");
+                        Session::flash('message', $message);
+                    } else {
+                        Session::flash('error', $response);
+                    }
                 } else {
                     $errorMessage = trans(Auth::user()->registered ? 'texts.confirmation_required' : 'texts.registration_required');
                     Session::flash('error', $errorMessage);
@@ -636,7 +646,7 @@ class InvoiceController extends BaseController
             'invoice' => $invoice,
             'versionsJson' => json_encode($versionsJson),
             'versionsSelect' => $versionsSelect,
-            'invoiceDesigns' => InvoiceDesign::availableDesigns(),
+            'invoiceDesigns' => InvoiceDesign::getDesigns(),
         ];
 
         return View::make('invoices.history', $data);

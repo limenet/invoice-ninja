@@ -246,6 +246,8 @@ define('ACCOUNT_USER_MANAGEMENT', 'user_management');
 define('ACCOUNT_DATA_VISUALIZATIONS', 'data_visualizations');
 define('ACCOUNT_EMAIL_TEMPLATES', 'email_templates');
 define('ACCOUNT_TOKEN_MANAGEMENT', 'token_management');
+define('ACCOUNT_CUSTOMIZE_DESIGN', 'customize_design');
+
 
 define('ACTIVITY_TYPE_CREATE_CLIENT', 1);
 define('ACTIVITY_TYPE_ARCHIVE_CLIENT', 2);
@@ -299,6 +301,7 @@ define('INVOICE_STATUS_PARTIAL', 4);
 define('INVOICE_STATUS_PAID', 5);
 
 define('PAYMENT_TYPE_CREDIT', 1);
+define('CUSTOM_DESIGN', 11);
 
 define('FREQUENCY_WEEKLY', 1);
 define('FREQUENCY_TWO_WEEKS', 2);
@@ -354,6 +357,7 @@ define('EVENT_CREATE_PAYMENT', 4);
 
 define('REQUESTED_PRO_PLAN', 'REQUESTED_PRO_PLAN');
 define('DEMO_ACCOUNT_ID', 'DEMO_ACCOUNT_ID');
+define('PREV_USER_ID', 'PREV_USER_ID');
 define('NINJA_ACCOUNT_KEY', 'zg4ylmzDkdkPOT8yoKQw9LTWaoZJx79h');
 define('NINJA_GATEWAY_ID', GATEWAY_STRIPE);
 define('NINJA_GATEWAY_CONFIG', '');
@@ -361,11 +365,15 @@ define('NINJA_WEB_URL', 'https://www.invoiceninja.com');
 define('NINJA_APP_URL', 'https://app.invoiceninja.com');
 define('NINJA_VERSION', '2.2.2.3');
 define('NINJA_DATE', '2000-01-01');
+
 define('NINJA_FROM_EMAIL', 'maildelivery@invoiceninja.com');
 define('RELEASES_URL', 'https://github.com/hillelcoren/invoice-ninja/releases/');
 define('ZAPIER_URL', 'https://zapier.com/developer/invite/11276/85cf0ee4beae8e802c6c579eb4e351f1/');
+define('OUTDATE_BROWSER_URL', 'http://browsehappy.com/');
+define('PDFMAKE_DOCS', 'http://pdfmake.org/playground.html');
 
 define('COUNT_FREE_DESIGNS', 4);
+define('COUNT_FREE_DESIGNS_SELF_HOST', 5); // include the custom design
 define('PRODUCT_ONE_CLICK_INSTALL', 1);
 define('PRODUCT_INVOICE_DESIGNS', 2);
 define('PRODUCT_WHITE_LABEL', 3);
@@ -457,6 +465,7 @@ Event::listen('illuminate.query', function($query, $bindings, $time, $name)
     Log::info($query, $data);
 });
 */
+
 
 /*
 if (Auth::check() && Auth::user()->id === 1)

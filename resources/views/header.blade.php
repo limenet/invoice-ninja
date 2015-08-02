@@ -25,6 +25,23 @@
       }
     }
 
+    @if (Auth::check() && Auth::user()->dark_mode)
+        body {
+            background: #000 !important;
+            color: white !important;
+        }
+
+        .panel-body {
+            background: #272822 !important;
+            /*background: #e6e6e6 !important;*/
+        }
+
+        .panel-default {
+            border-color: #444;
+        }
+    @endif
+
+
   </style>
 
   @include('script')
@@ -186,11 +203,17 @@
     });
   }
 
-  function unlinkAccount(userAccountId, userId) {
-    if (confirm('{!! trans("texts.are_you_sure") !!}')) {       
-        window.location = '{{ URL::to('/unlink_account') }}' + '/' + userAccountId + '/' + userId;        
-    }       
+  function showUnlink(userAccountId, userId) {    
+    NINJA.unlink = {
+        'userAccountId': userAccountId,
+        'userId': userId
+    };
+    $('#unlinkModal').modal('show');    
     return false;
+  }
+
+  function unlinkAccount() {    
+    window.location = '{{ URL::to('/unlink_account') }}' + '/' + NINJA.unlink.userAccountId + '/' + NINJA.unlink.userId;    
   }
 
   function wordWrapText(value, width)
@@ -242,7 +265,14 @@
         $(".alert-hide").fadeOut(500);
     }, 2000);
 
+    $('#search').blur(function(){
+      $('#search').css('width', '150px');
+      $('ul.navbar-right').show();
+    });
+
     $('#search').focus(function(){
+      $('#search').css('width', '256px');
+      $('ul.navbar-right').hide();
       if (!window.hasOwnProperty('searchData')) {
         $.get('{{ URL::route('getSearchData') }}', function(data) {                         
           window.searchData = true;                     
@@ -296,6 +326,15 @@
       showSignUp();
     @endif
 
+    $('ul.navbar-settings, ul.navbar-history').hover(function () {
+        //$('.user-accounts').find('li').hide();
+        //$('.user-accounts').css({display: 'none'});
+        //console.log($('.user-accounts').dropdown(''))
+        if ($('.user-accounts').css('display') == 'block') {
+            $('.user-accounts').dropdown('toggle');
+        }
+    });
+
     @yield('onReady')
 
   });
@@ -316,7 +355,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a href="{{ URL::to(NINJA_WEB_URL) }}" class='navbar-brand'>
+      <a href="{{ URL::to(NINJA_WEB_URL) }}" class='navbar-brand' target="_blank">
         <img src="{{ asset('images/invoiceninja-logo.png') }}" style="height:18px;width:auto"/>
       </a>	    
     </div>
@@ -353,29 +392,42 @@
           <ul class="dropdown-menu user-accounts" role="menu">
             @if (session(SESSION_USER_ACCOUNTS))
                 @foreach (session(SESSION_USER_ACCOUNTS) as $item)
-                    <li><a href='{{ URL::to("/switch_account/{$item->user_id}") }}'>
-                        @if ($item->user_id == Auth::user()->id)
-                            <b>
-                        @endif
-                        @if (count(session(SESSION_USER_ACCOUNTS)) > 1)
-                            <div class="pull-right glyphicon glyphicon-remove remove" onclick="return unlinkAccount({{ $item->id }}, {{ $item->user_id }})"></div>
-                        @endif
-                        <div class="account" style="padding-right:28px">{{ $item->account_name }}</div>
-                        <div class="user">{{ $item->user_name }}</div>
-                        @if ($item->user_id == Auth::user()->id)
-                            </b>
-                        @endif
-                    </a></li>        
+                    @if ($item->user_id == Auth::user()->id)
+                        @include('user_account', [
+                            'user_account_id' => $item->id,
+                            'user_id' => $item->user_id,
+                            'account_name' => $item->account_name,
+                            'user_name' => $item->user_name,
+                            'account_key' => $item->account_key,
+                            'selected' => true,
+                            'show_remove' => count(session(SESSION_USER_ACCOUNTS)) > 1,
+                        ])
+                    @endif
+                @endforeach
+                @foreach (session(SESSION_USER_ACCOUNTS) as $item)
+                    @if ($item->user_id != Auth::user()->id)
+                        @include('user_account', [
+                            'user_account_id' => $item->id,
+                            'user_id' => $item->user_id,
+                            'account_name' => $item->account_name,
+                            'user_name' => $item->user_name,
+                            'account_key' => $item->account_key,
+                            'selected' => false,
+                            'show_remove' => count(session(SESSION_USER_ACCOUNTS)) > 1,
+                        ])
+                    @endif
                 @endforeach
             @else
-                <li><a href='#'><b>
-                    <div class="account">{{ Auth::user()->account->name ?: trans('texts.untitled') }}</div>
-                    <div class="user">{{ Auth::user()->getDisplayName() }}</div>
-                </b></a></li>
+                @include('user_account', [
+                    'account_name' => Auth::user()->account->name ?: trans('texts.untitled'), 
+                    'user_name' => Auth::user()->getDisplayName(),
+                    'account_key' => Auth::user()->account->account_key,
+                    'selected' => true,
+                ])
             @endif            
             <li class="divider"></li>                
-            @if (Auth::user()->isPro() && (!session(SESSION_USER_ACCOUNTS) || count(session(SESSION_USER_ACCOUNTS)) < 5))
-                <li>{!! link_to('/login', trans('texts.add_account')) !!}</li>
+            @if (!session(SESSION_USER_ACCOUNTS) || count(session(SESSION_USER_ACCOUNTS)) < 5)
+                <li>{!! link_to('/login?new_company=true', trans('texts.add_company')) !!}</li>
             @endif
             <li>{!! link_to('#', trans('texts.logout'), array('onclick'=>'logout()')) !!}</li>
           </ul>
@@ -383,7 +435,7 @@
 
       </div>	
       
-      <ul class="nav navbar-nav navbar-right"> 
+      <ul class="nav navbar-nav navbar-right navbar-settings"> 
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-cog" title="{{ trans('texts.settings') }}"/>
@@ -394,13 +446,13 @@
             <li>{!! link_to('company/products', uctrans('texts.product_library')) !!}</li>
             <li>{!! link_to('company/notifications', uctrans('texts.notifications')) !!}</li>
             <li>{!! link_to('company/import_export', uctrans('texts.import_export')) !!}</li>
-            <li><a href="{{ url('company/advanced_settings/invoice_settings') }}">{!! uctrans('texts.advanced_settings') . Utils::getProLabel(ACCOUNT_ADVANCED_SETTINGS) !!}</a></li>
+            <li><a href="{{ url('company/advanced_settings/invoice_design') }}">{!! uctrans('texts.advanced_settings') . Utils::getProLabel(ACCOUNT_ADVANCED_SETTINGS) !!}</a></li>
           </ul>
         </li>
       </ul>
 
 
-      <ul class="nav navbar-nav navbar-right"> 
+      <ul class="nav navbar-nav navbar-right navbar-history"> 
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
             <span class="glyphicon glyphicon-time" title="{{ trans('texts.history') }}"/>
@@ -410,7 +462,9 @@
                 <li><a href="#">{{ trans('texts.no_items') }}</a></li>
             @else
                 @foreach (Session::get(RECENTLY_VIEWED) as $link)
-                    <li><a href="{{ $link->url }}">{{ $link->name }}</a></li>	
+                    @if (property_exists($link, 'accountId') && $link->accountId == Auth::user()->account_id)
+                        <li><a href="{{ $link->url }}">{{ $link->name }}</a></li>	
+                    @endif
                 @endforeach
             @endif
           </ul>
@@ -419,7 +473,7 @@
 
       <form class="navbar-form navbar-right" role="search">
         <div class="form-group">
-          <input type="text" id="search" style="width: {{ Session::get(SESSION_LOCALE) == 'en' ? 180 : 140 }}px" 
+          <input type="text" id="search" style="width: 150px" 
             class="form-control" placeholder="{{ trans('texts.search') }}">
         </div>
       </form>
@@ -454,7 +508,7 @@
   @endif
 
   @if (Session::has('error'))
-  <div class="alert alert-danger">{{ Session::get('error') }}</div>
+  <div class="alert alert-danger">{!! Session::get('error') !!}</div>
   @endif
 
   @if (!isset($showBreadcrumbs) || $showBreadcrumbs)
@@ -549,6 +603,28 @@
 </div>
 @endif
 
+@if (Auth::check() && session(SESSION_USER_ACCOUNTS) && count(session(SESSION_USER_ACCOUNTS)))
+<div class="modal fade" id="unlinkModal" tabindex="-1" role="dialog" aria-labelledby="unlinkModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">{{ trans('texts.unlink_account') }}</h4>
+      </div>
+
+      <div class="container">        
+        <h3>{{ trans('texts.are_you_sure') }}</h3>        
+      </div>
+
+      <div class="modal-footer" id="signUpFooter">          
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('texts.cancel') }}</button>
+        <button type="button" class="btn btn-primary" onclick="unlinkAccount()">{{ trans('texts.unlink') }}</button>           
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+
 @if (Auth::check() && !Auth::user()->isPro())
   <div class="modal fade" id="proPlanModal" tabindex="-1" role="dialog" aria-labelledby="proPlanModalLabel" aria-hidden="true">
     <div class="modal-dialog large-dialog">
@@ -588,7 +664,7 @@
 
 @endif
 
-{{-- Per our license, please do not remove or modify this link. --}}
+{{-- Per our license, please do not remove or modify this section. --}}
 @if (!Utils::isNinja())    
 <div class="container">
   {{ trans('texts.powered_by') }} <a href="https://www.invoiceninja.com/?utm_source=powered_by" target="_blank">InvoiceNinja.com</a> | 

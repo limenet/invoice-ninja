@@ -95,7 +95,7 @@ class UserController extends BaseController
         $user->force_pdfjs = true;
         $user->save();
 
-        Session::flash('message', trans('texts.security.updated_settings'));
+        Session::flash('message', trans('texts.updated_settings'));
 
         return Redirect::to('/dashboard');
     }
@@ -132,9 +132,12 @@ class UserController extends BaseController
      */
     public function create()
     {
-        if (!Auth::user()->confirmed) {
+        if (!Auth::user()->registered) {
             Session::flash('error', trans('texts.register_to_add_user'));
-
+            return Redirect::to('company/advanced_settings/user_management');
+        }        
+        if (!Auth::user()->confirmed) {
+            Session::flash('error', trans('texts.confirmation_required'));
             return Redirect::to('company/advanced_settings/user_management');
         }
 
@@ -301,11 +304,13 @@ class UserController extends BaseController
      * Log the user out of the application.
      *
      */
+    /*
     public function logout()
     {
         if (Auth::check()) {
             if (!Auth::user()->registered) {
                 $account = Auth::user()->account;
+                $this->accountRepo->unlinkAccount($account);
                 $account->forceDelete();
             }
         }
@@ -315,7 +320,8 @@ class UserController extends BaseController
 
         return Redirect::to('/')->with('clearGuestKey', true);
     }
-
+    */
+    
     public function changePassword()
     {
         // check the current password is correct
@@ -352,6 +358,10 @@ class UserController extends BaseController
             if ($account->hasUserId($newUserId) && $account->hasUserId($oldUserId)) {
                 Auth::loginUsingId($newUserId);
                 Auth::user()->account->loadLocalizationSettings();
+
+                // regenerate token to prevent open pages
+                // from saving under the wrong account
+                Session::put('_token', str_random(40));
             }
         }
         
@@ -360,7 +370,7 @@ class UserController extends BaseController
 
     public function unlinkAccount($userAccountId, $userId)
     {
-        $this->accountRepo->unlinkAccount($userAccountId, $userId);
+        $this->accountRepo->unlinkUser($userAccountId, $userId);
         $referer = Request::header('referer');
 
         $users = $this->accountRepo->loadAccounts(Auth::user()->id);

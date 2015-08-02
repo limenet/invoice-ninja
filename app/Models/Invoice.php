@@ -43,6 +43,11 @@ class Invoice extends EntityModel
         return $this->belongsTo('App\Models\InvoiceDesign');
     }
 
+    public function recurring_invoice()
+    {
+        return $this->belongsTo('App\Models\Invoice');
+    }
+
     public function invitations()
     {
         return $this->hasMany('App\Models\Invitation')->orderBy('invitations.contact_id');
@@ -64,9 +69,14 @@ class Invoice extends EntityModel
         return storage_path() . '/pdfcache/cache-' . $this->id . '.pdf';
     }
 
+    public static function calcLink($invoice)
+    {
+        return link_to('invoices/' . $invoice->public_id, $invoice->invoice_number);
+    }
+
     public function getLink()
     {
-        return link_to('invoices/'.$this->public_id, $this->invoice_number);
+        return self::calcLink($this);
     }
 
     public function getEntityType()
@@ -247,8 +257,11 @@ class Invoice extends EntityModel
     }
 }
 
+Invoice::creating(function ($invoice) {
+    $invoice->account->incrementCounter($invoice->is_quote);
+});
+
 Invoice::created(function ($invoice) {
-    $invoice->account->incrementCounter($invoice->invoice_number, $invoice->is_quote, $invoice->recurring_invoice_id);
     Activity::createInvoice($invoice);
 });
 
