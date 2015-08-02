@@ -113,6 +113,7 @@
                 @endif
                 @if ($contact->phone)
                     <i class="fa fa-phone" style="width: 20px"></i>{!! Utils::formatPhoneNumber($contact->phone) !!}
+                 @endif
 		  	@endforeach
 		</div>
 
