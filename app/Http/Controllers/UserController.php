@@ -377,6 +377,11 @@ class UserController extends BaseController
         Session::put(SESSION_USER_ACCOUNTS, $users);
 
         Session::flash('message', trans('texts.unlinked_account'));
-        return Redirect::to($referer);
+        return Redirect::to('/dashboard');
+    }
+
+    public function manageCompanies()
+    {
+        return View::make('users.account_management');
     }
 }

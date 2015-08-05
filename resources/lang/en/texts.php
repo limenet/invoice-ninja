@@ -120,7 +120,7 @@ return array(
   'active_clients' => 'active clients',
   'invoices_past_due' => 'Invoices Past Due',
   'upcoming_invoices' => 'Upcoming Invoices',
-  'average_invoice' => 'Average invoice',
+  'average_invoice' => 'Average Invoice',
 
   // list pages
   'archive' => 'Archive',
@@ -740,7 +740,9 @@ return array(
   'invoice_no' => 'Invoice No.',
   'recent_payments' => 'Recent Payments',
   'outstanding' => 'Outstanding',
-
+  'manage_companies' => 'Manage Companies',
+  'total_revenue' => 'Total Revenue',
+  
 
 );
 
