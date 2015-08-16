@@ -17,10 +17,11 @@ class Mailer
         try {
             Mail::send($views, $data, function ($message) use ($toEmail, $fromEmail, $fromName, $subject, $data) {
 
+                $toEmail = strtolower($toEmail);
                 $replyEmail = $fromEmail;
                 $fromEmail = CONTACT_EMAIL;
 
-                if(isset($data['invoice_id'])) {
+                if (isset($data['invoice_id'])) {
                     $invoice = Invoice::with('account')->where('id', '=', $data['invoice_id'])->get()->first();
                     if($invoice->account->pdf_email_attachment && file_exists($invoice->getPDFPath())) {
                         $message->attach(
@@ -39,7 +40,7 @@ class Mailer
             
             return true;
         } catch (Exception $exception) {
-            if (method_exists($exception, 'getResponse')) {
+            if (isset($_ENV['POSTMARK_API_TOKEN'])) {
                 $response = $exception->getResponse()->getBody()->getContents();
                 $response = json_decode($response);
                 return nl2br($response->Message);

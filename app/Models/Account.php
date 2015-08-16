@@ -4,7 +4,9 @@ use Eloquent;
 use Utils;
 use Session;
 use DateTime;
-
+use Event;
+use App;
+use App\Events\UserSettingsChanged;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Account extends Eloquent
@@ -12,10 +14,12 @@ class Account extends Eloquent
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
+    /*
     protected $casts = [
-        'utf8_invoice' => 'boolean',
+        'hide_quantity' => 'boolean',
     ];
-
+    */
+    
     public function users()
     {
         return $this->hasMany('App\Models\User');
@@ -92,6 +96,11 @@ class Account extends Eloquent
         }
     }
 
+    public function isEnglish()
+    {
+        return !$this->language_id || $this->language_id == DEFAULT_LANGUAGE;
+    }
+
     public function getDisplayName()
     {
         if ($this->name) {
@@ -148,7 +157,7 @@ class Account extends Eloquent
     {
         $fileName = 'logo/' . $this->account_key;
 
-        return file_exists($fileName.'.png') && $this->utf8_invoices ? $fileName.'.png' : $fileName.'.jpg';
+        return file_exists($fileName.'.png') ? $fileName.'.png' : $fileName.'.jpg';
     }
 
     public function getLogoWidth()
@@ -229,6 +238,8 @@ class Account extends Eloquent
         Session::put(SESSION_DATETIME_FORMAT, $this->datetime_format ? $this->datetime_format->format : DEFAULT_DATETIME_FORMAT);
         Session::put(SESSION_CURRENCY, $this->currency_id ? $this->currency_id : DEFAULT_CURRENCY);
         Session::put(SESSION_LOCALE, $this->language_id ? $this->language->locale : DEFAULT_LOCALE);
+
+        App::setLocale(session(SESSION_LOCALE));
     }
 
     public function getInvoiceLabels()
@@ -277,7 +288,7 @@ class Account extends Eloquent
             if (isset($custom[$field]) && $custom[$field]) {
                 $data[$field] = $custom[$field];
             } else {
-                $data[$field] = uctrans("texts.$field");
+                $data[$field] = $this->isEnglish() ? uctrans("texts.$field") : trans("texts.$field");
             }
         }
 
@@ -315,7 +326,7 @@ class Account extends Eloquent
 
     public function isWhiteLabel()
     {
-        if (Utils::isNinja()) {
+        if (Utils::isNinjaProd()) {
             return self::isPro() && $this->pro_plan_paid != NINJA_DATE;
         } else {
             return $this->pro_plan_paid == NINJA_DATE;
@@ -348,6 +359,8 @@ class Account extends Eloquent
                     'invoice_status_id',
                     'invoice_items',
                     'created_at',
+                    'is_recurring',
+                    'is_quote',
                 ]);
 
                 foreach ($invoice->invoice_items as $invoiceItem) {
@@ -420,9 +433,6 @@ class Account extends Eloquent
     }
 }
 
-Account::updating(function ($account) {
-    // Lithuanian requires UTF8 support
-    if (!Utils::isPro() && $account->language_id == 13) {
-        $account->utf8_invoices = true;
-    }
+Account::updated(function ($account) {
+    Event::fire(new UserSettingsChanged());
 });

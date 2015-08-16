@@ -253,12 +253,12 @@
     }, 2000);
 
     $('#search').blur(function(){
-      $('#search').css('width', '{{ Utils::isEnglish() ? 150 : 100 }}px');
+      $('#search').css('width', '{{ Utils::isEnglish() ? 150 : 110 }}px');
       $('ul.navbar-right').show();
     });
 
     $('#search').focus(function(){
-      $('#search').css('width', '{{ Utils::isEnglish() ? 256 : 206 }}px');
+      $('#search').css('width', '{{ Utils::isEnglish() ? 256 : 216 }}px');
       $('ul.navbar-right').hide();
       if (!window.hasOwnProperty('searchData')) {
         $.get('{{ URL::route('getSearchData') }}', function(data) {                         
@@ -323,6 +323,10 @@
     });
 
     @yield('onReady')
+
+    @if (Input::has('focus'))
+        $('#{{ Input::get('focus') }}').focus();
+    @endif
 
   });
 
@@ -460,7 +464,7 @@
 
       <form class="navbar-form navbar-right" role="search">
         <div class="form-group">
-          <input type="text" id="search" style="width: {{ Utils::isEnglish() ? 150 : 100 }}px" 
+          <input type="text" id="search" style="width: {{ Utils::isEnglish() ? 150 : 110 }}px" 
             class="form-control" placeholder="{{ trans('texts.search') }}">
         </div>
       </form>
@@ -630,7 +634,7 @@
 @endif
 
 {{-- Per our license, please do not remove or modify this section. --}}
-@if (!Utils::isNinja())    
+@if (!Utils::isNinjaProd())
 <div class="container">
   {{ trans('texts.powered_by') }} <a href="https://www.invoiceninja.com/?utm_source=powered_by" target="_blank">InvoiceNinja.com</a> | 
   @if (Auth::user()->account->isWhiteLabel())  

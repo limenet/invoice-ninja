@@ -4,10 +4,9 @@
 
     <style type="text/css">
 
-    .time-input input,
-    .time-input select {
-        float: left;
+    input.time-input {
         width: 110px;
+        font-size: 14px !important;
     }
     </style>
 
@@ -79,13 +78,13 @@
                             <td style="padding: 0px 12px 12px 0 !important">
                                 <div data-bind="css: { 'has-error': !isStartValid() }">
                                     <input type="text" data-bind="value: startTime.pretty, event:{ change: $root.refresh }" 
-                                        class="form-control" placeholder="{{ trans('texts.start_time') }}"/>
+                                        class="form-control time-input" placeholder="{{ trans('texts.start_time') }}"/>
                                 </div>
                             </td>
                             <td style="padding: 0px 12px 12px 0 !important">
                                 <div data-bind="css: { 'has-error': !isEndValid() }">
                                     <input type="text" data-bind="value: endTime.pretty, event:{ change: $root.refresh }" 
-                                        class="form-control" placeholder="{{ trans('texts.end_time') }}"/>
+                                        class="form-control time-input" placeholder="{{ trans('texts.end_time') }}"/>
                                 </div>
                             </td>
                             <td style="width:100px">                                
@@ -202,9 +201,6 @@
     }
 
     function TimeModel(data) {
-        console.log('== TimeModel ==');
-        console.log(data);
-
         var self = this;
         self.startTime = ko.observable(0);
         self.endTime = ko.observable(0);
@@ -274,15 +270,11 @@
     }
 
     function ViewModel(data) {
-        console.log('== ViewModel ==');
-        console.log(data);
-
         var self = this;
         self.time_log = ko.observableArray();
 
         if (data) {
             data = JSON.parse(data.time_log);
-            console.log(data);
             for (var i=0; i<data.length; i++) {
                 self.time_log.push(new TimeModel(data[i]));
             }            
