@@ -46,7 +46,7 @@ return array(
   'line_total' => 'Summe',
   'subtotal' => 'Zwischensumme',
   'paid_to_date' => 'Bereits gezahlt',
-  'balance_due' => 'Geschuldeter Betrag',
+  'balance_due' => 'Ausstehender Betrag',
   'invoice_design_id' => 'Design',
   'terms' => 'Bedingungen',
   'your_invoice' => 'Ihre Rechnung',
@@ -273,7 +273,7 @@ return array(
   'reset_password' => 'Du kannst dein Passwort zurücksetzen, indem du auf den folgenden Link klickst:',
   'reset_password_footer' => 'Wenn du das Zurücksetzen des Passworts nicht beantragt hast, benachrichtige bitte unseren Support: ' . CONTACT_EMAIL,
 
-  
+
   // Payment page
   'secure_payment' => 'Sichere Zahlung',
   'card_number' => 'Kartennummer',
@@ -314,7 +314,7 @@ return array(
   'pro_plan_description' => 'Jahresmitgliedschaft beim Invoice Ninja Pro Plan.',
   'pro_plan_success' => 'Danke, dass Sie Invoice Ninja\'s Pro gewählt haben!<p/>&nbsp;<br/>
                           <b>Nächste Schritte</b>Eine bezahlbare Rechnung wurde an die Mailadresse,
-                          welche mit Ihrem Account verbunden ist, geschickt. Um alle der umfangreichen 
+                          welche mit Ihrem Account verbunden ist, geschickt. Um alle der umfangreichen
                           Pro Funktionen freizuschalten, folgen Sie bitte den Anweisungen in der Rechnung um ein Jahr
                           die Pro Funktionen zu nutzen.
                           Sie finden die Rechnung nicht? Sie benötigen weitere Hilfe? Wir helfen gerne
@@ -461,7 +461,7 @@ return array(
   'buy' => 'Kaufen',
   'bought_designs' => 'Die zusätzliche Rechnungsvorlagen wurden erfolgreich hinzugefügt',
   'sent' => 'gesendet',
-  
+
   'vat_number' => 'USt-IdNr.',
   'timesheets' => 'Zeittabellen',
 
