@@ -235,22 +235,10 @@
     @endif
   }
 
-
-  // keep the token cookie valid to prevent token mismatch errors
-  function keepAlive() {
+  $(function() {
     window.setTimeout(function() { 
-        $.get('{{ URL::to('/keep_alive') }}', function(data) {
-            keepAlive();
-        })
-    }, 1000 * 60 * 60);
-  }      
-
-  $(function() {    
-    keepAlive();    
-
-    window.setTimeout(function() { 
-        $(".alert-hide").fadeOut(500);
-    }, 2000);
+        $(".alert-hide").fadeOut();
+    }, 3000);
 
     $('#search').blur(function(){
       $('#search').css('width', '{{ Utils::isEnglish() ? 150 : 110 }}px');
@@ -478,10 +466,10 @@
   </div>
 </nav>
 
-
-
 <br/>
-<div class="container">		
+<div class="container">
+  
+  @include('partials.warn_session', ['redirectTo' => '/dashboard'])
 
   @if (Session::has('warning'))
   <div class="alert alert-warning">{!! Session::get('warning') !!}</div>
@@ -499,11 +487,11 @@
   @endif
 
   @if (Session::has('error'))
-  <div class="alert alert-danger">{!! Session::get('error') !!}</div>
+      <div class="alert alert-danger">{!! Session::get('error') !!}</div>
   @endif
 
   @if (!isset($showBreadcrumbs) || $showBreadcrumbs)
-  {!! HTML::breadcrumbs() !!}
+    {!! HTML::breadcrumbs() !!}
   @endif
 
   @yield('content')		
@@ -635,8 +623,10 @@
 
 {{-- Per our license, please do not remove or modify this section. --}}
 @if (!Utils::isNinjaProd())
+<p>&nbsp;</p>
 <div class="container">
-  {{ trans('texts.powered_by') }} <a href="https://www.invoiceninja.com/?utm_source=powered_by" target="_blank">InvoiceNinja.com</a> | 
+  {{ trans('texts.powered_by') }} <a href="https://www.invoiceninja.com/?utm_source=powered_by" target="_blank">InvoiceNinja.com</a> -
+  {!! link_to(GITHUB_RELEASES, 'v' . NINJA_VERSION, ['target' => '_blank']) !!} | 
   @if (Auth::user()->account->isWhiteLabel())  
     {{ trans('texts.white_labeled') }}
   @else

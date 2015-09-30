@@ -348,7 +348,7 @@ class UserController extends BaseController
         return RESULT_SUCCESS;
     }
 
-    public function switchAccount($newUserId) 
+    public function switchAccount($newUserId)
     {
         $oldUserId = Auth::user()->id;
         $referer = Request::header('referer');
@@ -384,4 +384,5 @@ class UserController extends BaseController
     {
         return View::make('users.account_management');
     }
+
 }

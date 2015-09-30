@@ -41,7 +41,13 @@
                     <label for="simple-time" class="control-label col-lg-4 col-sm-4">  
                     </label>
                     <div class="col-lg-8 col-sm-8" style="padding-top: 10px">
-                        <p>{{ $task->getStartTime() }}<p/>
+                        <p>{{ $task->getStartTime() }} - 
+                        @if (Auth::user()->account->timezone_id)
+                            {{ $timezone }}
+                        @else
+                            {!! link_to('/company/details?focus=timezone_id', $timezone, ['target' => '_blank']) !!}
+                        @endif
+                        <p/>
 
                         @if ($task->hasPreviousDuration())
                             {{ trans('texts.duration') . ': ' . gmdate('H:i:s', $task->getDuration()) }}<br/>
@@ -174,15 +180,7 @@
             if (!timeLog.isEmpty()) {
                 data.push([timeLog.startTime(),timeLog.endTime()]);
             }
-            @if ($task && !$task->is_running)
-                if (!timeLog.isStartValid() || !timeLog.isEndValid()) {
-                    alert("{{ trans('texts.task_errors') }}");
-                    showTimeDetails();
-                    return;
-                }
-            @endif
-
-        }        
+        }
         $('#invoice_id').val(invoice_id);
         $('#time_log').val(JSON.stringify(data));
         $('#action').val(action);
@@ -202,6 +200,10 @@
 
     function TimeModel(data) {
         var self = this;
+
+        var dateTimeFormat = '{{ $datetimeFormat }}';
+        var timezone = '{{ $timezone }}';
+
         self.startTime = ko.observable(0);
         self.endTime = ko.observable(0);
         self.duration = ko.observable(0);
@@ -220,25 +222,25 @@
 
         self.startTime.pretty = ko.computed({
             read: function() {                
-                return self.startTime() ? moment.unix(self.startTime()).utcOffset({{ $minuteOffset }}).format('MMM D YYYY h:mm:ss a') : '';    
+                return self.startTime() ? moment.unix(self.startTime()).tz(timezone).format(dateTimeFormat) : '';    
             }, 
             write: function(data) {
-                self.startTime(moment(data, 'MMM D YYYY h:mm:ss a').utcOffset({{ $minuteOffset }}).unix());
+                self.startTime(moment(data, dateTimeFormat).tz(timezone).unix());
             }
         });
 
         self.endTime.pretty = ko.computed({
             read: function() {
-                return self.endTime() ? moment.unix(self.endTime()).utcOffset({{ $minuteOffset }}).format('MMM D YYYY h:mm:ss a') : '';
+                return self.endTime() ? moment.unix(self.endTime()).tz(timezone).format(dateTimeFormat) : '';
             }, 
             write: function(data) {
-                self.endTime(moment(data, 'MMM D YYYY h:mm:ss a').utcOffset({{ $minuteOffset }}).unix());
+                self.endTime(moment(data, dateTimeFormat).tz(timezone).unix());
             }
         });
 
         self.setNow = function() {
-            self.startTime(moment().utcOffset({{ $minuteOffset }}).unix());
-            self.endTime(moment().utcOffset({{ $minuteOffset }}).unix());            
+            self.startTime(moment.tz(timezone).unix());
+            self.endTime(moment.tz(timezone).unix());
         }
 
         self.duration.pretty = ko.computed(function() {
@@ -269,6 +271,15 @@
         };       
     }
 
+    function loadTimeLog(data) {
+        model.time_log.removeAll();
+        data = JSON.parse(data);
+        for (var i=0; i<data.length; i++) {
+            model.time_log.push(new TimeModel(data[i]));
+        }
+        model.time_log.push(new TimeModel());
+    }
+
     function ViewModel(data) {
         var self = this;
         self.time_log = ko.observableArray();
@@ -277,13 +288,13 @@
             data = JSON.parse(data.time_log);
             for (var i=0; i<data.length; i++) {
                 self.time_log.push(new TimeModel(data[i]));
-            }            
+            }
         }
         self.time_log.push(new TimeModel());
 
-        self.removeItem = function(item) {            
-            self.time_log.remove(item);   
-            self.refresh();         
+        self.removeItem = function(item) {
+            self.time_log.remove(item);
+            self.refresh();
         }
 
         self.refresh = function() {
@@ -291,11 +302,22 @@
             var lastTime = 0;
             for (var i=0; i<self.time_log().length; i++) {
                 var timeLog = self.time_log()[i];
-                var startValid = true;
-                var endValid = true;
                 if (timeLog.isEmpty()) {
                     hasEmpty = true;
-                } else {
+                }
+            }
+            if (!hasEmpty) {
+                self.addItem();
+            }
+        }
+
+        self.showTimeOverlaps = function() {
+            var lastTime = 0;
+            for (var i=0; i<self.time_log().length; i++) {
+                var timeLog = self.time_log()[i];
+                var startValid = true;
+                var endValid = true;
+                if (!timeLog.isEmpty()) {
                     if (timeLog.startTime() < lastTime || timeLog.startTime() > timeLog.endTime()) {
                         startValid = false;
                     }
@@ -306,9 +328,6 @@
                 }
                 timeLog.isStartValid(startValid);
                 timeLog.isEndValid(endValid);
-            }
-            if (!hasEmpty) {
-                self.addItem();
             }
         }
 
@@ -344,7 +363,7 @@
             if (val == 'timer') {
                 $('#datetime-details').hide();
             } else {
-                $('#datetime-details').fadeIn();        
+                $('#datetime-details').fadeIn();
             }
             $('#start-button').toggle();
             $('#save-button').toggle();
@@ -367,6 +386,12 @@
             @if ($task->is_running)
                 tock({{ $duration }});
             @endif
+        @endif
+
+        @if (Session::has('error'))
+            loadTimeLog({!! json_encode(Input::old('time_log')) !!});
+            model.showTimeOverlaps();
+            showTimeDetails();
         @endif
     });    
 

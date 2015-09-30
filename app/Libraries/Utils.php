@@ -40,6 +40,11 @@ class Utils
         }
     }
 
+    public static function isDownForMaintenance()
+    {
+        return file_exists(storage_path() . '/framework/down');
+    }
+
     public static function isProd()
     {
         return App::environment() == ENV_PRODUCTION;
@@ -341,10 +346,7 @@ class Utils
             return;
         }
 
-        //$timezone = Session::get(SESSION_TIMEZONE, DEFAULT_TIMEZONE);
         $format = Session::get(SESSION_DATE_FORMAT, DEFAULT_DATE_FORMAT);
-
-        //$dateTime = DateTime::createFromFormat($format, $date, new DateTimeZone($timezone));
         $dateTime = DateTime::createFromFormat($format, $date);
 
         return $formatResult ? $dateTime->format('Y-m-d') : $dateTime;
@@ -356,11 +358,8 @@ class Utils
             return '';
         }
 
-        //$timezone = Session::get(SESSION_TIMEZONE, DEFAULT_TIMEZONE);
         $format = Session::get(SESSION_DATE_FORMAT, DEFAULT_DATE_FORMAT);
-
         $dateTime = DateTime::createFromFormat('Y-m-d', $date);
-        //$dateTime->setTimeZone(new DateTimeZone($timezone));
 
         return $formatResult ? $dateTime->format($format) : $dateTime;
     }
@@ -734,5 +733,62 @@ class Utils
         }
         
         return $val;
+    }
+
+    public static function getFirst($values) {
+        if (is_array($values)) {
+            return count($values) ? $values[0] : false;
+        } else {
+            return $values;
+        }
+    }
+
+    // nouns in German and French should be uppercase
+    public static function transFlowText($key) {
+        $str = trans("texts.$key");
+        if (!in_array(App::getLocale(), ['de', 'fr'])) {
+            $str = strtolower($str);
+        }
+        return $str;
+    }
+
+    public static function getSubdomainPlaceholder() {
+        $parts = parse_url(SITE_URL);
+        $subdomain = '';
+        if (isset($parts['host'])) {
+            $host = explode('.', $parts['host']);
+            if (count($host) > 2) {
+                $subdomain = $host[0];
+            }
+        }
+        return $subdomain;
+    }
+
+    public static function getDomainPlaceholder() {
+        $parts = parse_url(SITE_URL);
+        $domain = '';
+        if (isset($parts['host'])) {
+            $host = explode('.', $parts['host']);
+            if (count($host) > 2) {
+                array_shift($host);
+                $domain .= implode('.', $host);
+            } else {
+                $domain .= $parts['host'];
+            }
+        }
+        if (isset($parts['path'])) {
+            $domain .= $parts['path'];
+        }
+        return $domain;
+    }
+
+    public static function replaceSubdomain($domain, $subdomain) {
+        $parsedUrl = parse_url($domain);
+        $host = explode('.', $parsedUrl['host']);
+        if (count($host) > 0) {
+            $oldSubdomain = $host[0];
+            $domain = str_replace("://{$oldSubdomain}.", "://{$subdomain}.", $domain);
+        }
+        return $domain;
     }
 }

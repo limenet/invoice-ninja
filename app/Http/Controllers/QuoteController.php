@@ -53,7 +53,7 @@ class QuoteController extends BaseController
         $data = [
           'title' => trans('texts.quotes'),
           'entityType' => ENTITY_QUOTE,
-          'columns' => Utils::trans(['checkbox', 'quote_number', 'client', 'quote_date', 'quote_total', 'due_date', 'status', 'action']),
+          'columns' => Utils::trans(['checkbox', 'quote_number', 'client', 'quote_date', 'quote_total', 'valid_until', 'status', 'action']),
         ];
 
     /*
@@ -71,7 +71,7 @@ class QuoteController extends BaseController
     {
         $invitationKey = Session::get('invitation_key');
         if (!$invitationKey) {
-            return Redirect::to('/setup');
+            app()->abort(404);
         }
 
         $invitation = Invitation::with('account')->where('invitation_key', '=', $invitationKey)->first();
@@ -156,6 +156,7 @@ class QuoteController extends BaseController
           'currencies' => Cache::get('currencies'),
           'sizes' => Cache::get('sizes'),
           'paymentTerms' => Cache::get('paymentTerms'),
+          'languages' => Cache::get('languages'),
           'industries' => Cache::get('industries'),
           'invoiceDesigns' => InvoiceDesign::getDesigns(),
           'invoiceLabels' => Auth::user()->account->getInvoiceLabels(),
@@ -185,7 +186,11 @@ class QuoteController extends BaseController
             Session::flash('message', $message);
         }
 
-        return Redirect::to('quotes');
+        if ($action == 'restore' && $count == 1) {
+            return Redirect::to("quotes/".Utils::getFirst($ids));
+        } else {
+            return Redirect::to("quotes");
+        }
     }
 
     public function approve($invitationKey)

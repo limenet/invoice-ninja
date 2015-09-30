@@ -9,15 +9,17 @@ use Exception;
 use Input;
 use Utils;
 use View;
+use Event;
 use Session;
 use Cookie;
 use Response;
+use Redirect;
 use App\Models\User;
 use App\Models\Account;
 use App\Models\Industry;
 use App\Ninja\Mailers\Mailer;
 use App\Ninja\Repositories\AccountRepository;
-use Redirect;
+use App\Events\UserSettingsChanged;
 
 class AppController extends BaseController
 {
@@ -88,7 +90,8 @@ class AppController extends BaseController
                     "MAIL_HOST={$mail['host']}\n".
                     "MAIL_USERNAME={$mail['username']}\n".
                     "MAIL_FROM_NAME={$mail['from']['name']}\n".
-                    "MAIL_PASSWORD={$mail['password']}";
+                    "MAIL_PASSWORD={$mail['password']}\n\n".
+                    "PHANTOMJS_CLOUD_KEY='a-demo-key-with-low-quota-per-ip-address'";
 
         // Write Config Settings
         $fp = fopen(base_path()."/.env", 'w');
@@ -101,6 +104,7 @@ class AppController extends BaseController
         if (Industry::count() == 0) {
             Artisan::call('db:seed', array('--force' => true));
         }
+        Cache::flush();
         Artisan::call('optimize', array('--force' => true));
         
         $firstName = trim(Input::get('first_name'));
@@ -182,6 +186,7 @@ class AppController extends BaseController
                 Artisan::call('db:seed', array('--force' => true, '--class' => 'PaymentLibrariesSeeder'));
                 Artisan::call('optimize', array('--force' => true));
                 Cache::flush();
+                Event::fire(new UserSettingsChanged());
                 Session::flash('message', trans('texts.processed_updates'));
             } catch (Exception $e) {
                 Response::make($e->getMessage(), 500);

@@ -37,11 +37,8 @@ class AppServiceProvider extends ServiceProvider {
 
             $str = '<li class="dropdown '.$class.'">
                    <a href="'.URL::to($types).'" class="dropdown-toggle">'.trans("texts.$types").'</a>
-                   <ul class="dropdown-menu" id="menu1">';
-
-            if ($type != ENTITY_TASK || Auth::user()->account->timezone_id) {
-                $str .= '<li><a href="'.URL::to($types.'/create').'">'.trans("texts.new_$type").'</a></li>';
-            }
+                   <ul class="dropdown-menu" id="menu1">
+                   <li><a href="'.URL::to($types.'/create').'">'.trans("texts.new_$type").'</a></li>';
             
             if ($type == ENTITY_INVOICE) {
                 $str .= '<li><a href="'.URL::to('recurring_invoices/create').'">'.trans("texts.new_recurring_invoice").'</a></li>';
@@ -72,7 +69,7 @@ class AppServiceProvider extends ServiceProvider {
 
             // Get the breadcrumbs by exploding the current path.
             $basePath = Utils::basePath();
-            $parts = explode('?', $_SERVER['REQUEST_URI']);
+            $parts = explode('?', isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '');
             $path = $parts[0];
 
             if ($basePath != '/') {
@@ -119,6 +116,26 @@ class AppServiceProvider extends ServiceProvider {
             return $credit >= $amount;
         });
 
+        // check that the time log elements don't overlap
+        Validator::extend('time_log', function($attribute, $value, $parameters) {
+            $lastTime = 0;
+            $value = json_decode($value);
+            array_multisort($value);
+            foreach ($value as $timeLog) {
+                list($startTime, $endTime) = $timeLog;
+                if (!$endTime) {
+                    continue;
+                }
+                if ($startTime < $lastTime || $startTime > $endTime) {
+                    return false;
+                }
+                if ($endTime < min($startTime, $lastTime)) {
+                    return false;
+                }
+                $lastTime = max($lastTime, $endTime);
+            }
+            return true;
+        });
 
         Validator::extend('less_than', function($attribute, $value, $parameters) {
             return floatval($value) <= floatval($parameters[0]);

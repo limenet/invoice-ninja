@@ -36,8 +36,6 @@ class TaskController extends BaseController
      */
     public function index()
     {
-        self::checkTimezone();
-
         return View::make('list', array(
             'entityType' => ENTITY_TASK,
             'title' => trans('texts.tasks'),
@@ -57,7 +55,7 @@ class TaskController extends BaseController
                   ->addColumn('client_name', function ($model) { return $model->client_public_id ? link_to('clients/'.$model->client_public_id, Utils::getClientDisplayName($model)) : ''; });
         }
 
-        return $table->addColumn('created_at', function($model) { return Task::calcStartTime($model); })
+        return $table->addColumn('created_at', function($model) { return link_to("tasks/{$model->public_id}/edit", Task::calcStartTime($model)); })
                 ->addColumn('time_log', function($model) { return gmdate('H:i:s', Task::calcDuration($model)); })
                 ->addColumn('description', function($model) { return $model->description; })
                 ->addColumn('invoice_number', function($model) { return self::getStatusLabel($model); })
@@ -121,6 +119,13 @@ class TaskController extends BaseController
         return $this->save();
     }
 
+    public function show($publicId)
+    {
+        Session::reflash();
+
+        return Redirect::to("tasks/{$publicId}/edit");
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -128,15 +133,14 @@ class TaskController extends BaseController
      */
     public function create($clientPublicId = 0)
     {
-        self::checkTimezone();
-
         $data = [
             'task' => null,
             'clientPublicId' => Input::old('client') ? Input::old('client') : $clientPublicId,
             'method' => 'POST',
             'url' => 'tasks',
             'title' => trans('texts.new_task'),
-            'minuteOffset' => Utils::getTiemstampOffset(),
+            'timezone' => Auth::user()->account->timezone ? Auth::user()->account->timezone->name : DEFAULT_TIMEZONE,
+            'datetimeFormat' => Auth::user()->account->getMomentDateTimeFormat(),
         ];
 
         $data = array_merge($data, self::getViewModel());
@@ -152,15 +156,13 @@ class TaskController extends BaseController
      */
     public function edit($publicId)
     {
-        self::checkTimezone();
-
         $task = Task::scope($publicId)->with('client', 'invoice')->firstOrFail();
 
         $actions = [];
         if ($task->invoice) {
             $actions[] = ['url' => URL::to("inovices/{$task->invoice->public_id}/edit"), 'label' => trans("texts.view_invoice")];
         } else {
-            $actions[] = ['url' => 'javascript:submitAction("invoice")', 'label' => trans("texts.create_invoice")];
+            $actions[] = ['url' => 'javascript:submitAction("invoice")', 'label' => trans("texts.invoice_task")];
 
             // check for any open invoices
             $invoices = $task->client_id ? $this->invoiceRepo->findOpenInvoices($task->client_id) : [];
@@ -186,7 +188,8 @@ class TaskController extends BaseController
             'title' => trans('texts.edit_task'),
             'duration' => $task->is_running ? $task->getCurrentDuration() : $task->getDuration(),
             'actions' => $actions,
-            'minuteOffset' => Utils::getTiemstampOffset(),
+            'timezone' => Auth::user()->account->timezone ? Auth::user()->account->timezone->name : DEFAULT_TIMEZONE,
+            'datetimeFormat' => Auth::user()->account->getMomentDateTimeFormat(),
         ];
 
         $data = array_merge($data, self::getViewModel());
@@ -218,6 +221,14 @@ class TaskController extends BaseController
 
         if (in_array($action, ['archive', 'delete', 'invoice', 'restore', 'add_to_invoice'])) {
             return self::bulk();
+        }
+
+        if ($validator = $this->taskRepo->getErrors(Input::all())) {
+            $url = $publicId ? 'tasks/'.$publicId.'/edit' : 'tasks/create';
+            Session::flash('error', trans('texts.task_errors'));
+            return Redirect::to($url)
+                ->withErrors($validator)
+                ->withInput();
         }
 
         $task = $this->taskRepo->save($publicId, Input::all());
@@ -283,14 +294,6 @@ class TaskController extends BaseController
             } else {
                 return Redirect::to('tasks');
             }
-        }
-    }
-
-    private function checkTimezone()
-    {
-        if (!Auth::user()->account->timezone) {
-            $link = link_to('/company/details?focus=timezone_id', trans('texts.click_here'), ['target' => '_blank']);
-            Session::flash('warning', trans('texts.timezone_unset', ['link' => $link]));
         }
     }
 }

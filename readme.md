@@ -1,5 +1,11 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hillelcoren/invoice-ninja/master/public/images/round_logo.png" alt="Sublime's custom image"/>
+</p>
+
 # Invoice Ninja
 ### [https://www.invoiceninja.com](https://www.invoiceninja.com)
+
+[![Join the chat at https://gitter.im/hillelcoren/invoice-ninja](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hillelcoren/invoice-ninja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 If you'd like to use our code to sell your own invoicing app email us for details about our affiliate program.
 
@@ -18,12 +24,13 @@ If you'd like to translate the site please use [caouecs/Laravel4-long](https://g
 ### Features
 
 * Built using Laravel 5
-* Live PDF generation
-* Integrates with 30+ payment providers
-* Recurring invoices
+* Live PDF generation using [pdfmake](http://pdfmake.org/)
+* Integrates with 30+ payment providers with [OmniPay](https://github.com/thephpleague/omnipay)
+* Recurring invoices with auto-billing
 * Tasks with time-tracking
-* Multi-user support
+* Multi-user/multi-company support
 * Tax rates and payment terms
+* Reminder emails
 * Partial payments
 * Custom email templates
 * [Zapier](https://zapier.com/) integration

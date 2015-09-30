@@ -185,7 +185,7 @@
    'users' => 'Brugere', 
    'localization' => 'Lokalisering', 
    'remove_logo' => 'Fjern logo', 
-   'logo_help' => 'Understøttede filtyper: JPEG, GIF og PNG. Anbefalet størrelse: 200px bredde og 120px højde', 
+   'logo_help' => 'Understøttede filtyper: JPEG, GIF og PNG', 
    'payment_gateway' => 'Betalingsløsning', 
    'gateway_id' => 'Kort betalings udbyder', 
    'email_notifications' => 'Notifikation via e-mail', 
@@ -743,11 +743,56 @@
    'manage_companies' => 'Manage Companies',
    'total_revenue' => 'Total Revenue',
 
-   'current_user' => 'Current User',
-   'new_recurring_invoice' => 'New Recurring Invoice',
-   'recurring_invoice' => 'Recurring Invoice',
-   'recurring_too_soon' => 'It\'s too soon to create the next recurring invoice',
-   'created_by_invoice' => 'Created by :invoice',
-   'primary_user' => 'Primary User',
+   'current_user' => 'Nuværende bruger',
+   'new_recurring_invoice' => 'Ny gentaget fakture',
+   'recurring_invoice' => 'Gentaget faktura',
+   'recurring_too_soon' => 'Det er for tidligt at generere den næste faktura',
+   'created_by_invoice' => 'Oprettet fra :invoice',
+   'primary_user' => 'Primær bruger',
+   'help' => 'Hjælp',
+   'customize_help' => '<p>Vi bruger <a href="http://pdfmake.org/" target="_blank">pdfmake</a> til at definere faktura design felter. pdfmake <a href="http://pdfmake.org/playground.html" target="_blank">legeplads</a> giver en god mulighed for at se biblioteket i aktion.</p>
+                        <p>Du kan tilgå alle faktura felter ved at tilføje <code>Value</code> til slutningen. For eksempel viser <code>$invoiceNumberValue</code> fakturanummeret.</p>
+                        <p>For at tilgå under indstillingerne ved hjælp af dot notation. For eksempel kan man for at vise klient navnet bruge <code>$client.nameValue</code>.</p>
+                        <p>Hvis du mangler svar på nogen spørgsmål så post et spørgsmål i vores <a href="https://www.invoiceninja.com/forums/forum/support/" target="_blank">support forum</a>.</p>',
+  
+   'invoice_due_date' => 'Due Date',
+   'quote_due_date' => 'Valid Until',
+   'valid_until' => 'Valid Until',
+   'reset_terms' => 'Reset terms',
+   'reset_footer' => 'Reset footer',
+   'invoices_sent' => ':count invoice sent|:count invoices sent',
+   'status_draft' => 'Draft',
+   'status_sent' => 'Sent',
+   'status_viewed' => 'Viewed',
+   'status_partial' => 'Partial',
+   'status_paid' => 'Paid',
+   'show_line_item_tax' => 'Display <b>line item taxes</b> inline',
+
+   'iframe_url' => 'Website',
+   'iframe_url_help1' => 'Copy the following code to a page on your site.',
+   'iframe_url_help2' => 'You can test the feature by clicking \'View as recipient\' for an invoice.',
+
+   'auto_bill' => 'Auto Bill',
+   'military_time' => '24 Hour Time',
+   'last_sent' => 'Last Sent',
+
+   'reminder_emails' => 'Reminder Emails',
+   'templates_and_reminders' => 'Templates & Reminders',
+   'subject' => 'Subject',
+   'body' => 'Body',
+   'first_reminder' => 'First Reminder',
+   'second_reminder' => 'Second Reminder',
+   'third_reminder' => 'Third Reminder',
+   'num_days_reminder' => 'Days after due date',
+   'reminder_subject' => 'Reminder: Invoice :invoice from :account',
+   'reset' => 'Reset',
+   'invoice_not_found' => 'The requested invoice is not available',
+
+   'referral_program' => 'Referral Program',
+   'referral_code' => 'Referral Code',
+   'last_sent_on' => 'Last sent on :date',
+
+   'page_expire' => 'This page will expire soon, :click_here to keep working',
+
 
  ); 
