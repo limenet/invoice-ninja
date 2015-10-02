@@ -772,7 +772,7 @@ return array(
   'iframe_url_help2' => 'You can test the feature by clicking \'View as recipient\' for an invoice.',
 
   'auto_bill' => 'Auto Bill',
-  'military_time' => '24 Stunden Format',
+  'military_time' => '24 Hour Time',
   'last_sent' => 'Last Sent',
 
   'reminder_emails' => 'Reminder Emails',
