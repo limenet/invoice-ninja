@@ -14,7 +14,7 @@
 /vendor
 /node_modules
 /.DS_Store
-/Thumbs.db
+Thumbs.db
 /.env
 /.env.development.php
 /.env.php
@@ -31,5 +31,3 @@
 /.project
 tests/_output/
 tests/_bootstrap.php
-
-composer.lock

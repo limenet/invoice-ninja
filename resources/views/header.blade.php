@@ -159,8 +159,12 @@
     }
   }
 
-  function showSignUp() {    
-    $('#signUpModal').modal('show');    
+  function showSignUp() {
+    $('#signUpModal').modal('show');
+  }
+
+  function hideSignUp() {
+    $('#signUpModal').modal('hide');
   }
 
   NINJA.proPlanFeature = '';
@@ -239,6 +243,14 @@
     @endif
   }
 
+  function setSignupEnabled(enabled) {
+    $('.signup-form input[type=text], .signup-form button').prop('disabled', !enabled);
+  }
+
+  function setSocialLoginProvider(provider) {
+    localStorage.setItem('auth_provider', provider);
+  }
+
   $(function() {
     window.setTimeout(function() { 
         $(".alert-hide").fadeOut();
@@ -253,17 +265,18 @@
       $('#search').css('width', '{{ Utils::isEnglish() ? 256 : 216 }}px');
       $('ul.navbar-right').hide();
       if (!window.hasOwnProperty('searchData')) {
-        $.get('{{ URL::route('getSearchData') }}', function(data) {                         
-          window.searchData = true;                     
+        trackEvent('/activity', '/search');
+        $.get('{{ URL::route('getSearchData') }}', function(data) {
+          window.searchData = true;
           var datasets = [];
           for (var type in data)
-          {                             
-            if (!data.hasOwnProperty(type)) continue;                           
+          {
+            if (!data.hasOwnProperty(type)) continue;
             datasets.push({
               name: type,
-              header: '&nbsp;<b>' + type  + '</b>',                                 
+              header: '&nbsp;<b>' + type  + '</b>',
               local: data[type]
-            });                                                         
+            });
           }
           if (datasets.length == 0) {
             return;
@@ -306,9 +319,6 @@
     @endif
 
     $('ul.navbar-settings, ul.navbar-history').hover(function () {
-        //$('.user-accounts').find('li').hide();
-        //$('.user-accounts').css({display: 'none'});
-        //console.log($('.user-accounts').dropdown(''))
         if ($('.user-accounts').css('display') == 'block') {
             $('.user-accounts').dropdown('toggle');
         }
@@ -318,6 +328,14 @@
 
     @if (Input::has('focus'))
         $('#{{ Input::get('focus') }}').focus();
+    @endif
+
+    // Ensure terms is checked for sign up form
+    @if (Auth::check() && !Auth::user()->registered)
+        setSignupEnabled(false);
+        $("#terms_checkbox").change(function() {
+            setSignupEnabled(this.checked);
+        });
     @endif
 
   });
@@ -424,12 +442,10 @@
             <span class="glyphicon glyphicon-cog" title="{{ trans('texts.settings') }}"/>
           </a>
           <ul class="dropdown-menu">
-            <li>{!! link_to('company/details', uctrans('texts.company_details')) !!}</li>
-            <li>{!! link_to('company/payments', uctrans('texts.online_payments')) !!}</li>
-            <li>{!! link_to('company/products', uctrans('texts.product_library')) !!}</li>
-            <li>{!! link_to('company/notifications', uctrans('texts.notifications')) !!}</li>
-            <li>{!! link_to('company/import_export', uctrans('texts.import_export')) !!}</li>
-            <li><a href="{{ url('company/advanced_settings/invoice_design') }}">{!! uctrans('texts.advanced_settings') . Utils::getProLabel(ACCOUNT_ADVANCED_SETTINGS) !!}</a></li>
+            @foreach (\App\Models\Account::$basicSettings as $setting)
+                <li>{!! link_to('settings/' . $setting, uctrans("texts.{$setting}")) !!}</li>
+            @endforeach
+            <li><a href="{{ url('settings/' . ACCOUNT_INVOICE_SETTINGS) }}">{!! uctrans('texts.advanced_settings') . Utils::getProLabel(ACCOUNT_ADVANCED_SETTINGS) !!}</a></li>
           </ul>
         </li>
       </ul>
@@ -527,11 +543,43 @@
           {!! Former::text('go_pro') !!}
         </div>
 
-        {!! Former::text('new_first_name')->label(trans('texts.first_name')) !!}
-        {!! Former::text('new_last_name')->label(trans('texts.last_name')) !!}
-        {!! Former::text('new_email')->label(trans('texts.email')) !!}
-        {!! Former::password('new_password')->label(trans('texts.password')) !!}
-        {!! Former::checkbox('terms_checkbox')->label(' ')->text(trans('texts.agree_to_terms', ['terms' => '<a href="'.URL::to('terms').'" target="_blank">'.trans('texts.terms_of_service').'</a>'])) !!}
+        
+        <div class="row signup-form">
+            <div class="col-md-11 col-md-offset-1">
+                {!! Former::checkbox('terms_checkbox')->label(' ')->text(trans('texts.agree_to_terms', ['terms' => '<a href="'.URL::to('terms').'" target="_blank">'.trans('texts.terms_of_service').'</a>']))->raw() !!}
+                <br/>
+            </div>
+            @if (Utils::isNinja())
+                <div class="col-md-4 col-md-offset-1">
+                    <h4>{{ trans('texts.sign_up_using') }}</h4><br/>
+                    @foreach (App\Services\AuthService::$providers as $provider)
+                    <a href="{{ URL::to('auth/' . $provider) }}" class="btn btn-primary btn-block" 
+                        onclick="setSocialLoginProvider('{{ strtolower($provider) }}')" id="{{ strtolower($provider) }}LoginButton">
+                        <i class="fa fa-{{ strtolower($provider) }}"></i> &nbsp;
+                        {{ $provider }}
+                    </a>
+                    @endforeach
+                </div>
+                <div class="col-md-1">
+                    <div style="border-right:thin solid #CCCCCC;height:110px;width:8px;margin-bottom:10px;"></div>
+                    {{ trans('texts.or') }}
+                    <div style="border-right:thin solid #CCCCCC;height:110px;width:8px;margin-top:10px;"></div>
+                </div>
+                <div class="col-md-6">
+            @else 
+                <div class="col-md-12">
+            @endif
+                {{ Former::setOption('TwitterBootstrap3.labelWidths.large', 1) }}
+                {{ Former::setOption('TwitterBootstrap3.labelWidths.small', 1) }}
+                {!! Former::text('new_first_name')->placeholder(trans('texts.first_name'))->label(' ') !!}
+                {!! Former::text('new_last_name')->placeholder(trans('texts.last_name'))->label(' ') !!}
+                {!! Former::text('new_email')->placeholder(trans('texts.email'))->label(' ') !!}
+                {!! Former::password('new_password')->placeholder(trans('texts.password'))->label(' ') !!}
+                {{ Former::setOption('TwitterBootstrap3.labelWidths.large', 4) }}
+                {{ Former::setOption('TwitterBootstrap3.labelWidths.small', 4) }}
+            </div>
+        </div>
+
         {!! Former::close() !!}
 
         <center><div id="errorTaken" style="display:none">&nbsp;<br/>{{ trans('texts.email_taken') }}</div></center>
@@ -627,10 +675,11 @@
 
 {{-- Per our license, please do not remove or modify this section. --}}
 @if (!Utils::isNinjaProd())
+</div>
 <p>&nbsp;</p>
 <div class="container">
   {{ trans('texts.powered_by') }} <a href="https://www.invoiceninja.com/?utm_source=powered_by" target="_blank">InvoiceNinja.com</a> -
-  {!! link_to(GITHUB_RELEASES, 'v' . NINJA_VERSION, ['target' => '_blank']) !!} | 
+  {!! link_to(RELEASES_URL, 'v' . NINJA_VERSION, ['target' => '_blank']) !!} | 
   @if (Auth::user()->account->isWhiteLabel())  
     {{ trans('texts.white_labeled') }}
   @else
