@@ -1,5 +1,6 @@
 @extends('header')
 
+
 @section('content')
 
 <div class="row">
@@ -80,7 +81,7 @@
                 @foreach ($activities as $activity)
                 <li class="list-group-item">
                     <span style="color:#888;font-style:italic">{{ Utils::timestampToDateString(strtotime($activity->created_at)) }}:</span>
-                    {!! Utils::decodeActivity($activity->message) !!}
+                    {!! $activity->getMessage() !!}
                 </li>
                 @endforeach
             </ul>
@@ -197,8 +198,8 @@
                         <thead>
                             <th>{{ trans('texts.quote_number_short') }}</th>
                             <th>{{ trans('texts.client') }}</th>
-                            <th>{{ trans('texts.due_date') }}</th>
-                            <th>{{ trans('texts.balance_due') }}</th>
+                            <th>{{ trans('texts.valid_until') }}</th>
+                            <th>{{ trans('texts.amount') }}</th>
                         </thead>
                         <tbody>
                             @foreach ($upcoming as $invoice)
@@ -228,8 +229,8 @@
                         <thead>
                             <th>{{ trans('texts.quote_number_short') }}</th>
                             <th>{{ trans('texts.client') }}</th>
-                            <th>{{ trans('texts.due_date') }}</th>
-                            <th>{{ trans('texts.balance_due') }}</th>
+                            <th>{{ trans('texts.valid_until') }}</th>
+                            <th>{{ trans('texts.amount') }}</th>
                         </thead>
                         <tbody>
                             @foreach ($pastDue as $invoice)
@@ -250,11 +251,7 @@
     </div>
 @endif
 
-
-<div class="row">
-    <div class="col-md-6">  
-    </div>
-</div>
+<script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script>
 
 <script type="text/javascript">
     $(function() {
@@ -262,7 +259,9 @@
             window.location = '{{ URL::to('invoices/create') }}';
         });
     });
+    ((window.gitter = {}).chat = {}).options = {
+        room: '{{ GITTER_ROOM }}',
+    };
 </script>
 
 @stop
-

@@ -18,6 +18,7 @@ use App\Models\Contact;
 use App\Models\Account;
 use App\Models\User;
 use App\Models\UserAccount;
+use App\Models\AccountToken;
 
 class AccountRepository
 {
@@ -139,7 +140,7 @@ class AccountRepository
         $invoice->user_id = $account->users()->first()->id;
         $invoice->public_id = $publicId;
         $invoice->client_id = $client->id;
-        $invoice->invoice_number = $account->getNextInvoiceNumber();
+        $invoice->invoice_number = $account->getNextInvoiceNumber($invoice);
         $invoice->invoice_date = date_create()->format('Y-m-d');
         $invoice->amount = PRO_PLAN_PRICE;
         $invoice->balance = PRO_PLAN_PRICE;
@@ -198,7 +199,7 @@ class AccountRepository
             $accountGateway->user_id = $user->id;
             $accountGateway->gateway_id = NINJA_GATEWAY_ID;
             $accountGateway->public_id = 1;
-            $accountGateway->config = env(NINJA_GATEWAY_CONFIG);
+            $accountGateway->setConfig(json_decode(env(NINJA_GATEWAY_CONFIG)));
             $account->account_gateways()->save($accountGateway);
         }
 
@@ -233,6 +234,15 @@ class AccountRepository
         }
 
         return $client;
+    }
+
+    public function findByKey($key)
+    {
+        $account = Account::whereAccountKey($key)
+                    ->with('clients.invoices.invoice_items', 'clients.contacts')
+                    ->firstOrFail();
+
+        return $account;
     }
 
     public function unlinkUserFromOauth($user)
@@ -300,6 +310,17 @@ class AccountRepository
                     ->first();
     }
 
+    public function findUsers($user, $with = null)
+    {
+        $accounts = $this->findUserAccounts($user->id);
+
+        if ($accounts) {
+            return $this->getUserAccounts($accounts, $with);
+        } else {
+            return [$user];
+        }
+    }
+
     public function findUserAccounts($userId1, $userId2 = false)
     {
         if (!Schema::hasTable('user_accounts')) {
@@ -323,7 +344,8 @@ class AccountRepository
         return $query->first(['id', 'user_id1', 'user_id2', 'user_id3', 'user_id4', 'user_id5']);
     }
 
-    public function prepareUsersData($record) {
+    public function getUserAccounts($record, $with = null)
+    {
         if (!$record) {
             return false;
         }
@@ -337,8 +359,22 @@ class AccountRepository
         }
 
         $users = User::with('account')
-                    ->whereIn('id', $userIds)
-                    ->get();
+                    ->whereIn('id', $userIds);
+
+        if ($with) {
+            $users->with($with);
+        }
+        
+        return $users->get();
+    }
+
+    public function prepareUsersData($record)
+    {
+        if (!$record) {
+            return false;
+        }
+
+        $users = $this->getUserAccounts($record);
 
         $data = [];
         foreach ($users as $user) {
@@ -454,5 +490,22 @@ class AccountRepository
         } while ($match);
         
         return $code;
+    }
+
+    public function createTokens($user, $name)
+    {
+        $name = trim($name) ?: 'TOKEN';
+        $users = $this->findUsers($user);
+
+        foreach ($users as $user) {
+            if ($token = AccountToken::whereUserId($user->id)->whereName($name)->first()) {
+                continue;
+            }
+
+            $token = AccountToken::createNew($user);
+            $token->name = $name;
+            $token->token = str_random(RANDOM_KEY_LENGTH);
+            $token->save();
+        }
     }
 }

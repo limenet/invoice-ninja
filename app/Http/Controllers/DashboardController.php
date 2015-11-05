@@ -62,6 +62,7 @@ class DashboardController extends BaseController
             ->get();
 
         $activities = Activity::where('activities.account_id', '=', Auth::user()->account_id)
+                ->with('client.contacts', 'user', 'invoice', 'payment', 'credit')
                 ->where('activity_type_id', '>', 0)
                 ->orderBy('created_at', 'desc')
                 ->take(50)
@@ -108,6 +109,7 @@ class DashboardController extends BaseController
                     ->leftJoin('contacts', 'contacts.client_id', '=', 'clients.id')
                     ->leftJoin('invoices', 'invoices.id', '=', 'payments.invoice_id')
                     ->where('payments.account_id', '=', Auth::user()->account_id)
+                    ->where('payments.deleted_at', '=', null)
                     ->where('clients.deleted_at', '=', null)
                     ->where('contacts.deleted_at', '=', null)
                     ->where('contacts.is_primary', '=', true)

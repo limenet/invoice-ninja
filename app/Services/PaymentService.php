@@ -10,22 +10,30 @@ use App\Models\Payment;
 use App\Models\Account;
 use App\Models\Country;
 use App\Models\AccountGatewayToken;
+use App\Ninja\Repositories\PaymentRepository;
 use App\Ninja\Repositories\AccountRepository;
-use App\Events\InvoicePaid;
+use App\Services\BaseService;
+use App\Events\PaymentWasCreated;
 
-class PaymentService {
-
+class PaymentService extends BaseService
+{
     public $lastError;
 
-    public function __construct(AccountRepository $accountRepo)
+    public function __construct(PaymentRepository $paymentRepo, AccountRepository $accountRepo)
     {
+        $this->paymentRepo = $paymentRepo;
         $this->accountRepo = $accountRepo;
+    }
+
+    protected function getRepo()
+    {
+        return $this->paymentRepo;
     }
 
     public function createGateway($accountGateway)
     {
         $gateway = Omnipay::create($accountGateway->gateway->provider);
-        $config = json_decode($accountGateway->config);
+        $config = $accountGateway->getConfig();
 
         foreach ($config as $key => $val) {
             if (!$val) {
@@ -36,7 +44,7 @@ class PaymentService {
             $gateway->$function($val);
         }
 
-        if ($accountGateway->gateway->id == GATEWAY_DWOLLA) {
+        if ($accountGateway->isGateway(GATEWAY_DWOLLA)) {
             if ($gateway->getSandbox() && isset($_ENV['DWOLLA_SANDBOX_KEY']) && isset($_ENV['DWOLLA_SANSBOX_SECRET'])) {
                 $gateway->setKey($_ENV['DWOLLA_SANDBOX_KEY']);
                 $gateway->setSecret($_ENV['DWOLLA_SANSBOX_SECRET']);
@@ -49,7 +57,7 @@ class PaymentService {
         return $gateway;
     }
 
-    public function getPaymentDetails($invitation, $input = null)
+    public function getPaymentDetails($invitation, $accountGateway, $input = null)
     {
         $invoice = $invitation->invoice;
         $account = $invoice->account;
@@ -66,8 +74,7 @@ class PaymentService {
         }
 
         $card = new CreditCard($data);
-
-        return [
+        $data = [
             'amount' => $invoice->getRequestedAmount(),
             'card' => $card,
             'currency' => $currencyCode,
@@ -77,6 +84,12 @@ class PaymentService {
             'transactionId' => $invoice->invoice_number,
             'transactionType' => 'Purchase',
         ];
+
+        if ($accountGateway->isGateway(GATEWAY_PAYPAL_EXPRESS) || $accountGateway->isGateway(GATEWAY_PAYPAL_PRO)) {
+            $data['ButtonSource'] = 'InvoiceNinja_SP';
+        };
+
+        return $data;
     }
 
     public function convertInputForOmnipay($input)
@@ -203,8 +216,6 @@ class PaymentService {
 
         $payment->save();
 
-        Event::fire(new InvoicePaid($payment));
-
         return $payment;
     }
 
@@ -222,7 +233,7 @@ class PaymentService {
 
         // setup the gateway/payment info
         $gateway = $this->createGateway($accountGateway);
-        $details = $this->getPaymentDetails($invitation);
+        $details = $this->getPaymentDetails($invitation, $accountGateway);
         $details['cardReference'] = $token;
 
         // submit purchase/get response

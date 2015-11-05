@@ -1,11 +1,23 @@
 <?php namespace App\Models;
 
 use Utils;
+use DateTime;
+use App\Models\BalanceAffecting;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Invoice extends EntityModel
+use App\Events\QuoteWasCreated;
+use App\Events\QuoteWasUpdated;
+use App\Events\InvoiceWasCreated;
+use App\Events\InvoiceWasUpdated;
+use App\Events\InvoiceInvitationWasEmailed;
+use App\Events\QuoteInvitationWasEmailed;
+
+class Invoice extends EntityModel implements BalanceAffecting
 {
-    use SoftDeletes;
+    use SoftDeletes {
+        SoftDeletes::trashed as parentTrashed;
+    }
+
     protected $dates = ['deleted_at'];
 
     protected $casts = [
@@ -13,6 +25,87 @@ class Invoice extends EntityModel
         'has_tasks' => 'boolean',
         'auto_bill' => 'boolean',
     ];
+
+    public static $patternFields = [
+        'counter',
+        'custom1',
+        'custom2',
+        'userId',
+        'year',
+        'date:',
+    ];
+
+    public function getRoute()
+    {
+        $entityType = $this->getEntityType();
+        return "/{$entityType}s/{$this->public_id}/edit";
+    }
+
+    public function getDisplayName()
+    {
+        return $this->is_recurring ? trans('texts.recurring') : $this->invoice_number; 
+    }
+
+    public function affectsBalance()
+    {
+        return !$this->is_quote && !$this->is_recurring;
+    }
+
+    public function getAdjustment()
+    {
+        if (!$this->affectsBalance()) {
+            return 0;
+        }
+
+        return $this->getRawAdjustment();
+    }
+
+    private function getRawAdjustment()
+    {
+        return floatval($this->amount) - floatval($this->getOriginal('amount'));
+    }
+
+    public function isChanged()
+    {
+        if ($this->getRawAdjustment() != 0) {
+            return true;
+        }
+
+        foreach ([
+            'invoice_number', 
+            'po_number', 
+            'invoice_date', 
+            'due_date', 
+            'terms', 
+            'public_notes', 
+            'invoice_footer', 
+            'partial'
+        ] as $field) {
+            if ($this->$field != $this->getOriginal($field)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getAmountPaid()
+    {
+        if ($this->is_quote || $this->is_recurring) {
+            return 0;
+        }
+
+        return ($this->amount - $this->balance);
+    }
+    
+    public function trashed()
+    {
+        if ($this->client && $this->client->trashed()) {
+            return true;
+        }
+
+        return self::parentTrashed();
+    }
 
     public function account()
     {
@@ -57,6 +150,69 @@ class Invoice extends EntityModel
     public function invitations()
     {
         return $this->hasMany('App\Models\Invitation')->orderBy('invitations.contact_id');
+    }
+
+    public function markInvitationsSent($notify = false)
+    {
+        foreach ($this->invitations as $invitation) {
+            $this->markInvitationSent($invitation, false, $notify);
+        }
+    }
+
+    public function markInvitationSent($invitation, $messageId = false, $notify = true)
+    {
+        if (!$this->isSent()) {
+            $this->invoice_status_id = INVOICE_STATUS_SENT;
+            $this->save();
+        }
+
+        $invitation->markSent($messageId);
+
+        // if the user marks it as sent rather than acually sending it 
+        // then we won't track it in the activity log
+        if (!$notify) {
+            return;
+        }
+
+        if ($this->is_quote) {
+            event(new QuoteInvitationWasEmailed($invitation));
+        } else {
+            event(new InvoiceInvitationWasEmailed($invitation));
+        }
+    }
+
+    public function markViewed()
+    {
+        if (!$this->isViewed()) {
+            $this->invoice_status_id = INVOICE_STATUS_VIEWED;
+            $this->save();
+        }
+    }
+
+    public function updatePaidStatus()
+    {
+        if ($this->isPaid() && $this->balance > 0) {
+            $this->invoice_status_id = ($this->balance == $this->amount ? INVOICE_STATUS_SENT : INVOICE_STATUS_PARTIAL);
+            $this->save();
+        } elseif ($this->invoice_status_id && $this->amount > 0 && $this->balance == 0 && $this->invoice_status_id != INVOICE_STATUS_PAID) {
+            $this->invoice_status_id = INVOICE_STATUS_PAID;
+            $this->save();
+        }
+    }
+
+    public function updateBalances($balanceAdjustment, $partial = 0)
+    {
+        if ($this->is_deleted) {
+            return;
+        }
+
+        $this->balance = $this->balance + $balanceAdjustment;
+
+        if ($this->partial > 0) {
+            $this->partial = $partial;
+        }
+
+        $this->save();
     }
 
     public function getName()
@@ -215,25 +371,16 @@ class Invoice extends EntityModel
         return $this;
     }
 
-    public function shouldSendToday()
-    {
-        if (!$nextSendDate = $this->getNextSendDate()) {
-            return false;
-        }
-
-        return $this->account->getDateTime() >= $nextSendDate;
-    }
-
     public function getSchedule()
     {
         if (!$this->start_date || !$this->is_recurring || !$this->frequency_id) {
             return false;
         }
 
-        $startDate = $this->last_sent_date ?: $this->start_date;
-        $startDate .= ' ' . DEFAULT_SEND_RECURRING_HOUR . ':00:00';
+        $startDate = $this->getOriginal('last_sent_date') ?: $this->getOriginal('start_date');
+        $startDate .= ' ' . $this->account->recurring_hour . ':00:00';
         $startDate = $this->account->getDateTime($startDate);
-        $endDate = $this->end_date ? $this->account->getDateTime($this->end_date) : null;
+        $endDate = $this->end_date ? $this->account->getDateTime($this->getOriginal('end_date')) : null;
         $timezone = $this->account->getTimezone();
 
         $rule = $this->getRecurrenceRule();
@@ -257,7 +404,7 @@ class Invoice extends EntityModel
     public function getNextSendDate()
     {
         if ($this->start_date && !$this->last_sent_date) {
-            $startDate = $this->start_date . ' ' . DEFAULT_SEND_RECURRING_HOUR . ':00:00';
+            $startDate = $this->getOriginal('start_date') . ' ' . $this->account->recurring_hour . ':00:00';
             return $this->account->getDateTime($startDate);
         }
 
@@ -327,6 +474,16 @@ class Invoice extends EntityModel
     /*
     public function shouldSendToday()
     {
+        if (!$nextSendDate = $this->getNextSendDate()) {
+            return false;
+        }
+        
+        return $this->account->getDateTime() >= $nextSendDate;
+    }
+    */
+
+    public function shouldSendToday()
+    {
         if (!$this->start_date || strtotime($this->start_date) > strtotime('now')) {
             return false;
         }
@@ -376,7 +533,6 @@ class Invoice extends EntityModel
 
         return false;
     }
-    */
 
     public function getReminder()
     {
@@ -431,22 +587,22 @@ class Invoice extends EntityModel
 
 Invoice::creating(function ($invoice) {
     if (!$invoice->is_recurring) {
-        $invoice->account->incrementCounter($invoice->is_quote);
+        $invoice->account->incrementCounter($invoice);
     }
 });
 
 Invoice::created(function ($invoice) {
-    Activity::createInvoice($invoice);
+    if ($invoice->is_quote) {
+        event(new QuoteWasCreated($invoice));
+    } else {
+        event(new InvoiceWasCreated($invoice));
+    }
 });
 
 Invoice::updating(function ($invoice) {
-    Activity::updateInvoice($invoice);
-});
-
-Invoice::deleting(function ($invoice) {
-    Activity::archiveInvoice($invoice);
-});
-
-Invoice::restoring(function ($invoice) {
-    Activity::restoreInvoice($invoice);
+    if ($invoice->is_quote) {
+        event(new QuoteWasUpdated($invoice));
+    } else {
+        event(new InvoiceWasUpdated($invoice));
+    }
 });

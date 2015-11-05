@@ -54,6 +54,13 @@ function GetPdfMake(invoice, javascript, callback) {
             }
         }
 
+        // only show the footer on the last page
+        if (key === 'footer') {
+            return function(page, pages) {
+                return page === pages ? val : '';
+            }
+        }
+
         // check for markdown
         if (key === 'text') {
             val = NINJA.parseMarkdownText(val, true);
@@ -97,6 +104,7 @@ function GetPdfMake(invoice, javascript, callback) {
     doc.save = function(fileName) {
         this.download(fileName);
     };
+    
     return doc;
 }
 
@@ -487,6 +495,7 @@ NINJA.clientDetails = function(invoice) {
     if (!client) {
         return;
     }
+    var account = invoice.account;
     var contact = client.contacts[0];
     var clientName = client.name || (contact.first_name || contact.last_name ? (contact.first_name + ' ' + contact.last_name) : contact.email);
     var clientEmail = client.contacts[0].email == clientName ? '' : client.contacts[0].email; 
@@ -497,6 +506,11 @@ NINJA.clientDetails = function(invoice) {
         cityStatePostal = formatAddress(client.city, client.state, client.postal_code, swap);
     }
 
+    // if a custom field is used in the invoice/quote number then we'll hide it from the PDF
+    var pattern = invoice.is_quote ? account.quote_number_pattern : account.invoice_number_pattern;
+    var custom1InPattern = (pattern && pattern.indexOf('{$custom1}') >= 0);
+    var custom2InPattern = (pattern && pattern.indexOf('{$custom2}') >= 0);
+
     data = [
         {text:clientName || ' ', style: ['clientName']},
         {text:client.id_number},
@@ -506,8 +520,8 @@ NINJA.clientDetails = function(invoice) {
         {text:cityStatePostal},
         {text:client.country ? client.country.name : ''},
         {text:clientEmail},
-        {text: invoice.client.custom_value1 ? invoice.account.custom_client_label1 + ' ' + invoice.client.custom_value1 : false},
-        {text: invoice.client.custom_value2 ? invoice.account.custom_client_label2 + ' ' + invoice.client.custom_value2 : false}
+        {text: client.custom_value1 && !custom1InPattern ? account.custom_client_label1 + ' ' + client.custom_value1 : false},
+        {text: client.custom_value2 && !custom2InPattern ? account.custom_client_label2 + ' ' + client.custom_value2 : false}
     ];
 
     return NINJA.prepareDataList(data, 'clientDetails');

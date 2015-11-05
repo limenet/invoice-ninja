@@ -122,19 +122,24 @@
       '&go_pro=' + $('#go_pro').val(),
       success: function(result) { 
         if (result) {
-          localStorage.setItem('guest_key', '');
-          fbq('track', 'CompleteRegistration');
-          window._fbq.push(['track', '{{ env('FACEBOOK_PIXEL_SIGN_UP') }}', {'value':'0.00','currency':'USD'}]);
-          trackEvent('/account', '/signed_up');
+          handleSignedUp();
           NINJA.isRegistered = true;
           $('#signUpButton').hide();
-          $('#myAccountButton').html(result);          
-        }            
+          $('#myAccountButton').html(result);
+        }
         $('#signUpSuccessDiv, #signUpFooter, #closeSignUpButton').show();
         $('#working, #saveSignUpButton').hide();
       }
-    });     
-  }      
+    });
+  }
+  @endif
+
+  function handleSignedUp() {
+      localStorage.setItem('guest_key', '');
+      fbq('track', 'CompleteRegistration');
+      window._fbq.push(['track', '{{ env('FACEBOOK_PIXEL_SIGN_UP') }}', {'value':'0.00','currency':'USD'}]);
+      trackEvent('/account', '/signed_up');
+  }
 
   function checkForEnter(event)
   {
@@ -144,7 +149,6 @@
       return false;
     }
   }
-  @endif
 
   function logout(force)
   {
@@ -244,7 +248,12 @@
   }
 
   function setSignupEnabled(enabled) {
-    $('.signup-form input[type=text], .signup-form button').prop('disabled', !enabled);
+    $('.signup-form input[type=text]').prop('disabled', !enabled);
+    if (enabled) {
+        $('.signup-form a.btn').removeClass('disabled');
+    } else {
+        $('.signup-form a.btn').addClass('disabled');
+    }
   }
 
   function setSocialLoginProvider(provider) {
@@ -438,7 +447,7 @@
       
       <ul class="nav navbar-nav navbar-right navbar-settings"> 
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <a href="{{ URL::to('/settings') }}" class="dropdown-toggle">
             <span class="glyphicon glyphicon-cog" title="{{ trans('texts.settings') }}"/>
           </a>
           <ul class="dropdown-menu">
@@ -453,7 +462,7 @@
 
       <ul class="nav navbar-nav navbar-right navbar-history"> 
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <a href="{{ count(Session::get(RECENTLY_VIEWED)) ? Session::get(RECENTLY_VIEWED)[0]->url : '#' }}" class="dropdown-toggle">
             <span class="glyphicon glyphicon-time" title="{{ trans('texts.history') }}"/>
           </a>
           <ul class="dropdown-menu">	        		        	
@@ -549,7 +558,7 @@
                 {!! Former::checkbox('terms_checkbox')->label(' ')->text(trans('texts.agree_to_terms', ['terms' => '<a href="'.URL::to('terms').'" target="_blank">'.trans('texts.terms_of_service').'</a>']))->raw() !!}
                 <br/>
             </div>
-            @if (Utils::isNinja())
+            @if (Utils::isOAuthEnabled())
                 <div class="col-md-4 col-md-offset-1">
                     <h4>{{ trans('texts.sign_up_using') }}</h4><br/>
                     @foreach (App\Services\AuthService::$providers as $provider)

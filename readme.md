@@ -7,14 +7,13 @@
 
 [![Join the chat at https://gitter.im/hillelcoren/invoice-ninja](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hillelcoren/invoice-ninja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Please help our project by voting for us on [Product Hunt](http://www.producthunt.com/tech/invoice-ninja).
-
 If you'd like to use our code to sell your own invoicing app email us for details about our affiliate program.
 
 ### Installation Options
-* [Zip - Free](https://www.invoiceninja.com/knowledgebase/self-host/)
-* [Bitnami - Free](https://bitnami.com/stack/invoice-ninja)
-* [Softaculous - $30](https://www.softaculous.com/apps/ecommerce/Invoice_Ninja)
+* [Self-Host Zip](https://www.invoiceninja.com/knowledgebase/self-host/) - Free
+* [Docker File](https://github.com/lalop/invoice-ninja-docker/blob/master/Dockerfile) - Free
+* [Bitnami](https://bitnami.com/stack/invoice-ninja) - Free
+* [Softaculous](https://www.softaculous.com/apps/ecommerce/Invoice_Ninja) - $30
 
 ### Features
 * Built using Laravel 5
@@ -40,14 +39,14 @@ If you'd like to use our code to sell your own invoicing app email us for detail
 * [Support Forum](https://www.invoiceninja.com/forums/forum/support/)
 * [Feature Roadmap](https://trello.com/b/63BbiVVe/)
 
-### Recommended Providers
-* [Stripe](https://stripe.com/)
-* [Postmark](https://postmarkapp.com/)
-
 ### Contributors
 * [Troels Liebe Bentsen](https://github.com/tlbdk)
 * [Jeramy Simpson](https://github.com/JeramyMywork) - [MyWork](https://www.mywork.com.au)
 * [Sigitas Limontas](https://lt.linkedin.com/in/sigitaslimontas)
+
+### Recommended Providers
+* [Stripe](https://stripe.com/)
+* [Postmark](https://postmarkapp.com/)
 
 ### Frameworks/Libraries
 * [laravel/laravel](https://github.com/laravel/laravel) - A PHP Framework For Web Artisans
@@ -80,3 +79,4 @@ If you'd like to use our code to sell your own invoicing app email us for detail
 * [lokesh/lightbox2](https://github.com/lokesh/lightbox2/) - The original lightbox script
 * [josdejong/jsoneditor](https://github.com/josdejong/jsoneditor/) - A web-based tool to view, edit and format JSON
 * [simshaun/recurr](https://github.com/simshaun/recurr) - PHP library for working with recurrence rules
+* [quilljs/quill](https://github.com/quilljs/quill/) - A cross browser rich text editor with an API

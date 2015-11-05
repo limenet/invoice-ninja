@@ -36,7 +36,10 @@ use App\Models\Gateway;
 use App\Models\Timezone;
 use App\Models\Industry;
 use App\Models\InvoiceDesign;
+use App\Models\TaxRate;
 use App\Ninja\Repositories\AccountRepository;
+use App\Ninja\Repositories\ClientRepository;
+use App\Ninja\Repositories\ReferralRepository;
 use App\Ninja\Mailers\UserMailer;
 use App\Ninja\Mailers\ContactMailer;
 use App\Events\UserSignedUp;
@@ -44,19 +47,23 @@ use App\Events\UserLoggedIn;
 use App\Events\UserSettingsChanged;
 use App\Services\AuthService;
 
+use App\Commands\CreateClient;
+
 class AccountController extends BaseController
 {
     protected $accountRepo;
     protected $userMailer;
     protected $contactMailer;
+    protected $referralRepository;
 
-    public function __construct(AccountRepository $accountRepo, UserMailer $userMailer, ContactMailer $contactMailer)
+    public function __construct(AccountRepository $accountRepo, UserMailer $userMailer, ContactMailer $contactMailer, ReferralRepository $referralRepository)
     {
         parent::__construct();
 
         $this->accountRepo = $accountRepo;
         $this->userMailer = $userMailer;
         $this->contactMailer = $contactMailer;
+        $this->referralRepository = $referralRepository;
     }
 
     public function demo()
@@ -156,6 +163,8 @@ class AccountController extends BaseController
             return self::showLocalization();
         } elseif ($section == ACCOUNT_PAYMENTS) {
             return self::showOnlinePayments();
+        } elseif ($section == ACCOUNT_INVOICE_SETTINGS) {
+            return self::showInvoiceSettings();
         } elseif ($section == ACCOUNT_IMPORT_EXPORT) {
             return View::make('accounts.import_export', ['title' => trans('texts.import_export')]);
         } elseif ($section == ACCOUNT_INVOICE_DESIGN || $section == ACCOUNT_CUSTOMIZE_DESIGN) {
@@ -164,6 +173,10 @@ class AccountController extends BaseController
             return self::showTemplates();
         } elseif ($section === ACCOUNT_PRODUCTS) {
             return self::showProducts();
+        } elseif ($section === ACCOUNT_TAX_RATES) {
+            return self::showTaxRates();
+        } elseif ($section === ACCOUNT_SYSTEM_SETTINGS) {
+            return self::showSystemSettings();
         } else {
             $data = [
                 'account' => Account::with('users')->findOrFail(Auth::user()->account_id),
@@ -172,6 +185,44 @@ class AccountController extends BaseController
             ];
             return View::make("accounts.{$section}", $data);
         }
+    }
+
+    private function showSystemSettings()
+    {
+        if (Utils::isNinjaProd()) {
+            return Redirect::to('/');
+        }
+
+        $data = [
+            'account' => Account::with('users')->findOrFail(Auth::user()->account_id),
+            'title' => trans("texts.system_settings"),
+            'section' => ACCOUNT_SYSTEM_SETTINGS,
+        ];
+
+        return View::make("accounts.system_settings", $data);
+    }
+
+    private function showInvoiceSettings()
+    {
+        $account = Auth::user()->account;
+        $recurringHours = [];
+
+        for ($i=0; $i<24; $i++) {
+            if ($account->military_time) {
+                $format = 'H:i';
+            } else {
+                $format = 'g:i a';
+            }
+            $recurringHours[$i] = date($format, strtotime("{$i}:00"));
+        }
+
+        $data = [
+            'account' => Account::with('users')->findOrFail(Auth::user()->account_id),
+            'title' => trans("texts.invoice_settings"),
+            'section' => ACCOUNT_INVOICE_SETTINGS,
+            'recurringHours' => $recurringHours
+        ];
+        return View::make("accounts.invoice_settings", $data);
     }
 
     private function showCompanyDetails()
@@ -193,13 +244,14 @@ class AccountController extends BaseController
         foreach (AuthService::$providers as $provider) {
             $oauthLoginUrls[] = ['label' => $provider, 'url' => '/auth/' . strtolower($provider)];
         }
-
+        
         $data = [
             'account' => Account::with('users')->findOrFail(Auth::user()->account_id),
             'title' => trans('texts.user_details'),
             'user' => Auth::user(),
             'oauthProviderName' => AuthService::getProviderName(Auth::user()->oauth_provider_id),
             'oauthLoginUrls' => $oauthLoginUrls,
+            'referralCounts' => $this->referralRepository->getCounts(Auth::user()->id),
         ];
 
         return View::make('accounts.user_details', $data);
@@ -238,12 +290,30 @@ class AccountController extends BaseController
 
     private function showProducts()
     {
+        $columns = ['product', 'description', 'unit_cost'];
+        if (Auth::user()->account->invoice_item_taxes) {
+            $columns[] = 'tax_rate';
+        }
+        $columns[] = 'action';
+
         $data = [
             'account' => Auth::user()->account,
             'title' => trans('texts.product_library'),
+            'columns' => Utils::trans($columns),
         ];
 
         return View::make('accounts.products', $data);
+    }
+
+    private function showTaxRates()
+    {
+        $data = [
+            'account' => Auth::user()->account,
+            'title' => trans('texts.tax_rates'),
+            'taxRates' => TaxRate::scope()->get(['id', 'name', 'rate']),
+        ];
+
+        return View::make('accounts.tax_rates', $data);
     }
 
     private function showInvoiceDesign($section)
@@ -262,7 +332,7 @@ class AccountController extends BaseController
         $client->work_phone = '';
         $client->work_email = '';
 
-        $invoice->invoice_number = $account->getNextInvoiceNumber();
+        $invoice->invoice_number = '0000';
         $invoice->invoice_date = Utils::fromSqlDate(date('Y-m-d'));
         $invoice->account = json_decode($account->toJson());
         $invoice->amount = $invoice->balance = 100;
@@ -349,6 +419,8 @@ class AccountController extends BaseController
             return AccountController::saveEmailTemplates();
         } elseif ($section === ACCOUNT_PRODUCTS) {
             return AccountController::saveProducts();
+        } elseif ($section === ACCOUNT_TAX_RATES) {
+            return AccountController::saveTaxRates();
         }
     }
 
@@ -398,6 +470,20 @@ class AccountController extends BaseController
         return Redirect::to('settings/' . ACCOUNT_TEMPLATES_AND_REMINDERS);
     }
 
+    private function saveTaxRates()
+    {
+        $account = Auth::user()->account;
+
+        $account->invoice_taxes = Input::get('invoice_taxes') ? true : false;
+        $account->invoice_item_taxes = Input::get('invoice_item_taxes') ? true : false;
+        $account->show_item_taxes = Input::get('show_item_taxes') ? true : false;
+        $account->default_tax_rate_id = Input::get('default_tax_rate_id');
+        $account->save();
+
+        Session::flash('message', trans('texts.updated_settings'));
+        return Redirect::to('settings/' . ACCOUNT_TAX_RATES);
+    }
+
     private function saveProducts()
     {
         $account = Auth::user()->account;
@@ -414,7 +500,11 @@ class AccountController extends BaseController
     {
         if (Auth::user()->account->isPro()) {
             
-            $rules = [];
+            $rules = [
+                'invoice_number_pattern' => 'has_counter',
+                'quote_number_pattern' => 'has_counter',
+            ];
+            
             $user = Auth::user();
             $iframeURL = preg_replace('/[^a-zA-Z0-9_\-\:\/\.]/', '', substr(strtolower(Input::get('iframe_url')), 0, MAX_IFRAME_URL_LENGTH));
             $iframeURL = rtrim($iframeURL, "/");
@@ -450,18 +540,38 @@ class AccountController extends BaseController
                 $account->custom_invoice_text_label1 = trim(Input::get('custom_invoice_text_label1'));
                 $account->custom_invoice_text_label2 = trim(Input::get('custom_invoice_text_label2'));
 
-                $account->invoice_number_prefix = Input::get('invoice_number_prefix');
                 $account->invoice_number_counter = Input::get('invoice_number_counter');
                 $account->quote_number_prefix = Input::get('quote_number_prefix');
                 $account->share_counter = Input::get('share_counter') ? true : false;
-
                 $account->pdf_email_attachment = Input::get('pdf_email_attachment') ? true : false;
-                $account->auto_wrap = Input::get('auto_wrap') ? true : false;
+                $account->invoice_terms = Input::get('invoice_terms');
+                $account->invoice_footer = Input::get('invoice_footer');
+                $account->quote_terms = Input::get('quote_terms');
+
+                if (Input::has('recurring_hour')) {
+                    $account->recurring_hour = Input::get('recurring_hour');
+                }
 
                 if (!$account->share_counter) {
                     $account->quote_number_counter = Input::get('quote_number_counter');
                 }
 
+                if (Input::get('invoice_number_type') == 'prefix') {
+                    $account->invoice_number_prefix = trim(Input::get('invoice_number_prefix'));
+                    $account->invoice_number_pattern = null;
+                } else {
+                    $account->invoice_number_pattern = trim(Input::get('invoice_number_pattern'));
+                    $account->invoice_number_prefix = null;
+                }
+                
+                if (Input::get('quote_number_type') == 'prefix') {
+                    $account->quote_number_prefix = trim(Input::get('quote_number_prefix'));
+                    $account->quote_number_pattern = null;
+                } else {
+                    $account->quote_number_pattern = trim(Input::get('quote_number_pattern'));
+                    $account->quote_number_prefix = null;
+                }
+                
                 if (!$account->share_counter && $account->invoice_number_prefix == $account->quote_number_prefix) {
                     Session::flash('error', trans('texts.invalid_counter'));
                     return Redirect::to('settings/' . ACCOUNT_INVOICE_SETTINGS)->withInput();
@@ -553,49 +663,57 @@ class AccountController extends BaseController
                 continue;
             }
 
-            $client = Client::createNew();
-            $contact = Contact::createNew();
-            $contact->is_primary = true;
-            $contact->send_invoice = true;
-            $count++;
+            $data = [
+                'contacts' => [[]]
+            ];
 
             foreach ($row as $index => $value) {
                 $field = $map[$index];
-                $value = trim($value);
+                if ( ! $value = trim($value)) {
+                    continue;
+                }
 
-                if ($field == Client::$fieldName && !$client->name) {
-                    $client->name = $value;
-                } elseif ($field == Client::$fieldPhone && !$client->work_phone) {
-                    $client->work_phone = $value;
-                } elseif ($field == Client::$fieldAddress1 && !$client->address1) {
-                    $client->address1 = $value;
-                } elseif ($field == Client::$fieldAddress2 && !$client->address2) {
-                    $client->address2 = $value;
-                } elseif ($field == Client::$fieldCity && !$client->city) {
-                    $client->city = $value;
-                } elseif ($field == Client::$fieldState && !$client->state) {
-                    $client->state = $value;
-                } elseif ($field == Client::$fieldPostalCode && !$client->postal_code) {
-                    $client->postal_code = $value;
-                } elseif ($field == Client::$fieldCountry && !$client->country_id) {
+                if ($field == Client::$fieldName) {
+                    $data['name'] = $value;
+                } elseif ($field == Client::$fieldPhone) {
+                    $data['work_phone'] = $value;
+                } elseif ($field == Client::$fieldAddress1) {
+                    $data['address1'] = $value;
+                } elseif ($field == Client::$fieldAddress2) {
+                    $data['address2'] = $value;
+                } elseif ($field == Client::$fieldCity) {
+                    $data['city'] = $value;
+                } elseif ($field == Client::$fieldState) {
+                    $data['state'] = $value;
+                } elseif ($field == Client::$fieldPostalCode) {
+                    $data['postal_code'] = $value;
+                } elseif ($field == Client::$fieldCountry) {
                     $value = strtolower($value);
-                    $client->country_id = isset($countryMap[$value]) ? $countryMap[$value] : null;
-                } elseif ($field == Client::$fieldNotes && !$client->private_notes) {
-                    $client->private_notes = $value;
-                } elseif ($field == Contact::$fieldFirstName && !$contact->first_name) {
-                    $contact->first_name = $value;
-                } elseif ($field == Contact::$fieldLastName && !$contact->last_name) {
-                    $contact->last_name = $value;
-                } elseif ($field == Contact::$fieldPhone && !$contact->phone) {
-                    $contact->phone = $value;
-                } elseif ($field == Contact::$fieldEmail && !$contact->email) {
-                    $contact->email = strtolower($value);
+                    $data['country_id'] = isset($countryMap[$value]) ? $countryMap[$value] : null;
+                } elseif ($field == Client::$fieldNotes) {
+                    $data['private_notes'] = $value;
+                } elseif ($field == Contact::$fieldFirstName) {
+                    $data['contacts'][0]['first_name'] = $value;
+                } elseif ($field == Contact::$fieldLastName) {
+                    $data['contacts'][0]['last_name'] = $value;
+                } elseif ($field == Contact::$fieldPhone) {
+                    $data['contacts'][0]['phone'] = $value;
+                } elseif ($field == Contact::$fieldEmail) {
+                    $data['contacts'][0]['email'] = strtolower($value);
                 }
             }
 
-            $client->save();
-            $client->contacts()->save($contact);
-            Activity::createClient($client, false);
+            $rules = [
+                'contacts' => 'valid_contacts',
+            ];
+            $validator = Validator::make($data, $rules);
+            if ($validator->fails()) {
+                continue;
+            }
+
+            $clientRepository = new ClientRepository();
+            $clientRepository->save($data);
+            $count++;
         }
 
         $message = Utils::pluralize('created_client', $count);
@@ -708,12 +826,6 @@ class AccountController extends BaseController
 
     private function saveNotifications()
     {
-        $account = Auth::user()->account;
-        $account->invoice_terms = Input::get('invoice_terms');
-        $account->invoice_footer = Input::get('invoice_footer');
-        $account->email_footer = Input::get('email_footer');
-        $account->save();
-
         $user = Auth::user();
         $user->notify_sent = Input::get('notify_sent');
         $user->notify_viewed = Input::get('notify_viewed');
@@ -754,6 +866,7 @@ class AccountController extends BaseController
             $account->country_id = Input::get('country_id') ? Input::get('country_id') : null;
             $account->size_id = Input::get('size_id') ? Input::get('size_id') : null;
             $account->industry_id = Input::get('industry_id') ? Input::get('industry_id') : null;
+            $account->email_footer = Input::get('email_footer');
             $account->save();
                 
             /* Logo image file */
@@ -765,8 +878,10 @@ class AccountController extends BaseController
                 $mimeType = $file->getMimeType();
 
                 if ($mimeType == 'image/jpeg') {
+                    $path = 'logo/' . $account->account_key . '.jpg';
                     $file->move('logo/', $account->account_key . '.jpg');
                 } else if ($mimeType == 'image/png') {
+                    $path = 'logo/' . $account->account_key . '.png';
                     $file->move('logo/', $account->account_key . '.png');
                 } else {
                     if (extension_loaded('fileinfo')) {
@@ -774,11 +889,19 @@ class AccountController extends BaseController
                         $image->resize(200, 120, function ($constraint) {
                             $constraint->aspectRatio();
                         });
+                        $path = 'logo/'.$account->account_key.'.jpg';
                         Image::canvas($image->width(), $image->height(), '#FFFFFF')
-                            ->insert($image)->save('logo/'.$account->account_key.'.jpg');
+                            ->insert($image)->save($path);
                     } else {
                         Session::flash('warning', 'Warning: To support gifs the fileinfo PHP extension needs to be enabled.');
                     }
+                }
+
+                // make sure image isn't interlaced
+                if (extension_loaded('fileinfo')) {
+                    $img = Image::make($path);
+                    $img->interlace(false);
+                    $img->save();
                 }
             }
 

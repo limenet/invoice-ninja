@@ -58,15 +58,9 @@ class InvoiceApiController extends Controller
     {
         $data = Input::all();
         $error = null;
-                
-        // check if the invoice number is set and unique
-        if (!isset($data['invoice_number']) && !isset($data['id'])) {
-            $data['invoice_number'] = Auth::user()->account->getNextInvoiceNumber();
-        } else if (isset($data['invoice_number'])) {
-            $invoice = Invoice::scope()->where('invoice_number', '=', $data['invoice_number'])->first();
-            if ($invoice) {
-                $error = trans('validation.unique', ['attribute' => 'texts.invoice_number']);
-            }
+
+        if (isset($data['id']) || isset($data['public_id'])) {
+            die("We don't yet support updating invoices");
         }
 
         if (isset($data['email'])) {
@@ -88,11 +82,21 @@ class InvoiceApiController extends Controller
                 }
                 $error = $this->clientRepo->getErrors($clientData);
                 if (!$error) {
-                    $client = $this->clientRepo->save(false, $clientData, false);
+                    $client = $this->clientRepo->save($clientData);
                 }
             }
         } else if (isset($data['client_id'])) {
             $client = Client::scope($data['client_id'])->first();
+        }
+
+        // check if the invoice number is set and unique
+        if (!isset($data['invoice_number']) && !isset($data['id'])) {
+            // do nothing... invoice number will be set automatically
+        } else if (isset($data['invoice_number'])) {
+            $invoice = Invoice::scope()->where('invoice_number', '=', $data['invoice_number'])->first();
+            if ($invoice) {
+                $error = trans('validation.unique', ['attribute' => 'texts.invoice_number']);
+            }
         }
 
         if (!$error) {
@@ -108,7 +112,7 @@ class InvoiceApiController extends Controller
         } else {
             $data = self::prepareData($data, $client);
             $data['client_id'] = $client->id;
-            $invoice = $this->invoiceRepo->save(false, $data, false);
+            $invoice = $this->invoiceRepo->save($data);
 
             if (!isset($data['id'])) {
                 $invitation = Invitation::createNew();

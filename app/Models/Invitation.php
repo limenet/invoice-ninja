@@ -1,6 +1,7 @@
 <?php namespace App\Models;
 
 use Utils;
+use Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invitation extends EntityModel
@@ -57,7 +58,7 @@ class Invitation extends EntityModel
         foreach ($statuses as $status) {
             $field = "{$status}_date";
             $date = '';
-            if ($this->$field) {
+            if ($this->$field && $this->field != '0000-00-00 00:00:00') {
                 $date = Utils::dateToString($this->$field);
                 $hasValue = true;
             }
@@ -72,4 +73,23 @@ class Invitation extends EntityModel
         return $this->invitation_key;
     }
 
+    public function markSent($messageId = null)
+    {
+        $this->message_id = $messageId;
+        $this->email_error = null;
+        $this->sent_date = Carbon::now()->toDateTimeString();
+        $this->save();
+    }
+
+    public function markViewed()
+    {
+        $invoice = $this->invoice;
+        $client = $invoice->client;
+
+        $this->viewed_date = Carbon::now()->toDateTimeString();
+        $this->save();
+
+        $invoice->markViewed();
+        $client->markLoggedIn();
+    }
 }

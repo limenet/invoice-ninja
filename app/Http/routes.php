@@ -114,6 +114,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('products', 'ProductController');
     Route::get('products/{product_id}/archive', 'ProductController@archive');
 
+    Route::get('api/tax_rates', array('as'=>'api.tax_rates', 'uses'=>'TaxRateController@getDatatable'));
+    Route::resource('tax_rates', 'TaxRateController');
+    Route::get('tax_rates/{tax_rates_id}/archive', 'TaxRateController@archive');
+
     Route::get('company/{section}/{subSection?}', 'AccountController@redirectLegacy');
     Route::get('settings/data_visualizations', 'ReportController@d3');
     Route::get('settings/charts_and_reports', 'ReportController@showReports');
@@ -151,8 +155,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('api/invoices/{client_id?}', array('as'=>'api.invoices', 'uses'=>'InvoiceController@getDatatable'));
     Route::get('invoices/create/{client_id?}', 'InvoiceController@create');
     Route::get('recurring_invoices/create/{client_id?}', 'InvoiceController@createRecurring');
+    Route::get('recurring_invoices', 'RecurringInvoiceController@index');
     Route::get('invoices/{public_id}/clone', 'InvoiceController@cloneInvoice');
     Route::post('invoices/bulk', 'InvoiceController@bulk');
+    Route::post('recurring_invoices/bulk', 'InvoiceController@bulk');
 
     Route::get('quotes/create/{client_id?}', 'QuoteController@create');
     Route::get('quotes/{public_id}/clone', 'InvoiceController@cloneInvoice');
@@ -178,12 +184,16 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('credits/bulk', 'CreditController@bulk');
 
     get('/resend_confirmation', 'AccountController@resendConfirmation');
+    post('/update_setup', 'AppController@updateSetup');
 });
 
-// Route group for API
+// Route groups for API
 Route::group(['middleware' => 'api', 'prefix' => 'api/v1'], function()
 {
     Route::resource('ping', 'ClientApiController@ping');
+    Route::post('login', 'AccountApiController@login');
+    Route::get('accounts', 'AccountApiController@index');
+    Route::get('accounts/{account_key}', 'AccountApiController@show');
     Route::resource('clients', 'ClientApiController');
     Route::get('quotes/{client_id?}', 'QuoteApiController@index');
     Route::resource('quotes', 'QuoteApiController');
@@ -258,6 +268,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('ACCOUNT_PAYMENTS', 'online_payments');
     define('ACCOUNT_MAP', 'import_map');
     define('ACCOUNT_EXPORT', 'export');
+    define('ACCOUNT_TAX_RATES', 'tax_rates');
     define('ACCOUNT_PRODUCTS', 'products');
     define('ACCOUNT_ADVANCED_SETTINGS', 'advanced_settings');
     define('ACCOUNT_INVOICE_SETTINGS', 'invoice_settings');
@@ -268,7 +279,11 @@ if (!defined('CONTACT_EMAIL')) {
     define('ACCOUNT_TEMPLATES_AND_REMINDERS', 'templates_and_reminders');
     define('ACCOUNT_API_TOKENS', 'api_tokens');
     define('ACCOUNT_CUSTOMIZE_DESIGN', 'customize_design');
+    define('ACCOUNT_SYSTEM_SETTINGS', 'system_settings');
 
+    define('ACTION_RESTORE', 'restore');
+    define('ACTION_ARCHIVE', 'archive');
+    define('ACTION_DELETE', 'delete');
 
     define('ACTIVITY_TYPE_CREATE_CLIENT', 1);
     define('ACTIVITY_TYPE_ARCHIVE_CLIENT', 2);
@@ -282,12 +297,12 @@ if (!defined('CONTACT_EMAIL')) {
     define('ACTIVITY_TYPE_DELETE_INVOICE', 9);
 
     define('ACTIVITY_TYPE_CREATE_PAYMENT', 10);
-    define('ACTIVITY_TYPE_UPDATE_PAYMENT', 11);
+    //define('ACTIVITY_TYPE_UPDATE_PAYMENT', 11);
     define('ACTIVITY_TYPE_ARCHIVE_PAYMENT', 12);
     define('ACTIVITY_TYPE_DELETE_PAYMENT', 13);
 
     define('ACTIVITY_TYPE_CREATE_CREDIT', 14);
-    define('ACTIVITY_TYPE_UPDATE_CREDIT', 15);
+    //define('ACTIVITY_TYPE_UPDATE_CREDIT', 15);
     define('ACTIVITY_TYPE_ARCHIVE_CREDIT', 16);
     define('ACTIVITY_TYPE_DELETE_CREDIT', 17);
 
@@ -318,7 +333,9 @@ if (!defined('CONTACT_EMAIL')) {
     define('MAX_NUM_CLIENTS', 100);
     define('MAX_NUM_CLIENTS_PRO', 20000);
     define('MAX_NUM_CLIENTS_LEGACY', 500);
+    define('MAX_INVOICE_AMOUNT', 10000000);
     define('LEGACY_CUTOFF', 57800);
+    define('ERROR_DELAY', 3);
 
     define('INVOICE_STATUS_DRAFT', 1);
     define('INVOICE_STATUS_SENT', 2);
@@ -371,6 +388,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('GATEWAY_AUTHORIZE_NET', 1);
     define('GATEWAY_EWAY', 4);
     define('GATEWAY_AUTHORIZE_NET_SIM', 2);
+    define('GATEWAY_PAYFAST', 13);
     define('GATEWAY_PAYPAL_EXPRESS', 17);
     define('GATEWAY_PAYPAL_PRO', 18);
     define('GATEWAY_STRIPE', 23);
@@ -394,7 +412,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('NINJA_GATEWAY_CONFIG', 'NINJA_GATEWAY_CONFIG');
     define('NINJA_WEB_URL', 'https://www.invoiceninja.com');
     define('NINJA_APP_URL', 'https://app.invoiceninja.com');
-    define('NINJA_VERSION', '2.4.3');
+    define('NINJA_VERSION', '2.4.5');
     define('NINJA_DATE', '2000-01-01');
 
     define('NINJA_FROM_EMAIL', 'maildelivery@invoiceninja.com');
@@ -403,7 +421,9 @@ if (!defined('CONTACT_EMAIL')) {
     define('OUTDATE_BROWSER_URL', 'http://browsehappy.com/');
     define('PDFMAKE_DOCS', 'http://pdfmake.org/playground.html');
     define('PHANTOMJS_CLOUD', 'http://api.phantomjscloud.com/single/browser/v1/');
-    define('REFERRAL_PROGRAM_URL', false);
+    define('PHP_DATE_FORMATS', 'http://php.net/manual/en/function.date.php');
+    define('GITTER_ROOM', 'hillelcoren/invoice-ninja');
+    define('REFERRAL_PROGRAM_URL', 'https://www.invoiceninja.com/affiliates/');
 
     define('COUNT_FREE_DESIGNS', 4);
     define('COUNT_FREE_DESIGNS_SELF_HOST', 5); // include the custom design
@@ -425,6 +445,7 @@ if (!defined('CONTACT_EMAIL')) {
 
     define('TEST_USERNAME', 'user@example.com');
     define('TEST_PASSWORD', 'password');
+    define('API_SECRET', 'API_SECRET');
 
     define('TOKEN_BILLING_DISABLED', 1);
     define('TOKEN_BILLING_OPT_IN', 2);

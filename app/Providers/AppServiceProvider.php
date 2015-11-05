@@ -41,11 +41,13 @@ class AppServiceProvider extends ServiceProvider {
                    <li><a href="'.URL::to($types.'/create').'">'.trans("texts.new_$type").'</a></li>';
             
             if ($type == ENTITY_INVOICE) {
-                $str .= '<li><a href="'.URL::to('recurring_invoices/create').'">'.trans("texts.new_recurring_invoice").'</a></li>';
+                $str .= '<li class="divider"></li>
+                         <li><a href="'.URL::to('recurring_invoices').'">'.trans("texts.recurring_invoices").'</a></li>
+                         <li><a href="'.URL::to('recurring_invoices/create').'">'.trans("texts.new_recurring_invoice").'</a></li>';
                 if (Auth::user()->isPro()) {
                     $str .= '<li class="divider"></li>
-                        <li><a href="'.URL::to('quotes').'">'.trans("texts.quotes").'</a></li>
-                        <li><a href="'.URL::to('quotes/create').'">'.trans("texts.new_quote").'</a></li>';
+                            <li><a href="'.URL::to('quotes').'">'.trans("texts.quotes").'</a></li>
+                            <li><a href="'.URL::to('quotes/create').'">'.trans("texts.new_quote").'</a></li>';
                 }
             } else if ($type == ENTITY_CLIENT) {
                 $str .= '<li class="divider"></li>
@@ -144,6 +146,32 @@ class AppServiceProvider extends ServiceProvider {
         Validator::replacer('less_than', function($message, $attribute, $rule, $parameters) {
             return str_replace(':value', $parameters[0], $message);
         });
+
+        Validator::extend('has_counter', function($attribute, $value, $parameters) {
+            return !$value || strstr($value, '{$counter}');
+        });
+
+        Validator::extend('valid_contacts', function($attribute, $value, $parameters) {
+            foreach ($value as $contact) {
+                $validator = Validator::make($contact, [
+                        'email' => 'email|required_without:first_name',
+                        'first_name' => 'required_without:email',
+                    ]);
+                if ($validator->fails()) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        Validator::extend('valid_invoice_items', function($attribute, $value, $parameters) {
+            $total = 0;
+            foreach ($value as $item) {
+                $total += $item['qty'] * $item['cost'];
+            }
+            return $total <= MAX_INVOICE_AMOUNT;
+        });
+
 	}
 
 	/**

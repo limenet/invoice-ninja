@@ -3378,3 +3378,7 @@ ul.user-accounts a:hover div.remove {
     content: "";
     background-color: #e37329;
 }
+
+.gitter-open-chat-button {
+    background-color: #0b4d78 !important;
+}

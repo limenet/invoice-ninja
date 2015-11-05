@@ -8,9 +8,15 @@ use App\Models\Invitation;
 use App\Models\Product;
 use App\Models\Task;
 use App\Services\PaymentService;
+use App\Ninja\Repositories\BaseRepository;
 
-class InvoiceRepository
+class InvoiceRepository extends BaseRepository
 {
+    public function getClassName()
+    {
+        return 'App\Models\Invoice';
+    }
+
     public function __construct(PaymentService $paymentService)
     {
         $this->paymentService = $paymentService;
@@ -145,10 +151,6 @@ class InvoiceRepository
         ->addColumn('invoice_status_name', function ($model) { return $model->quote_invoice_id ? link_to("invoices/{$model->quote_invoice_id}/edit", trans('texts.converted')) : self::getStatusLabel($model->invoice_status_id, $model->invoice_status_name); })
         ->addColumn('dropdown', function ($model) use ($entityType) {
 
-            if ($model->is_deleted) {
-                return '<div style="height:38px"/>';
-            }
-
               $str = '<div class="btn-group tr-action" style="visibility:hidden;">
                   <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">
                     '.trans('texts.select').' <span class="caret"></span>
@@ -182,11 +184,14 @@ class InvoiceRepository
                 }
 
                 $str .= '<li class="divider"></li>
-                      <li><a href="javascript:archiveEntity('.$model->public_id.')">'.trans("texts.archive_{$entityType}").'</a></li>
-                    <li><a href="javascript:deleteEntity('.$model->public_id.')">'.trans("texts.delete_{$entityType}").'</a></li>';
+                      <li><a href="javascript:archiveEntity('.$model->public_id.')">'.trans("texts.archive_{$entityType}").'</a></li>';
+
             } else {
-                $str .= '<li><a href="javascript:restoreEntity('.$model->public_id.')">'.trans("texts.restore_{$entityType}").'</a></li>
-                        <li><a href="javascript:deleteEntity('.$model->public_id.')">'.trans("texts.delete_{$entityType}").'</a></li>';
+                $str .= '<li><a href="javascript:restoreEntity('.$model->public_id.')">'.trans("texts.restore_{$entityType}").'</a></li>';
+            }
+
+            if (!$model->is_deleted) {
+                $str .= '<li><a href="javascript:deleteEntity('.$model->public_id.')">'.trans("texts.delete_{$entityType}").'</a></li>';
             }
 
             return $str.'</ul>
@@ -214,58 +219,33 @@ class InvoiceRepository
         }
         return "<h4><div class=\"label label-{$class}\">$label</div></h4>";
     }
-
-    public function getErrors($input)
+    
+    public function save($data)
     {
-        $contact = (array) $input->client->contacts[0];
-        $rules = [
-            'email' => 'email|required_without:first_name',
-            'first_name' => 'required_without:email',
-        ];
-        $validator = \Validator::make($contact, $rules);
-
-        if ($validator->fails()) {
-            return $validator;
-        }
-
-        $invoice = (array) $input;
-        $invoiceId = isset($invoice['public_id']) && $invoice['public_id'] ? Invoice::getPrivateId($invoice['public_id']) : null;
-        $rules = [
-          'invoice_number' => 'required|unique:invoices,invoice_number,'.$invoiceId.',id,account_id,'.\Auth::user()->account_id,
-          'discount' => 'positive',
-        ];
-
-        if ($invoice['is_recurring'] && $invoice['start_date'] && $invoice['end_date']) {
-            $rules['end_date'] = 'after:'.$invoice['start_date'];
-        }
-
-        $validator = \Validator::make($invoice, $rules);
-
-        if ($validator->fails()) {
-            return $validator;
-        }
-
-        return false;
-    }
-
-    public function save($publicId, $data, $entityType)
-    {
-        if ($publicId) {
-            $invoice = Invoice::scope($publicId)->firstOrFail();
-        } else {
-            $invoice = Invoice::createNew();
-
-            if ($entityType == ENTITY_QUOTE) {
-                $invoice->is_quote = true;
-            }
-        }
-
         $account = \Auth::user()->account;
+        $publicId = isset($data['public_id']) ? $data['public_id'] : false;
+        
+        $isNew = !$publicId || $publicId == '-1';
+
+        if ($isNew) {
+            $entityType = ENTITY_INVOICE;
+            if (isset($data['is_recurring']) && $data['is_recurring']) {
+                $entityType = ENTITY_RECURRING_INVOICE;
+            } elseif (isset($data['is_quote']) && $data['is_quote']) {
+                $entityType = ENTITY_QUOTE;
+            }
+            $invoice = $account->createInvoice($entityType, $data['client_id']);
+            if (isset($data['has_tasks']) && $data['has_tasks']) {
+                $invoice->has_tasks = true;
+            }
+        } else {
+            $invoice = Invoice::scope($publicId)->firstOrFail();
+        }
 
         if ((isset($data['set_default_terms']) && $data['set_default_terms'])
             || (isset($data['set_default_footer']) && $data['set_default_footer'])) {
             if (isset($data['set_default_terms']) && $data['set_default_terms']) {
-                $account->invoice_terms = trim($data['terms']);
+                $account->{"{$entityType}_terms"} = trim($data['terms']);
             }
             if (isset($data['set_default_footer']) && $data['set_default_footer']) {
                 $account->invoice_footer = trim($data['invoice_footer']);
@@ -273,7 +253,7 @@ class InvoiceRepository
             $account->save();
         }
 
-        if (isset($data['invoice_number'])) {
+        if (isset($data['invoice_number']) && !$invoice->is_recurring) {
             $invoice->invoice_number = trim($data['invoice_number']);
         }
 
@@ -281,13 +261,7 @@ class InvoiceRepository
         $invoice->is_amount_discount = $data['is_amount_discount'] ? true : false;
         $invoice->partial = round(Utils::parseFloat($data['partial']), 2);
         $invoice->invoice_date = isset($data['invoice_date_sql']) ? $data['invoice_date_sql'] : Utils::toSqlDate($data['invoice_date']);
-        $invoice->has_tasks = isset($data['has_tasks']) ? $data['has_tasks'] : false;
-        
-        if (!$publicId) {
-            $invoice->client_id = $data['client_id'];
-            $invoice->is_recurring = $data['is_recurring'] ? true : false;
-        }
-        
+
         if ($invoice->is_recurring) {
             if ($invoice->start_date && $invoice->start_date != Utils::toSqlDate($data['start_date'])) {
                 $invoice->last_sent_date = null;
@@ -368,12 +342,20 @@ class InvoiceRepository
                 $total *= (100 - $invoice->discount) / 100;
             }
         }
-
-        $invoice->custom_value1 = round($data['custom_value1'], 2);
-        $invoice->custom_value2 = round($data['custom_value2'], 2);
-        $invoice->custom_taxes1 = $data['custom_taxes1'] ? true : false;
-        $invoice->custom_taxes2 = $data['custom_taxes2'] ? true : false;
-
+        
+        if (isset($data['custom_value1'])) {
+            $invoice->custom_value1 = round($data['custom_value1'], 2);
+            if ($isNew) {
+                $invoice->custom_taxes1 = $account->custom_invoice_taxes1 ?: false;
+            }
+        }
+        if (isset($data['custom_value2'])) {
+            $invoice->custom_value2 = round($data['custom_value2'], 2);
+            if ($isNew) {
+                $invoice->custom_taxes2 = $account->custom_invoice_taxes2 ?: false;
+            }
+        }
+        
         if (isset($data['custom_text_value1'])) {
             $invoice->custom_text_value1 = trim($data['custom_text_value1']);
         }
@@ -478,7 +460,7 @@ class InvoiceRepository
             }
             $clone->invoice_number = $account->invoice_number_prefix.$invoiceNumber;
         } else {
-            $clone->invoice_number = $account->getNextInvoiceNumber();
+            $clone->invoice_number = $account->getNextInvoiceNumber($invoice);
         }
 
         foreach ([
@@ -549,50 +531,29 @@ class InvoiceRepository
         return $clone;
     }
 
-    public function bulk($ids, $action, $statusId = false)
+    public function markSent($invoice)
     {
-        if (!$ids) {
-            return 0;
-        }
-
-        $invoices = Invoice::withTrashed()->scope($ids)->get();
-
-        foreach ($invoices as $invoice) {
-            if ($action == 'mark') {
-                $invoice->invoice_status_id = $statusId;
-                $invoice->save();
-            } elseif ($action == 'restore') {
-                $invoice->restore();
-            } else {
-                if ($action == 'delete') {
-                    $invoice->is_deleted = true;
-                    $invoice->save();
-                }
-
-                $invoice->delete();
-            }
-        }
-
-        return count($invoices);
+        $invoice->markInvitationsSent();
     }
 
     public function findInvoiceByInvitation($invitationKey)
     {
         $invitation = Invitation::where('invitation_key', '=', $invitationKey)->first();
+
         if (!$invitation) {
-            app()->abort(404, trans('texts.invoice_not_found'));
+            return false;
         }
 
         $invoice = $invitation->invoice;
         if (!$invoice || $invoice->is_deleted) {
-            app()->abort(404, trans('texts.invoice_not_found'));
+            return false;
         }
 
         $invoice->load('user', 'invoice_items', 'invoice_design', 'account.country', 'client.contacts', 'client.country');
         $client = $invoice->client;
 
         if (!$client || $client->is_deleted) {
-            app()->abort(404, trans('texts.invoice_not_found'));
+            return false;
         }
 
         return $invitation;
@@ -630,7 +591,7 @@ class InvoiceRepository
         $invoice = Invoice::createNew($recurInvoice);
         $invoice->client_id = $recurInvoice->client_id;
         $invoice->recurring_invoice_id = $recurInvoice->id;
-        $invoice->invoice_number = $recurInvoice->account->getNextInvoiceNumber(false, 'R');
+        $invoice->invoice_number = 'R' . $recurInvoice->account->getNextInvoiceNumber($recurInvoice);
         $invoice->amount = $recurInvoice->amount;
         $invoice->balance = $recurInvoice->amount;
         $invoice->invoice_date = date_create()->format('Y-m-d');
@@ -642,10 +603,10 @@ class InvoiceRepository
         $invoice->tax_name = $recurInvoice->tax_name;
         $invoice->tax_rate = $recurInvoice->tax_rate;
         $invoice->invoice_design_id = $recurInvoice->invoice_design_id;
-        $invoice->custom_value1 = $recurInvoice->custom_value1;
-        $invoice->custom_value2 = $recurInvoice->custom_value2;
-        $invoice->custom_taxes1 = $recurInvoice->custom_taxes1;
-        $invoice->custom_taxes2 = $recurInvoice->custom_taxes2;
+        $invoice->custom_value1 = $recurInvoice->custom_value1 ?: 0;
+        $invoice->custom_value2 = $recurInvoice->custom_value2 ?: 0;
+        $invoice->custom_taxes1 = $recurInvoice->custom_taxes1 ?: 0;
+        $invoice->custom_taxes2 = $recurInvoice->custom_taxes2 ?: 0;
         $invoice->custom_text_value1 = $recurInvoice->custom_text_value1;
         $invoice->custom_text_value2 = $recurInvoice->custom_text_value2;
         $invoice->is_amount_discount = $recurInvoice->is_amount_discount;

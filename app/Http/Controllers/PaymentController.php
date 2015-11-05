@@ -25,6 +25,9 @@ use App\Ninja\Repositories\AccountRepository;
 use App\Ninja\Mailers\ContactMailer;
 use App\Services\PaymentService;
 
+use App\Http\Requests\CreatePaymentRequest;
+use App\Http\Requests\UpdatePaymentRequest;
+
 class PaymentController extends BaseController
 {
     public function __construct(PaymentRepository $paymentRepo, InvoiceRepository $invoiceRepo, AccountRepository $accountRepo, ContactMailer $contactMailer, PaymentService $paymentService)
@@ -68,7 +71,7 @@ class PaymentController extends BaseController
         return $table->addColumn('amount', function ($model) { return Utils::formatMoney($model->amount, $model->currency_id); })
             ->addColumn('payment_date', function ($model) { return Utils::dateToString($model->payment_date); })
             ->addColumn('dropdown', function ($model) {
-                if ($model->is_deleted || $model->invoice_is_deleted) {
+                if ($model->invoice_is_deleted) {
                     return '<div style="height:38px"/>';
                 }
 
@@ -86,6 +89,10 @@ class PaymentController extends BaseController
                     $str .= '<li><a href="javascript:restoreEntity('.$model->public_id.')">'.trans('texts.restore_payment').'</a></li>';
                 }
 
+                if ($model->is_deleted) {
+                    return $str;
+                }
+                
                 return $str.'<li><a href="javascript:deleteEntity('.$model->public_id.')">'.trans('texts.delete_payment').'</a></li></ul>
                         </div>';
             })
@@ -111,6 +118,7 @@ class PaymentController extends BaseController
             'url' => "payments",
             'title' => trans('texts.new_payment'),
             'paymentTypes' => Cache::get('paymentTypes'),
+            'paymentTypeId' => Input::get('paymentTypeId'),
             'clients' => Client::scope()->with('contacts')->orderBy('name')->get(), );
 
         return View::make('payments.edit', $data);
@@ -174,7 +182,10 @@ class PaymentController extends BaseController
         $acceptedCreditCardTypes = $accountGateway->getCreditcardTypes();
 
         // Handle offsite payments
-        if ($useToken || $paymentType != PAYMENT_TYPE_CREDIT_CARD || $gateway->id == GATEWAY_EWAY) {
+        if ($useToken || $paymentType != PAYMENT_TYPE_CREDIT_CARD 
+            || $gateway->id == GATEWAY_EWAY 
+            || $gateway->id == GATEWAY_TWO_CHECKOUT
+            || $gateway->id == GATEWAY_PAYFAST) {
             if (Session::has('error')) {
                 Session::reflash();
                 return Redirect::to('view/'.$invitationKey);
@@ -418,7 +429,7 @@ class PaymentController extends BaseController
             }
 
             $gateway = $this->paymentService->createGateway($accountGateway);
-            $details = $this->paymentService->getPaymentDetails($invitation, $data);
+            $details = $this->paymentService->getPaymentDetails($invitation, $accountGateway, $data);
 
             // check if we're creating/using a billing token
             if ($accountGateway->gateway_id == GATEWAY_STRIPE) {
@@ -439,11 +450,14 @@ class PaymentController extends BaseController
 
             if ($accountGateway->gateway_id == GATEWAY_EWAY) {
                 $ref = $response->getData()['AccessCode'];
-                $token = $response->getCardReference();
+            } elseif ($accountGateway->gateway_id == GATEWAY_TWO_CHECKOUT) {
+                $ref = $response->getData()['cart_order_id'];
+            } elseif ($accountGateway->gateway_id == GATEWAY_PAYFAST) {
+                $ref = $response->getData()['m_payment_id'];
             } else {
                 $ref = $response->getTransactionReference();
             }
-
+            
             if (!$ref) {
                 $this->error('No-Ref', $response->getMessage(), $accountGateway);
 
@@ -467,7 +481,6 @@ class PaymentController extends BaseController
             } elseif ($response->isRedirect()) {
                 $invitation->transaction_reference = $ref;
                 $invitation->save();
-
                 Session::put('transaction_reference', $ref);
                 Session::save();
                 $response->redirect();
@@ -512,11 +525,16 @@ class PaymentController extends BaseController
             return Redirect::to($invitation->getLink());
         }
 
+        // PayFast transaction referencce
+        if ($accountGateway->isGateway(GATEWAY_PAYFAST) && Request::has('pt')) {
+            $token = Request::query('pt');
+        }
+
         try {
-            if (method_exists($gateway, 'completePurchase')) {
-                $details = $this->paymentService->getPaymentDetails($invitation);
+            if (method_exists($gateway, 'completePurchase') && !$accountGateway->isGateway(GATEWAY_TWO_CHECKOUT)) {
+                $details = $this->paymentService->getPaymentDetails($invitation, $accountGateway);
                 $response = $gateway->completePurchase($details)->send();
-                $ref = $response->getTransactionReference();
+                $ref = $response->getTransactionReference() ?: $token;
 
                 if ($response->isSuccessful()) {
                     $payment = $this->paymentService->createPayment($invitation, $ref, $payerId);
@@ -539,49 +557,36 @@ class PaymentController extends BaseController
         }
     }
 
-    public function store()
+    public function store(CreatePaymentRequest $request)
     {
-        return $this->save();
-    }
+        $input = $request->input();
+        $payment = $this->paymentRepo->save($input);
 
-    public function update($publicId)
-    {
-        return $this->save($publicId);
-    }
-
-    private function save($publicId = null)
-    {
-        if (!$publicId && $errors = $this->paymentRepo->getErrors(Input::all())) {
-            $url = $publicId ? 'payments/'.$publicId.'/edit' : 'payments/create';
-
-            return Redirect::to($url)
-                ->withErrors($errors)
-                ->withInput();
+        if (Input::get('email_receipt')) {
+            $this->contactMailer->sendPaymentConfirmation($payment);
+            Session::flash('message', trans('texts.created_payment_emailed_client'));
         } else {
-            $payment = $this->paymentRepo->save($publicId, Input::all());
-
-            if ($publicId) {
-                Session::flash('message', trans('texts.updated_payment'));
-
-                return Redirect::to('payments/');
-            } else {
-                if (Input::get('email_receipt')) {
-                    $this->contactMailer->sendPaymentConfirmation($payment);
-                    Session::flash('message', trans('texts.created_payment_emailed_client'));
-                } else {
-                    Session::flash('message', trans('texts.created_payment'));
-                }
-
-                return Redirect::to('clients/'.Input::get('client'));
-            }
+            Session::flash('message', trans('texts.created_payment'));
         }
+
+        return redirect()->to($payment->client->getRoute());
+    }
+
+    public function update(UpdatePaymentRequest $request)
+    {
+        $input = $request->input();
+        $payment = $this->paymentRepo->save($input);
+
+        Session::flash('message', trans('texts.updated_payment'));
+
+        return redirect()->to($payment->getRoute());
     }
 
     public function bulk()
     {
         $action = Input::get('action');
-        $ids = Input::get('id') ? Input::get('id') : Input::get('ids');
-        $count = $this->paymentRepo->bulk($ids, $action);
+        $ids = Input::get('public_id') ? Input::get('public_id') : Input::get('ids');
+        $count = $this->paymentService->bulk($ids, $action);
 
         if ($count > 0) {
             $message = Utils::pluralize($action.'d_payment', $count);
@@ -593,19 +598,11 @@ class PaymentController extends BaseController
 
     private function error($type, $error, $accountGateway, $exception = false)
     {
-        if (!$error) {
-            if ($exception) {
-                $error = $exception->getMessage();
-            } else {
-                $error = trans('texts.payment_error');
-            }
-        }
-
         $message = '';
         if ($accountGateway && $accountGateway->gateway) {
             $message = $accountGateway->gateway->name . ': ';
         }
-        $message .= $error;
+        $message .= $error ?: trans('texts.payment_error');
 
         Session::flash('error', $message);
         Utils::logError("Payment Error [{$type}]: " . ($exception ? Utils::getErrorString($exception) : $message));

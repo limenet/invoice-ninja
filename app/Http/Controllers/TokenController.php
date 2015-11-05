@@ -25,6 +25,11 @@ use App\Ninja\Repositories\AccountRepository;
 
 class TokenController extends BaseController
 {
+    public function index()
+    {
+        return Redirect::to('settings/' . ACCOUNT_API_TOKENS);
+    }
+
     public function getDatatable()
     {
         $query = DB::table('account_tokens')
@@ -140,13 +145,9 @@ class TokenController extends BaseController
             if ($tokenPublicId) {
                 $token->name = trim(Input::get('name'));
             } else {
-                $lastToken = AccountToken::withTrashed()->where('account_id', '=', Auth::user()->account_id)
-                            ->orderBy('public_id', 'DESC')->first();
-
                 $token = AccountToken::createNew();
                 $token->name = trim(Input::get('name'));
                 $token->token = str_random(RANDOM_KEY_LENGTH);
-                $token->public_id = $lastToken ? $lastToken->public_id + 1 : 1;
             }
 
             $token->save();

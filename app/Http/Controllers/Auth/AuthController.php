@@ -61,7 +61,7 @@ class AuthController extends Controller {
         $this->accountRepo->unlinkUserFromOauth(Auth::user());
 
         Session::flash('message', trans('texts.updated_settings'));
-        return redirect()->to('/settings/' . ACCOUNT_COMPANY_DETAILS);
+        return redirect()->to('/settings/' . ACCOUNT_USER_DETAILS);
     }
 
     public function getLoginWrapper()
@@ -75,6 +75,7 @@ class AuthController extends Controller {
 
     public function postLoginWrapper(Request $request)
     {
+
         $userId = Auth::check() ? Auth::user()->id : null;
         $user = User::where('email', '=', $request->input('email'))->first();
 
@@ -90,15 +91,15 @@ class AuthController extends Controller {
 
             $users = false;
             // we're linking a new account
-            if ($userId && Auth::user()->id != $userId) {
+            if ($request->link_accounts && $userId && Auth::user()->id != $userId) {
                 $users = $this->accountRepo->associateAccounts($userId, Auth::user()->id);
-                Session::flash('warning', trans('texts.associated_accounts'));
+                Session::flash('message', trans('texts.associated_accounts'));
             // check if other accounts are linked
             } else {
                 $users = $this->accountRepo->loadAccounts(Auth::user()->id);
             }
-            
             Session::put(SESSION_USER_ACCOUNTS, $users);
+
         } elseif ($user) {
             $user->failed_logins = $user->failed_logins + 1;
             $user->save();
@@ -106,6 +107,7 @@ class AuthController extends Controller {
 
         return $response;
     }
+
 
     public function getLogoutWrapper()
     {

@@ -8,7 +8,6 @@
     )) !!}
 
     {{ Former::populate($account) }}
-    {{ Former::populateField('military_time', intval($account->military_time)) }}
     {{ Former::populateField('first_name', $user->first_name) }}
     {{ Former::populateField('last_name', $user->last_name) }}
     {{ Former::populateField('email', $user->email) }}  
@@ -39,7 +38,7 @@
 
                 <br/>
 
-                @if (Utils::isNinja())
+                @if (Utils::isOAuthEnabled())
                     {!! Former::plaintext('oneclick_login')->value(
                             $user->oauth_provider_id ? 
                                 $oauthProviderName . ' - ' . link_to('#', trans('texts.disable'), ['onclick' => 'disableSocialLogin()']) : 
@@ -50,10 +49,14 @@
 
                 @if (Utils::isNinja())
                     @if ($user->referral_code)
+                        {{ Former::setOption('capitalize_translations', false) }}
                         {!! Former::plaintext('referral_code')
-                                ->help(trans('texts.referral_code_help'))
-                                ->value($user->referral_code . ' <a href="'.REFERRAL_PROGRAM_URL.'" target="_blank" title="'.trans('texts.learn_more').'">' . Icon::create('question-sign') . '</a>') !!}
-                    @elseif (Input::has('affiliate'))
+                                ->help(NINJA_APP_URL . '/invoice_now?rc=' . $user->referral_code)
+                                ->value($user->referral_code . ' - '. 
+                                    $referralCounts['free'] . ' ' . trans('texts.free') . ' | ' . 
+                                    $referralCounts['pro'] . ' ' . trans('texts.pro') . ' ' .
+                                    '<a href="'.REFERRAL_PROGRAM_URL.'" target="_blank" title="'.trans('texts.learn_more').'">' . Icon::create('question-sign') . '</a>') !!}
+                    @else
                         {!! Former::checkbox('referral_code')
                                 ->help(trans('texts.referral_code_help'))
                                 ->text(trans('texts.enable') . ' <a href="'.REFERRAL_PROGRAM_URL.'" target="_blank" title="'.trans('texts.learn_more').'">' . Icon::create('question-sign') . '</a>')  !!}
@@ -71,12 +74,18 @@
         <center>
             @if (Utils::isNinja())
                 @if (Auth::user()->confirmed)
-                    {!! Button::primary(trans('texts.change_password'))->large()->withAttributes(['onclick'=>'showChangePassword()']) !!}
+                    {!! Button::primary(trans('texts.change_password'))
+                            ->appendIcon(Icon::create('lock'))
+                            ->large()->withAttributes(['onclick'=>'showChangePassword()']) !!}
                 @elseif (Auth::user()->registered)
-                    {!! Button::primary(trans('texts.resend_confirmation'))->asLinkTo(URL::to('/resend_confirmation'))->large() !!}
+                    {!! Button::primary(trans('texts.resend_confirmation'))
+                            ->appendIcon(Icon::create('send'))
+                            ->asLinkTo(URL::to('/resend_confirmation'))->large() !!}
                 @endif
             @endif
-            {!! Button::success(trans('texts.save'))->submit()->large()->appendIcon(Icon::create('floppy-disk')) !!}
+            {!! Button::success(trans('texts.save'))
+                    ->submit()->large()
+                    ->appendIcon(Icon::create('floppy-disk')) !!}
         </center>
     </div>
 
@@ -120,7 +129,10 @@
                 </div>
 
                 <div class="modal-footer" style="margin-top: 0px" id="changePasswordFooter">
-                    <button type="button" class="btn btn-default" id="cancelChangePasswordButton" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-default" id="cancelChangePasswordButton" data-dismiss="modal">
+                        {{ trans('texts.cancel') }}
+                        <i class="glyphicon glyphicon-remove-circle"></i>
+                    </button>
                     <button type="button" class="btn btn-success" onclick="submitChangePassword()" id="changePasswordButton" disabled>
                         {{ trans('texts.save') }}
                         <i class="glyphicon glyphicon-floppy-disk"></i>
