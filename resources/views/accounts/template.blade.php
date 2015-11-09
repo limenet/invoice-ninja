@@ -1,5 +1,5 @@
 <div role="tabpanel" class="tab-pane {{ isset($active) && $active ? 'active' : '' }}" id="{{ $field }}">
-    <div class="panel-body">
+    <div class="panel-body" style="padding-bottom: 0px">
         @if (isset($isReminder) && $isReminder)
             <div class="row">
                 <div class="col-md-6">
@@ -50,21 +50,23 @@
 
     <script type="text/javascript">
         $(function() {
-            var {{ $field }}Editor = new Quill('#{{ $field }}Editor', {
+            var editor = new Quill('#{{ $field }}Editor', {
               modules: {
                 'toolbar': { container: '#{{ $field }}Toolbar' },
                 'link-tooltip': true
               },
               theme: 'snow'
             });
-            {{ $field }}Editor.setHTML($('#email_template_{{ $field }}').val());
-            {{ $field }}Editor.on('text-change', function(delta, source) {
+            editor.setHTML($('#email_template_{{ $field }}').val());
+            editor.on('text-change', function(delta, source) {
                   if (source == 'api') {
                     return;
                   }
-                  var html = {{ $field }}Editor.getHTML();
+                  var html = editors['{{ $field }}'].getHTML();
                   $('#email_template_{{ $field }}').val(html);
                   refreshPreview();
+                  NINJA.formIsChanged = true;
                 });
+            editors['{{ $field }}'] = editor;
         });
     </script>

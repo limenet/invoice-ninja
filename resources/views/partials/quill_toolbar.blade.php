@@ -1,4 +1,5 @@
-    <div id="{{ $field }}Toolbar" class="toolbar" style="padding-left: 0px">
+<div id="toolbar-toolbar" class="toolbar ql-toolbar ql-snow">
+    <div id="{{ $name }}Toolbar" class="toolbar" style="padding-left: 0px">
         <span class="ql-format-group">
             <select title="Font" class="ql-font">
                 <option value="sans-serif" selected="">Sans Serif</option>
@@ -110,4 +111,8 @@
                 <option value="justify" label="Justify"></option>
             </select>
         </span>
+        <span class="ql-format-group">
+            <span title="Link" class="ql-format-button ql-link"></span>
+        </span>
     </div>
+</div>
