@@ -202,6 +202,20 @@ class Account extends Eloquent
         return $date->format($this->getCustomDateFormat());
     }
 
+    public function formatDateTime($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        return $date->format($this->getCustomDateTimeFormat());
+    }
+
+    public function getCustomDateTimeFormat()
+    {
+        return $this->datetime_format ? $this->datetime_format->format : DEFAULT_DATETIME_FORMAT;
+    }
+
     public function getGatewayByType($type = PAYMENT_TYPE_ANY)
     {
         foreach ($this->account_gateways as $gateway) {
@@ -236,6 +250,11 @@ class Account extends Eloquent
         $fileName = 'logo/' . $this->account_key;
 
         return file_exists($fileName.'.png') ? $fileName.'.png' : $fileName.'.jpg';
+    }
+
+    public function getLogoURL()
+    {
+        return SITE_URL . '/' . $this->getLogoPath();
     }
 
     public function getToken($name)
@@ -331,7 +350,7 @@ class Account extends Eloquent
 
         if (strstr($pattern, '{$userId}')) {
             $search[] = '{$userId}';
-            $replace[] = str_pad($invoice->user->public_id, 2, '0', STR_PAD_LEFT);
+            $replace[] = str_pad(($invoice->user->public_id + 1), 2, '0', STR_PAD_LEFT);
         }
 
         $matches = false;
@@ -416,6 +435,11 @@ class Account extends Eloquent
         }
         
         $this->save();
+    }
+
+    public function loadAllData()
+    {
+        $this->load('clients.getInvoices.invoice_items', 'clients.getQuotes.invoice_items', 'users', 'clients.contacts');
     }
 
     public function loadLocalizationSettings($client = false)
