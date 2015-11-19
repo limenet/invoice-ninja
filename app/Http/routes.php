@@ -1,6 +1,5 @@
 <?php
 
-
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -132,7 +131,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('user/setTheme', 'UserController@setTheme');
     Route::post('remove_logo', 'AccountController@removeLogo');
     Route::post('account/go_pro', 'AccountController@enableProPlan');
-    Route::post('/export', 'ImportExportController@doExport');
+    
+    Route::post('/export', 'ExportController@doExport');
+    Route::post('/import', 'ImportController@doImport');
+    Route::post('/import_csv', 'ImportController@doImportCSV');
 
     Route::resource('gateways', 'AccountGatewayController');
     Route::get('api/gateways', array('as'=>'api.gateways', 'uses'=>'AccountGatewayController@getDatatable'));
@@ -194,6 +196,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'api/v1'], function()
 {
     Route::resource('ping', 'ClientApiController@ping');
     Route::post('login', 'AccountApiController@login');
+    Route::get('static', 'AccountApiController@getStaticData');
     Route::get('accounts', 'AccountApiController@show');
     Route::resource('clients', 'ClientApiController');
     Route::get('quotes/{client_id?}', 'QuoteApiController@index');
@@ -334,8 +337,19 @@ if (!defined('CONTACT_EMAIL')) {
     define('MAX_NUM_USERS', 20);
     define('MAX_SUBDOMAIN_LENGTH', 30);
     define('MAX_IFRAME_URL_LENGTH', 250);
+    define('MAX_LOGO_FILE_SIZE', 200); // KB
     define('DEFAULT_FONT_SIZE', 9);
     define('DEFAULT_SEND_RECURRING_HOUR', 8);
+
+    define('IMPORT_CSV', 'CSV');
+    define('IMPORT_FRESHBOOKS', 'FreshBooks');
+    define('IMPORT_WAVE', 'Wave');
+    define('IMPORT_RONIN', 'Ronin');
+    define('IMPORT_HIVEAGE', 'Hiveage');
+    define('IMPORT_ZOHO', 'Zoho');
+    define('IMPORT_NUTCACHE', 'Nutcache');
+    define('IMPORT_INVOICEABLE', 'Invoiceable');
+    define('IMPORT_HARVEST', 'Harvest');
 
     define('MAX_NUM_CLIENTS', 100);
     define('MAX_NUM_CLIENTS_PRO', 20000);
@@ -381,7 +395,6 @@ if (!defined('CONTACT_EMAIL')) {
     define('DEFAULT_DATE_PICKER_FORMAT', 'M d, yyyy');
     define('DEFAULT_DATETIME_FORMAT', 'F j, Y g:i a');
     define('DEFAULT_DATETIME_MOMENT_FORMAT', 'MMM D, YYYY h:mm:ss a');
-    define('DEFAULT_QUERY_CACHE', 120); // minutes
     define('DEFAULT_LOCALE', 'en');
     define('DEFAULT_MAP_ZOOM', 10);
 
@@ -430,7 +443,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('PDFMAKE_DOCS', 'http://pdfmake.org/playground.html');
     define('PHANTOMJS_CLOUD', 'http://api.phantomjscloud.com/single/browser/v1/');
     define('PHP_DATE_FORMATS', 'http://php.net/manual/en/function.date.php');
-    define('REFERRAL_PROGRAM_URL', 'https://www.invoiceninja.com/affiliates/');
+    define('REFERRAL_PROGRAM_URL', 'https://www.invoiceninja.com/referral-program/');
 
     define('COUNT_FREE_DESIGNS', 4);
     define('COUNT_FREE_DESIGNS_SELF_HOST', 5); // include the custom design
@@ -475,7 +488,6 @@ if (!defined('CONTACT_EMAIL')) {
     define('SOCIAL_GITHUB', 'GitHub');
     define('SOCIAL_LINKEDIN', 'LinkedIn');
 
-
     $creditCards = [
                 1 => ['card' => 'images/credit_cards/Test-Visa-Icon.png', 'text' => 'Visa'],
                 2 => ['card' => 'images/credit_cards/Test-MasterCard-Icon.png', 'text' => 'Master Card'],
@@ -483,8 +495,22 @@ if (!defined('CONTACT_EMAIL')) {
                 8 => ['card' => 'images/credit_cards/Test-Diners-Icon.png', 'text' => 'Diners'],
                 16 => ['card' => 'images/credit_cards/Test-Discover-Icon.png', 'text' => 'Discover']
             ];
-
     define('CREDIT_CARDS', serialize($creditCards));
+
+    $cachedTables = [
+        'currencies' => 'App\Models\Currency',
+        'sizes' => 'App\Models\Size',
+        'industries' => 'App\Models\Industry',
+        'timezones' => 'App\Models\Timezone',
+        'dateFormats' => 'App\Models\DateFormat',
+        'datetimeFormats' => 'App\Models\DatetimeFormat',
+        'languages' => 'App\Models\Language',
+        'paymentTerms' => 'App\Models\PaymentTerm',
+        'paymentTypes' => 'App\Models\PaymentType',
+        'countries' => 'App\Models\Country',
+        'invoiceDesigns' => 'App\Models\InvoiceDesign',
+    ];
+    define('CACHED_TABLES', serialize($cachedTables));
 
     function uctrans($text)
     {

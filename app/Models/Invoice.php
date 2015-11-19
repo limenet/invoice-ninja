@@ -15,6 +15,7 @@ use App\Events\QuoteInvitationWasEmailed;
 class Invoice extends EntityModel implements BalanceAffecting
 {
     use PresentableTrait;
+    use OwnedByClientTrait;
     use SoftDeletes {
         SoftDeletes::trashed as parentTrashed;
     }
@@ -191,14 +192,22 @@ class Invoice extends EntityModel implements BalanceAffecting
         }
     }
 
-    public function updatePaidStatus()
+    public function updatePaidStatus($save = true)
     {
-        if ($this->isPaid() && $this->balance > 0) {
-            $this->invoice_status_id = ($this->balance == $this->amount ? INVOICE_STATUS_SENT : INVOICE_STATUS_PARTIAL);
-            $this->save();
-        } elseif ($this->invoice_status_id && $this->amount > 0 && $this->balance == 0 && $this->invoice_status_id != INVOICE_STATUS_PAID) {
-            $this->invoice_status_id = INVOICE_STATUS_PAID;
-            $this->save();
+        $statusId = false;
+        if ($this->amount > 0 && $this->balance == 0) {
+            $statusId = INVOICE_STATUS_PAID;
+        } elseif ($this->balance > 0 && $this->balance < $this->amount) {
+            $statusId = INVOICE_STATUS_PARTIAL;
+        } elseif ($this->isPartial() && $this->balance > 0) {
+            $statusId = ($this->balance == $this->amount ? INVOICE_STATUS_SENT : INVOICE_STATUS_PARTIAL);
+        }
+
+        if ($statusId && $statusId != $this->invoice_status_id) {
+            $this->invoice_status_id = $statusId;
+            if ($save) {
+                $this->save();
+            }
         }
     }
 
@@ -256,6 +265,11 @@ class Invoice extends EntityModel implements BalanceAffecting
     public function isViewed()
     {
         return $this->invoice_status_id >= INVOICE_STATUS_VIEWED;
+    }
+
+    public function isPartial()
+    {
+        return $this->invoice_status_id >= INVOICE_STATUS_PARTIAL;
     }
 
     public function isPaid()

@@ -207,12 +207,12 @@ class Utils
         $data = [
             'context' => $context,
             'user_id' => Auth::check() ? Auth::user()->id : 0,
+            'account_id' => Auth::check() ? Auth::user()->account_id : 0,
             'user_name' => Auth::check() ? Auth::user()->getDisplayName() : '',
             'url' => Input::get('url', Request::url()),
             'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
             'ip' => Request::getClientIp(),
             'count' => Session::get('error_count', 0),
-            //'input' => Input::all()
         ];
 
         Log::error($error."\n", $data);
@@ -232,7 +232,7 @@ class Utils
         return floatval($value);
     }
 
-    public static function formatMoney($value, $currencyId = false)
+    public static function formatMoney($value, $currencyId = false, $showSymbol = true)
     {
         if (!$currencyId) {
             $currencyId = Session::get(SESSION_CURRENCY, DEFAULT_CURRENCY);
@@ -252,9 +252,11 @@ class Utils
             $value = 0;
         }
 
-        Cache::add('currency', $currency, DEFAULT_QUERY_CACHE);
-
-        return $currency->symbol.number_format($value, $currency->precision, $currency->decimal_separator, $currency->thousand_separator);
+        $str = '';
+        if ($showSymbol) {
+            $str .= $currency->symbol;
+        }
+        return $str . number_format($value, $currency->precision, $currency->decimal_separator, $currency->thousand_separator);
     }
 
     public static function pluralize($string, $count)
@@ -640,6 +642,7 @@ class Utils
           //'Access-Control-Allow-Headers' => 'Origin, Content-Type, Accept, Authorization, X-Requested-With',
           //'Access-Control-Allow-Credentials' => 'true',
           'X-Total-Count' => $count,
+          'X-Ninja-Version' => NINJA_VERSION,
           //'X-Rate-Limit-Limit' - The number of allowed requests in the current period
           //'X-Rate-Limit-Remaining' - The number of remaining requests in the current period
           //'X-Rate-Limit-Reset' - The number of seconds left in the current period,
@@ -847,7 +850,7 @@ class Utils
 
         $today = new DateTime('now');
         $datePaid = DateTime::createFromFormat('Y-m-d', $date);
-        $interval = $today->diff($date);
+        $interval = $today->diff($datePaid);
 
         return $interval->y == 0;
     }

@@ -2,6 +2,8 @@
 
 use App\Models\Account;
 use App\Models\AccountToken;
+use App\Models\Contact;
+use App\Models\Product;
 use League\Fractal;
 use League\Fractal\TransformerAbstract;
 
@@ -10,6 +12,9 @@ class AccountTransformer extends TransformerAbstract
     protected $defaultIncludes = [
         'users',
         'clients',
+        'invoices',
+        'contacts',
+        'products',
     ];
 
     public function includeUsers(Account $account)
@@ -20,6 +25,21 @@ class AccountTransformer extends TransformerAbstract
     public function includeClients(Account $account)
     {
         return $this->collection($account->clients, new ClientTransformer($account));
+    }
+
+    public function includeInvoices(Account $account)
+    {
+        return $this->collection($account->invoices, new InvoiceTransformer($account));
+    }
+
+    public function includeContacts(Account $account)
+    {
+        return $this->collection($account->contacts, new ContactTransformer($account));
+    }
+
+    public function includeProducts(Account $account)
+    {
+        return $this->collection($account->products, new ProductTransformer($account));
     }
 
     public function transform(Account $account)

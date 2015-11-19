@@ -60,6 +60,11 @@ class Account extends Eloquent
         return $this->hasMany('App\Models\Client');
     }
 
+    public function contacts()
+    {
+        return $this->hasMany('App\Models\Contact');
+    }
+
     public function invoices()
     {
         return $this->hasMany('App\Models\Invoice');
@@ -73,6 +78,11 @@ class Account extends Eloquent
     public function tax_rates()
     {
         return $this->hasMany('App\Models\TaxRate');
+    }
+
+    public function products()
+    {
+        return $this->hasMany('App\Models\Product');
     }
 
     public function country()
