@@ -45,11 +45,6 @@ class Utils
         return file_exists(storage_path() . '/framework/down');
     }
 
-    public static function isProd()
-    {
-        return App::environment() == ENV_PRODUCTION;
-    }
-
     public static function isNinja()
     {
         return self::isNinjaProd() || self::isNinjaDev();
@@ -63,6 +58,11 @@ class Utils
     public static function isNinjaDev()
     {
         return isset($_ENV['NINJA_DEV']) && $_ENV['NINJA_DEV'] == 'true';
+    }
+
+    public static function requireHTTPS()
+    {
+        return Utils::isNinjaProd() || (isset($_ENV['REQUIRE_HTTPS']) && $_ENV['REQUIRE_HTTPS'] == 'true');
     }
 
     public static function isOAuthEnabled()
@@ -230,6 +230,13 @@ class Utils
         $value = preg_replace('/[^0-9\.\-]/', '', $value);
 
         return floatval($value);
+    }
+
+    public static function parseInt($value)
+    {
+        $value = preg_replace('/[^0-9]/', '', $value);
+
+        return intval($value);
     }
 
     public static function formatMoney($value, $currencyId = false, $showSymbol = true)
@@ -588,18 +595,6 @@ class Utils
         if ($status == 410) {
             $subscription->delete();
         }
-    }
-
-
-    public static function remapPublicIds($items)
-    {
-        $return = [];
-        
-        foreach ($items as $item) {
-            $return[] = $item->toPublicArray();
-        }
-
-        return $return;
     }
 
     public static function hideIds($data, $mapped = false)

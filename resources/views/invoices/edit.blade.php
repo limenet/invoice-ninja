@@ -68,7 +68,7 @@
 			<div class="form-group" style="margin-bottom: 8px">
 				<div class="col-lg-8 col-sm-8 col-lg-offset-4 col-sm-offset-4">
 					<a id="createClientLink" class="pointer" data-bind="click: $root.showClientForm, html: $root.clientLinkText"></a>
-                    <span data-bind="visible: $root.invoice().client().public_id() > 0">| 
+                    <span data-bind="visible: $root.invoice().client().public_id() > 0" style="display:none">| 
                         <a data-bind="attr: {href: '{{ url('/clients') }}/' + $root.invoice().client().public_id()}" target="_blank">{{ trans('texts.view_client') }}</a>
                     </span>
 				</div>
@@ -218,7 +218,7 @@
 					<div class="line-total" data-bind="text: totals.total"></div>
 				</td>
 				<td style="cursor:pointer" class="hide-border td-icon">
-                    <i style="display:none;padding-left:4px" data-bind="click: $parent.removeItem, visible: actionsVisible() &amp;&amp; 
+                    <i style="padding-left:2px" data-bind="click: $parent.removeItem, visible: actionsVisible() &amp;&amp; 
                     $index() < ($parent.invoice_items().length - 1) &amp;&amp;
                     $parent.invoice_items().length > 1" class="fa fa-minus-circle redlink" title="Remove item"/>
 				</td>
