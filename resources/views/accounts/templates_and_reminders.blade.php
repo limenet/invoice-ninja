@@ -3,6 +3,7 @@
 @section('head')
     @parent
 
+    @include('money_script')
     <link href="{{ asset('css/quill.snow.css') }}" rel="stylesheet" type="text/css"/>
     <script src="{{ asset('js/quill.min.js') }}" type="text/javascript"></script>
 
@@ -32,9 +33,10 @@
         @endforeach
     @endforeach
 
-    {!! Former::populateField("enable_reminder1", intval($account->enable_reminder1)) !!}
-    {!! Former::populateField("enable_reminder2", intval($account->enable_reminder2)) !!}
-    {!! Former::populateField("enable_reminder3", intval($account->enable_reminder3)) !!}    
+    {!! Former::populateField('enable_reminder1', intval($account->enable_reminder1)) !!}
+    {!! Former::populateField('enable_reminder2', intval($account->enable_reminder2)) !!}
+    {!! Former::populateField('enable_reminder3', intval($account->enable_reminder3)) !!}    
+
 
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -82,6 +84,51 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="templateHelpModal" tabindex="-1" role="dialog" aria-labelledby="templateHelpModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="min-width:150px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="templateHelpModalLabel">{{ trans('texts.template_help_title') }}</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p>{{ trans('texts.template_help_1') }}</p>
+                    <ul>
+                        @foreach (\App\Ninja\Mailers\ContactMailer::$variableFields as $field)
+                            <li>${{ $field }}</li>
+                        @endforeach
+                        @if ($account->custom_client_label1)
+                            <li>$customClient1</li>
+                        @endif
+                        @if ($account->custom_client_label2)
+                            <li>$customClient2</li>
+                        @endif
+                        @if ($account->custom_invoice_text_label1)
+                            <li>$customInvoice1</li>
+                        @endif
+                        @if ($account->custom_invoice_text_label2)
+                            <li>$customInvoice1</li>
+                        @endif
+                        @if (count($account->account_gateways) > 1)
+                            @foreach (\App\Models\Gateway::$paymentTypes as $type)
+                                @if ($account->getGatewayByType($type))
+                                    <li>${{ \App\Models\Gateway::getPaymentTypeName($type) }}Link</li>
+                                    <li>${{ \App\Models\Gateway::getPaymentTypeName($type) }}Button</li>
+                                @endif
+                            @endforeach
+                        @endif
+                    </ul>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 0px">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">{{ trans('texts.close') }}</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     @if (Auth::user()->isPro())
         <center>
@@ -146,34 +193,34 @@
                 return '';
             }
 
-            keys = [
-                'footer', 
-                'account', 
-                'client', 
-                'amount', 
-                'link', 
-                'contact', 
-                'firstName',
-                'invoice', 
-                'quote'
-            ];
-
-            vals = [
+            var keys = {!! json_encode(\App\Ninja\Mailers\ContactMailer::$variableFields) !!};
+            var vals = [
                 {!! json_encode($emailFooter) !!}, 
-                "{{ Auth::user()->account->getDisplayName() }}", 
+                "{{ $account->getDisplayName() }}", 
                 "Client Name", 
                 formatMoney(100), 
-                "{{ Auth::user()->account->getSiteUrl() . '...' }}", 
                 "Contact Name", 
                 "First Name",
                 "0001", 
-                "0001"
+                "0001",
+                "{{ $account->formatDate($account->getDateTime()) }}",
+                "{{ URL::to('/view/...') }}", 
+                '{!! HTML::flatButton('view_invoice', '#0b4d78') !!}',
+                "{{ URL::to('/payment/...') }}", 
+                '{!! HTML::flatButton('pay_now', '#36c157') !!}',
             ];
 
+            // Add blanks for custom values
+            keys.push('customClient1', 'customClient2', 'customInvoice1', 'customInvoice2');
+            vals.push('custom value', 'custom value', 'custom value', 'custom value');
+
             // Add any available payment method links
-            @foreach (\App\Models\Gateway::getPaymentTypeLinks() as $type)
-                {!! "keys.push('" . $type.'_link' . "');" !!}
-                {!! "vals.push('" . URL::to("/payment/xxxxxx/{$type}") . "');" !!}
+            @foreach (\App\Models\Gateway::$paymentTypes as $type)
+                {!! "keys.push('" . \App\Models\Gateway::getPaymentTypeName($type).'Link' . "');" !!}
+                {!! "vals.push('" . URL::to('/payment/...') . "');" !!}
+
+                {!! "keys.push('" . \App\Models\Gateway::getPaymentTypeName($type).'Button' . "');" !!}
+                {!! "vals.push('" . HTML::flatButton('pay_now', '#36c157') . "');" !!}
             @endforeach
 
             for (var i=0; i<keys.length; i++) {

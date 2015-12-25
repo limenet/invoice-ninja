@@ -111,14 +111,14 @@ class Invoice extends EntityModel implements BalanceAffecting
         }
 
         foreach ([
-            'invoice_number', 
-            'po_number', 
-            'invoice_date', 
-            'due_date', 
-            'terms', 
-            'public_notes', 
-            'invoice_footer', 
-            'partial'
+            'invoice_number',
+            'po_number',
+            'invoice_date',
+            'due_date',
+            'terms',
+            'public_notes',
+            'invoice_footer',
+            'partial',
         ] as $field) {
             if ($this->$field != $this->getOriginal($field)) {
                 return true;
@@ -311,6 +311,15 @@ class Invoice extends EntityModel implements BalanceAffecting
     public function isPaid()
     {
         return $this->invoice_status_id >= INVOICE_STATUS_PAID;
+    }
+
+    public function isOverdue()
+    {
+        if ( ! $this->due_date) {
+            return false;
+        }
+
+        return time() > strtotime($this->due_date);
     }
 
     public function getRequestedAmount()
@@ -517,7 +526,7 @@ class Invoice extends EntityModel implements BalanceAffecting
         }
 
         if ($this->end_date) {
-            $rule .= 'UNTIL=' . $this->end_date;
+            $rule .= 'UNTIL=' . $this->getOriginal('end_date');
         }
 
         return $rule;

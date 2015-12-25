@@ -4,6 +4,7 @@
     @parent
 
     <style type="text/css">
+        .contact-file,
         .task-file {
             display: none;
         }
@@ -22,7 +23,9 @@
   </div>
     <div class="panel-body">
 
-        {!! Former::open_for_files('/import') !!}
+        {!! Former::open_for_files('/import')
+                ->addClass('warn-on-exit') !!}
+
         {!! Former::select('source')
                 ->onchange('setFileTypesVisible()')
                 ->options(array_combine(\App\Services\ImportService::$sources, \App\Services\ImportService::$sources))
@@ -94,7 +97,7 @@
 
       <div class="modal-footer" style="margin-top: 0px">
         <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('texts.go_back') }}</button>
-        <button type="button" class="btn btn-primary" onclick="confirmCancel()">{{ trans('texts.cancel_account') }}</button>         
+        <button type="button" class="btn btn-danger" onclick="confirmCancel()">{{ trans('texts.cancel_account') }}</button>         
       </div>
 
     </div>

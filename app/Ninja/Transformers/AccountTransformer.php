@@ -4,6 +4,7 @@ use App\Models\Account;
 use App\Models\AccountToken;
 use App\Models\Contact;
 use App\Models\Product;
+use App\Models\TaxRate;
 use League\Fractal;
 use League\Fractal\TransformerAbstract;
 
@@ -11,10 +12,11 @@ class AccountTransformer extends EntityTransformer
 {
     protected $defaultIncludes = [
         'users',
-        'clients',
+    //    'clients',
         'invoices',
         'contacts',
         'products',
+        'taxRates'
     ];
 
     public function includeUsers(Account $account)
@@ -47,6 +49,13 @@ class AccountTransformer extends EntityTransformer
         return $this->includeCollection($account->products, $transformer, 'products');
     }
 
+    public function includeTaxRates(Account $account)
+    {
+        $transformer = new TaxRateTransformer($account, $this->serializer);
+        return $this->includeCollection($account->tax_rates, $transformer, 'taxRates');
+    }
+
+
     public function transform(Account $account)
     {
         return [
@@ -76,7 +85,15 @@ class AccountTransformer extends EntityTransformer
             'language_id' => (int) $account->language_id,
             'fill_products' => (bool) $account->fill_products,
             'update_products' => (bool) $account->update_products,
-            'vat_number' => $account->vat_number
+            'vat_number' => $account->vat_number,
+            'custom_invoice_label1' => $account->custom_invoice_label1,
+            'custom_invoice_label2' => $account->custom_invoice_label2,
+            'custom_invoice_taxes1' => $account->custom_invoice_taxes1,
+            'custom_invoice_taxes2' => $account->custom_invoice_taxes1,
+            'custom_label1' => $account->custom_label1,
+            'custom_label2' => $account->custom_label2,
+            'custom_value1' => $account->custom_value1,
+            'custom_value2' => $account->custom_value2
         ];
     }
 }

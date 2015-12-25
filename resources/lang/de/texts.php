@@ -410,7 +410,7 @@ return array(
     'user_management' => 'Benutzerverwaltung',
     'add_user' => 'Benutzer hinzufügen',
     'send_invite' => 'Einladung senden',
-    'sent_invite' => 'Einladung erfolgreich gesendet',
+    'sent_invite' => 'Einladung erfolgreich versendet',
     'updated_user' => 'Benutzer erfolgreich aktualisiert',
     'invitation_message' => 'Du wurdest von :invitor eingeladen.',
     'register_to_add_user' => 'Bitte registrieren, um einen Benutzer hinzuzufügen',
@@ -443,7 +443,7 @@ return array(
     'share_invoice_counter' => 'Zähler der Rechnung teilen',
     'invoice_issued_to' => 'Rechnung ausgestellt für',
     'invalid_counter' => 'Bitte setze, um Probleme zu vermeiden, entweder ein Rechnungs- oder Angebotspräfix.',
-    'mark_sent' => 'Als gesendet markieren',
+    'mark_sent' => 'Als versendet markieren',
 
     'gateway_help_1' => ':link um sich bei Authorize.net anzumelden.',
     'gateway_help_2' => ':link um sich bei Authorize.net anzumelden.',
@@ -458,7 +458,7 @@ return array(
     'more_designs_self_host_text' => '',
     'buy' => 'Kaufen',
     'bought_designs' => 'Die zusätzliche Rechnungsdesigns wurden erfolgreich hinzugefügt',
-    'sent' => 'gesendet',
+    'sent' => 'versendet',
 
     'vat_number' => 'USt-IdNr.',
     'timesheets' => 'Zeittabellen',
@@ -583,7 +583,7 @@ return array(
     'notification_quote_approved_subject' => 'Angebot :invoice wurde von :client angenommen.',
     'notification_quote_approved' => 'Der folgende Kunde :client nahm das Angebot :invoice über :amount an.',
     'resend_confirmation' => 'Bestätigungsmail erneut senden',
-    'confirmation_resent' => 'Bestätigungsemail wurde erneut gesendet',
+    'confirmation_resent' => 'Bestätigungsemail wurde erneut versendet',
 
     'gateway_help_42' => ':link zum Registrieren auf BitPay.<br/>Hinweis: benutze einen Legacy API Key, keinen API token.',
     'payment_type_credit_card' => 'Kreditkarte',
@@ -704,7 +704,7 @@ return array(
     'or' => 'oder',
 
     'email_error' => 'Es gab ein Problem beim Senden dieses E-Mails.',
-    'confirm_recurring_timing' => 'Beachten Sie: E-Mails werden zu Beginn der Stunde gesendet.',
+    'confirm_recurring_timing' => 'Beachten Sie: E-Mails werden zu Beginn der Stunde versendet.',
     'old_browser' => 'Bitte verwenden Sie einen <a href="'.OUTDATE_BROWSER_URL.'" target="_blank">neueren Browser</a>',
     'payment_terms_help' => 'Setzt das Standardfälligkeitsdatum',
     'unlink_account' => 'Konten trennen',
@@ -772,7 +772,7 @@ return array(
 
     'auto_bill' => 'Auto-Rechnung',
     'military_time' => '24-Stunden-Zeit',
-    'last_sent' => 'Zuletzt gesendet',
+    'last_sent' => 'Zuletzt versendet',
 
     'reminder_emails' => 'Erinnerungs-Emails',
     'templates_and_reminders' => 'Vorlagen & Erinnerungen',
@@ -952,4 +952,35 @@ return array(
     'secret_key' => 'Secret Key',
     'missing_publishable_key' => 'Set your Stripe publishable key for an improved checkout process',
 
+    'email_design' => 'Email Design',
+    'due_by' => 'Due by :date',
+    'enable_email_markup' => 'Enable Markup',
+    'enable_email_markup_help' => 'Make it easier for your clients to pay you by adding schema.org markup to your emails.',
+    'template_help_title' => 'Templates Help',
+    'template_help_1' => 'Available variables:',
+    'email_design_id' => 'Email Style',
+    'email_design_help' => 'Make your emails look more professional with HTML layouts',
+    'plain' => 'Plain',
+    'light' => 'Light',
+    'dark' => 'Dark',
+
+    'industry_help' => 'Used to provide comparisons against the averages of companies of similar size and industry.',
+    'subdomain_help' => 'Customize the invoice link subdomain or display the invoice on your own website.',
+    'invoice_number_help' => 'Specify a prefix or use a custom pattern to dynamically set the invoice number.',
+    'quote_number_help' => 'Specify a prefix or use a custom pattern to dynamically set the quote number.',
+    'custom_client_fields_helps' => 'Add a text input to the client create/edit page and display the label and value on the PDF.',
+    'custom_account_fields_helps' => 'Add a label and value to the company details section of the PDF.',
+    'custom_invoice_fields_helps' => 'Add a text input to the invoice create/edit page and display the label and value on the PDF.',
+    'custom_invoice_charges_helps' => 'Add a text input to the invoice create/edit page and include the charge in the invoice subtotals.',
+    'color_help' => 'Note: the primary color is also used in the client portal and custom email designs.',
+
+    'token_expired' => 'Validation token was expired. Please try again.',
+    'invoice_link' => 'Invoice Link',
+    'button_confirmation_message' => 'Click to confirm your email address.',
+    'confirm' => 'Confirm',
+    'email_preferences' => 'Email Preferences',
+    'created_invoices' => 'Successfully created :count invoice(s)',
+    'next_invoice_number' => 'The next invoice number is :number.',
+    'next_quote_number' => 'The next quote number is :number.',
+    
 );

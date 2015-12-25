@@ -3,6 +3,7 @@
 @section('head')
 	@parent
 
+    @include('money_script')
 		<script src="{{ asset('js/pdf.built.js') }}" type="text/javascript"></script>
 
 @stop
@@ -119,7 +120,8 @@
                             ->step('1') !!}
 
                       {!! Former::text('primary_color') !!}
-                      {!! Former::text('secondary_color') !!}
+                      {!! Former::text('secondary_color')
+                                ->help('<br/>'.trans('texts.color_help')) !!}
 
                     </div>
                 </div>

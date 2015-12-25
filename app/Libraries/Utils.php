@@ -7,6 +7,7 @@ use App;
 use Schema;
 use Session;
 use Request;
+use Exception;
 use View;
 use DateTimeZone;
 use Input;
@@ -35,7 +36,7 @@ class Utils
             if (Schema::hasTable('accounts')) {
                 return true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -198,6 +199,10 @@ class Utils
 
     public static function logError($error, $context = 'PHP')
     {
+        if ($error instanceof Exception) {
+            $error = self::getErrorString($error);
+        }
+
         $count = Session::get('error_count', 0);
         Session::put('error_count', ++$count);
         if ($count > 100) {
@@ -239,31 +244,54 @@ class Utils
         return intval($value);
     }
 
-    public static function formatMoney($value, $currencyId = false, $showSymbol = true)
+    public static function getFromCache($id, $type) {
+        $data = Cache::get($type)->filter(function($item) use ($id) {
+            return $item->id == $id;
+        });
+        
+        return $data->first();
+    }
+
+    public static function formatMoney($value, $currencyId = false, $countryId = false, $hideSymbol = false)
     {
-        if (!$currencyId) {
-            $currencyId = Session::get(SESSION_CURRENCY, DEFAULT_CURRENCY);
-        }
-
-        foreach (Cache::get('currencies') as $currency) {
-            if ($currency->id == $currencyId) {
-                break;
-            }
-        }
-
-        if (!$currency) {
-            $currency = Currency::find(1);
-        }
-
         if (!$value) {
             $value = 0;
         }
 
-        $str = '';
-        if ($showSymbol) {
-            $str .= $currency->symbol;
+        if (!$currencyId) {
+            $currencyId = Session::get(SESSION_CURRENCY, DEFAULT_CURRENCY);
         }
-        return $str . number_format($value, $currency->precision, $currency->decimal_separator, $currency->thousand_separator);
+
+        if (!$countryId && Auth::check()) {
+            $countryId = Auth::user()->account->country_id;
+        }
+
+        $currency = self::getFromCache($currencyId, 'currencies');
+        $thousand = $currency->thousand_separator;
+        $decimal = $currency->decimal_separator;
+        $swapSymbol = false;
+
+        if ($countryId && $currencyId == CURRENCY_EURO) {
+            $country = self::getFromCache($countryId, 'countries');
+            $swapSymbol = $country->swap_currency_symbol;
+            if ($country->thousand_separator) {
+                $thousand = $country->thousand_separator;
+            }
+            if ($country->decimal_separator) {
+                $decimal = $country->decimal_separator;
+            }
+        }
+
+        $value = number_format($value, $currency->precision, $decimal, $thousand);
+        $symbol = $currency->symbol;
+
+        if ($hideSymbol) {
+            return $value;
+        } elseif ($swapSymbol) {
+            return "{$value} " . trim($symbol);
+        } else {
+            return "{$symbol}{$value}";
+        }
     }
 
     public static function pluralize($string, $count)
@@ -279,9 +307,19 @@ class Utils
         return json_decode(json_encode((array) $data), true);
     }
 
-    public static function toSpaceCase($camelStr)
+    public static function toSpaceCase($string)
     {
-        return preg_replace('/([a-z])([A-Z])/s', '$1 $2', $camelStr);
+        return preg_replace('/([a-z])([A-Z])/s', '$1 $2', $string);
+    }
+
+    public static function toSnakeCase($string)
+    {
+        return preg_replace('/([a-z])([A-Z])/s', '$1_$2', $string);
+    }
+
+    public static function toCamelCase($string)
+    {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $string))));
     }
 
     public static function timestampToDateTimeString($timestamp)
@@ -646,7 +684,7 @@ class Utils
 
     public static function isEmpty($value)
     {
-        return !$value || $value == '0.00' || $value == '0,00';
+        return !$value || $value == '0' || $value == '0.00' || $value == '0,00';
     }
 
     public static function startsWith($haystack, $needle)
@@ -764,7 +802,7 @@ class Utils
     public static function decodePDF($string)
     {
         $string = str_replace('data:application/pdf;base64,', '', $string);
-        return  base64_decode($string);
+        return base64_decode($string);
     }
 
     public static function cityStateZip($city, $state, $postalCode, $swap)
@@ -804,10 +842,10 @@ class Utils
         return link_to($link, $title, array('target' => '_blank'));
     }
 
-    public static function wrapAdjustment($adjustment, $currencyId)
+    public static function wrapAdjustment($adjustment, $currencyId, $countryId)
     {
         $class = $adjustment <= 0 ? 'success' : 'default';
-        $adjustment = Utils::formatMoney($adjustment, $currencyId);
+        $adjustment = Utils::formatMoney($adjustment, $currencyId, $countryId);
         return "<h4><div class=\"label label-{$class}\">$adjustment</div></h4>";
     }
 
@@ -848,5 +886,14 @@ class Utils
         $interval = $today->diff($datePaid);
 
         return $interval->y == 0;
+    }
+
+    public static function addHttp($url)
+    {
+        if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+            $url = "http://" . $url;
+        }
+        
+        return $url;
     }
 }

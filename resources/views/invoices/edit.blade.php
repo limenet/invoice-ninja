@@ -3,6 +3,7 @@
 @section('head')
 	@parent
 
+    @include('money_script')
 	<script src="{{ asset('js/pdf.built.js') }}" type="text/javascript"></script>
 
     <style type="text/css">
@@ -87,11 +88,13 @@
 							<span data-bind="html: email.display"></span> 
                         </label>
                         <span data-bind="html: $data.view_as_recipient"></span>&nbsp;&nbsp;
+                        @if (Utils::isConfirmed())
                         <span style="vertical-align:text-top;color:red" class="fa fa-exclamation-triangle" 
                                 data-bind="visible: $data.email_error, tooltip: {title: $data.email_error}"></span>
                         <span style="vertical-align:text-top" class="glyphicon glyphicon-info-sign" 
                                 data-bind="visible: $data.invitation_status, tooltip: {title: $data.invitation_status, html: true}, 
                                 style: {color: $data.hasOwnProperty('invitation_viewed') &amp;&amp; $data.invitation_viewed() ? '#57D172':'#B1B5BA'}"></span>
+                        @endif
 					</div>
 				</div>
 			</div>
@@ -172,10 +175,10 @@
 		<thead>
 			<tr>
 				<th style="min-width:32px;" class="hide-border"></th>
-				<th style="min-width:160px" data-bind="text: productLabel"></th>
+				<th style="min-width:160px">{{ $invoiceLabels['item'] }}</th>
 				<th style="width:100%">{{ $invoiceLabels['description'] }}</th>
-				<th style="min-width:120px" data-bind="text: costLabel"></th>
-				<th style="{{ $account->hide_quantity ? 'display:none' : 'min-width:120px' }}" data-bind="text: qtyLabel"></th>
+				<th style="min-width:120px" data-bind="text: costLabel">{{ $invoiceLabels['unit_cost'] }}</th>
+				<th style="{{ $account->hide_quantity ? 'display:none' : 'min-width:120px' }}" data-bind="text: qtyLabel">{{ $invoiceLabels['quantity'] }}</th>
 				<th style="min-width:120px;display:none;" data-bind="visible: $root.invoice_item_taxes.show">{{ trans('texts.tax') }}</th>
 				<th style="min-width:120px;">{{ trans('texts.line_total') }}</th>
 				<th style="min-width:32px;" class="hide-border"></th>
@@ -185,7 +188,6 @@
 			<tr data-bind="event: { mouseover: showActions, mouseout: hideActions }" class="sortable-row">
 				<td class="hide-border td-icon">
 					<i style="display:none" data-bind="visible: actionsVisible() &amp;&amp;
-                        $index() < ($parent.invoice_items().length - 1) &amp;&amp;
                         $parent.invoice_items().length > 1" class="fa fa-sort"></i>
 				</td>
 				<td>
@@ -352,7 +354,7 @@
 				</tr>
 			@endif
 
-			<tr>
+			<tr style="font-size:1.05em">
 				<td class="hide-border" colspan="3"/>
 				<td class="hide-border" style="display:none" data-bind="visible: $root.invoice_item_taxes.show"/>
 				<td class="hide-border" colspan="{{ $account->hide_quantity ? 1 : 2 }}"><b>{{ trans($entityType == ENTITY_INVOICE ? 'texts.balance_due' : 'texts.total') }}</b></td>
@@ -488,7 +490,7 @@
                     {!! Former::select('client[country_id]')
                             ->label(trans('texts.country_id'))
                             ->addOption('','')->addGroupClass('country_select')
-                            ->fromQuery($countries, 'name', 'id')->data_bind("dropdown: country_id") !!}
+                            ->fromQuery(Cache::get('countries'), 'name', 'id')->data_bind("dropdown: country_id") !!}
                 </span>
 
             </div>
@@ -607,7 +609,6 @@
 	
     var products = {!! $products !!};
     var clients = {!! $clients !!}; 
-    var countries = {!! $countries !!};
     var account = {!! Auth::user()->account !!};
 
     var clientMap = {};
@@ -674,16 +675,15 @@
                 var tasks = {!! $tasks !!};
                 
                 for (var i=0; i<tasks.length; i++) {
-                    var task = tasks[i];                    
+                    var task = tasks[i];
                     var item = model.invoice().addItem();
                     item.notes(task.description);
-                    item.product_key(task.startTime);
                     item.qty(task.duration);
                     item.task_public_id(task.publicId);
-                }        
+                }
                 model.invoice().invoice_items.push(blank);
                 model.invoice().has_tasks(true);
-            @endif        
+            @endif
         @endif
 
         model.invoice().tax(model.getTaxRate(model.invoice().tax_name(), model.invoice().tax_rate()));
@@ -825,7 +825,9 @@
 					var product = products[i];
 					if (product.product_key == key) {
 						var model = ko.dataFor(this);
-                        model.notes(product.notes);
+                        if (product.notes) {
+                            model.notes(product.notes);
+                        }
                         model.cost(accounting.toFixed(product.cost,2));
                         if (!model.qty()) {
 						  model.qty(1);
@@ -859,10 +861,10 @@
 
         @if (!$invoice->id)
             if (!invoice.terms) {
-                invoice.terms = wordWrapText('{!! str_replace(["\r\n","\r","\n"], '\n', addslashes($account->{"{$entityType}_terms"})) !!}', 300);
+                invoice.terms = account['{{ $entityType }}_terms'];
             }
             if (!invoice.invoice_footer) {
-                invoice.invoice_footer = wordWrapText('{!! str_replace(["\r\n","\r","\n"], '\n', addslashes($account->invoice_footer)) !!}', 600);
+                invoice.invoice_footer = account['invoice_footer'];
             }
         @endif
 
@@ -872,9 +874,9 @@
 			invoice.imageHeight = {{ $account->getLogoHeight() }};
 		@endif
 
-        invoiceLabels.item = invoice.has_tasks ? invoiceLabels.date : invoiceLabels.item_orig;
+        //invoiceLabels.item = invoice.has_tasks ? invoiceLabels.date : invoiceLabels.item_orig;
         invoiceLabels.quantity = invoice.has_tasks ? invoiceLabels.hours : invoiceLabels.quantity_orig;
-        invoiceLabels.unit_cost = invoice.has_tasks ? invoiceLabels.rate : invoiceLabels.unit_cost_orig;        
+        invoiceLabels.unit_cost = invoice.has_tasks ? invoiceLabels.rate : invoiceLabels.unit_cost_orig;
 
         return invoice;
 	}
@@ -1129,8 +1131,8 @@
             return;
         @endif
         var number = '{{ $account->getNumberPattern($invoice) }}';
-        number = number.replace('{$custom1}', client.custom_value1);
-        number = number.replace('{$custom2}', client.custom_value2);
+        number = number.replace('{$custom1}', client.custom_value1 ? client.custom_value1 : '');
+        number = number.replace('{$custom2}', client.custom_value2 ? client.custom_value1 : '');
         model.invoice().invoice_number(number);
     }
 

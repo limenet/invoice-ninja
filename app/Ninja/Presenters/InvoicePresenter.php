@@ -15,12 +15,27 @@ class InvoicePresenter extends Presenter {
         return $this->entity->user->getDisplayName();
     }
 
-    public function balance_due()
+    public function balanceDueLabel()
     {
-        $amount = $this->entity->getRequestedAmount();
-        $currencyId = $this->entity->client->currency_id;
+        if ($this->entity->partial) {
+            return 'amount_due';
+        } elseif ($this->entity->is_quote) {
+            return 'total';
+        } else {
+            return 'balance_due';
+        }
+    }
 
-        return Utils::formatMoney($amount, $currencyId);
+    // https://schema.org/PaymentStatusType
+    public function paymentStatus()
+    {
+        if ( ! $this->entity->balance) {
+            return 'PaymentComplete';
+        } elseif ($this->entity->isOverdue()) {
+            return 'PaymentPastDue';
+        } else {
+            return 'PaymentDue';
+        }
     }
 
     public function status()
@@ -28,32 +43,6 @@ class InvoicePresenter extends Presenter {
         $status = $this->entity->invoice_status ? $this->entity->invoice_status->name : 'draft';
         $status = strtolower($status);
         return trans("texts.status_{$status}");
-    }
-
-    public function balance()
-    {
-        $amount = $this->entity->balance;
-        $currencyId = $this->entity->client->currency_id;
-
-        return Utils::formatMoney($amount, $currencyId);
-    }
-
-    public function amount()
-    {
-        $amount = $this->entity->amount;
-        $currencyId = $this->entity->client->currency_id;
-
-        return Utils::formatMoney($amount, $currencyId);
-    }
-
-    public function discount()
-    {
-        if ($this->entity->is_amount_discount) {
-            $currencyId = $this->entity->client->currency_id;
-            return Utils::formatMoney($this->entity->discount, $currencyId);
-        } else {
-            return $this->entity->discount . '%';
-        }
     }
 
     public function invoice_date()

@@ -11,7 +11,7 @@
 |
 */
 
-//Cache::flush();
+//Crypt::decrypt();
 //apc_clear_cache();
 //dd(DB::getQueryLog());
 //dd(Client::getPrivateId(1));
@@ -25,13 +25,6 @@ Route::get('/setup', 'AppController@showSetup');
 Route::post('/setup', 'AppController@doSetup');
 Route::get('/install', 'AppController@install');
 Route::get('/update', 'AppController@update');
-
-/*
-// Codeception code coverage
-Route::get('/c3.php', function () {
-    include '../c3.php';
-});
-*/
 
 // Public pages
 Route::get('/', 'HomeController@showIndex');
@@ -69,7 +62,6 @@ Route::get('/auth_unlink', 'Auth\AuthController@authUnlink');
 
 Route::post('/hook/email_bounced', 'AppController@emailBounced');
 Route::post('/hook/email_opened', 'AppController@emailOpened');
-
 
 // Laravel auth routes
 get('/signup', array('as' => 'signup', 'uses' => 'Auth\AuthController@getRegister'));
@@ -253,6 +245,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('ENTITY_CONTACT', 'contact');
     define('ENTITY_INVOICE', 'invoice');
     define('ENTITY_INVOICE_ITEMS', 'invoice_items');
+    define('ENTITY_INVITATION', 'invitation');
     define('ENTITY_RECURRING_INVOICE', 'recurring_invoice');
     define('ENTITY_PAYMENT', 'payment');
     define('ENTITY_CREDIT', 'credit');
@@ -284,6 +277,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('ACCOUNT_ADVANCED_SETTINGS', 'advanced_settings');
     define('ACCOUNT_INVOICE_SETTINGS', 'invoice_settings');
     define('ACCOUNT_INVOICE_DESIGN', 'invoice_design');
+    define('ACCOUNT_EMAIL_SETTINGS', 'email_settings');
     define('ACCOUNT_CHARTS_AND_REPORTS', 'charts_and_reports');
     define('ACCOUNT_USER_MANAGEMENT', 'user_management');
     define('ACCOUNT_DATA_VISUALIZATIONS', 'data_visualizations');
@@ -339,7 +333,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('MAX_SUBDOMAIN_LENGTH', 30);
     define('MAX_IFRAME_URL_LENGTH', 250);
     define('MAX_LOGO_FILE_SIZE', 200); // KB
-    define('MAX_FAILED_LOGINS', 5);
+    define('MAX_FAILED_LOGINS', 10);
     define('DEFAULT_FONT_SIZE', 9);
     define('DEFAULT_SEND_RECURRING_HOUR', 8);
 
@@ -356,7 +350,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('MAX_NUM_CLIENTS', 100);
     define('MAX_NUM_CLIENTS_PRO', 20000);
     define('MAX_NUM_CLIENTS_LEGACY', 500);
-    define('MAX_INVOICE_AMOUNT', 10000000);
+    define('MAX_INVOICE_AMOUNT', 1000000000);
     define('LEGACY_CUTOFF', 57800);
     define('ERROR_DELAY', 3);
 
@@ -390,8 +384,12 @@ if (!defined('CONTACT_EMAIL')) {
     define('SESSION_LAST_REQUEST_PAGE', 'SESSION_LAST_REQUEST_PAGE');
     define('SESSION_LAST_REQUEST_TIME', 'SESSION_LAST_REQUEST_TIME');
 
+    define('CURRENCY_DOLLAR', 1);
+    define('CURRENCY_EURO', 3);
+
     define('DEFAULT_TIMEZONE', 'US/Eastern');
-    define('DEFAULT_CURRENCY', 1); // US Dollar
+    define('DEFAULT_COUNTRY', 840); // United Stated
+    define('DEFAULT_CURRENCY', CURRENCY_DOLLAR);
     define('DEFAULT_LANGUAGE', 1); // English
     define('DEFAULT_DATE_FORMAT', 'M j, Y');
     define('DEFAULT_DATE_PICKER_FORMAT', 'M d, yyyy');
@@ -435,8 +433,12 @@ if (!defined('CONTACT_EMAIL')) {
     define('NINJA_GATEWAY_CONFIG', 'NINJA_GATEWAY_CONFIG');
     define('NINJA_WEB_URL', 'https://www.invoiceninja.com');
     define('NINJA_APP_URL', 'https://app.invoiceninja.com');
-    define('NINJA_VERSION', '2.4.7');
+    define('NINJA_VERSION', '2.4.8');
     define('NINJA_DATE', '2000-01-01');
+
+    define('SOCIAL_LINK_FACEBOOK', 'https://www.facebook.com/invoiceninja');
+    define('SOCIAL_LINK_TWITTER', 'https://twitter.com/invoiceninja');
+    define('SOCIAL_LINK_GITHUB', 'https://github.com/invoiceninja/invoiceninja/');
 
     define('NINJA_FROM_EMAIL', 'maildelivery@invoiceninja.com');
     define('RELEASES_URL', 'https://trello.com/b/63BbiVVe/invoice-ninja');
@@ -446,6 +448,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('PHANTOMJS_CLOUD', 'http://api.phantomjscloud.com/api/browser/v2/');
     define('PHP_DATE_FORMATS', 'http://php.net/manual/en/function.date.php');
     define('REFERRAL_PROGRAM_URL', 'https://www.invoiceninja.com/referral-program/');
+    define('EMAIL_MARKUP_URL', 'https://developers.google.com/gmail/markup');
 
     define('COUNT_FREE_DESIGNS', 4);
     define('COUNT_FREE_DESIGNS_SELF_HOST', 5); // include the custom design
@@ -498,6 +501,9 @@ if (!defined('CONTACT_EMAIL')) {
     define('API_SERIALIZER_ARRAY', 'array');
     define('API_SERIALIZER_JSON', 'json');
 
+    define('EMAIL_DESIGN_PLAIN', 1);
+    define('FLAT_BUTTON_CSS', 'border:0 none;border-radius:6px;padding:12px 40px;margin:0 6px;cursor:hand;display:inline-block;font-size:14px;color:#fff;text-transform:none');
+
     $creditCards = [
                 1 => ['card' => 'images/credit_cards/Test-Visa-Icon.png', 'text' => 'Visa'],
                 2 => ['card' => 'images/credit_cards/Test-MasterCard-Icon.png', 'text' => 'Master Card'],
@@ -522,7 +528,6 @@ if (!defined('CONTACT_EMAIL')) {
         'invoiceStatus' => 'App\Models\InvoiceStatus',
         'frequencies' => 'App\Models\Frequency',
         'gateways' => 'App\Models\Gateway',
-        'themes' => 'App\Models\Theme',
     ];
     define('CACHED_TABLES', serialize($cachedTables));
 

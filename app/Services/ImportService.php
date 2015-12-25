@@ -9,6 +9,7 @@ use parsecsv;
 use Session;
 use Validator;
 use League\Fractal\Manager;
+use App\Ninja\Repositories\ContactRepository;
 use App\Ninja\Repositories\ClientRepository;
 use App\Ninja\Repositories\InvoiceRepository;
 use App\Ninja\Repositories\PaymentRepository;
@@ -21,9 +22,11 @@ class ImportService
     protected $transformer;
     protected $invoiceRepo;
     protected $clientRepo;
+    protected $contactRepo;
 
     public static $entityTypes = [
         ENTITY_CLIENT,
+        ENTITY_CONTACT,
         ENTITY_INVOICE,
         ENTITY_TASK,
     ];
@@ -32,15 +35,15 @@ class ImportService
         IMPORT_CSV,
         IMPORT_FRESHBOOKS,
         //IMPORT_HARVEST,
-        //IMPORT_HIVEAGE,
-        //IMPORT_INVOICEABLE,
-        //IMPORT_NUTCACHE,
-        //IMPORT_RONIN,
-        //IMPORT_WAVE,
-        //IMPORT_ZOHO,
+        IMPORT_HIVEAGE,
+        IMPORT_INVOICEABLE,
+        IMPORT_NUTCACHE,
+        IMPORT_RONIN,
+        IMPORT_WAVE,
+        IMPORT_ZOHO,
     ];
 
-    public function __construct(Manager $manager, ClientRepository $clientRepo, InvoiceRepository $invoiceRepo, PaymentRepository $paymentRepo)
+    public function __construct(Manager $manager, ClientRepository $clientRepo, InvoiceRepository $invoiceRepo, PaymentRepository $paymentRepo, ContactRepository $contactRepo)
     {
         $this->fractal = $manager;
         $this->fractal->setSerializer(new ArraySerializer());
@@ -48,40 +51,49 @@ class ImportService
         $this->clientRepo = $clientRepo;
         $this->invoiceRepo = $invoiceRepo;
         $this->paymentRepo = $paymentRepo;
+        $this->contactRepo = $contactRepo;
     }
 
     public function import($source, $files)
     {
+        $results = [];
         $imported_files = null;
 
         foreach ($files as $entityType => $file) {
-            $this->execute($source, $entityType, $file);
+            $results[$entityType] = $this->execute($source, $entityType, $file);
         }
+        
+        return $results;
     }
 
     private function execute($source, $entityType, $file)
     {
-        $skipped = [];
+        $results = [
+            RESULT_SUCCESS => [],
+            RESULT_FAILURE => [],
+        ];
 
-        Excel::load($file, function ($reader) use ($source, $entityType, $skipped) {
+        Excel::load($file, function ($reader) use ($source, $entityType, &$results) {
             $this->checkData($entityType, count($reader->all()));
             $maps = $this->createMaps();
 
-            $reader->each(function ($row) use ($source, $entityType, $maps) {
+            $reader->each(function ($row) use ($source, $entityType, $maps, &$results) {
                 $result = $this->saveData($source, $entityType, $row, $maps);
 
-                if ( ! $result) {
-                    $skipped[] = $row;
+                if ($result) {
+                    $results[RESULT_SUCCESS][] = $result;
+                } else {
+                    $results[RESULT_FAILURE][] = $row;
                 }
             });
         });
 
-        return $skipped;
+        return $results;
     }
 
     private function saveData($source, $entityType, $row, $maps)
     {
-        $transformer = $this->getTransformer($source, $entityType);
+        $transformer = $this->getTransformer($source, $entityType, $maps);
         $resource = $transformer->transform($row, $maps);
 
         if (!$resource) {
@@ -97,16 +109,18 @@ class ImportService
             $data['invoice_number'] = $account->getNextInvoiceNumber($invoice);
         }
 
-        if ($this->validate($data, $entityType) !== true) {
+        if ($this->validate($source, $data, $entityType) !== true) {
             return;
         }
 
         $entity = $this->{"{$entityType}Repo"}->save($data);
 
         // if the invoice is paid we'll also create a payment record
-        if ($entityType === ENTITY_INVOICE && isset($row->paid) && $row->paid) {
-            $this->createPayment($source, $row, $maps, $data['client_id'], $entity->public_id);
+        if ($entityType === ENTITY_INVOICE && isset($data['paid']) && $data['paid'] > 0) {
+            $this->createPayment($source, $row, $maps, $data['client_id'], $entity->id);
         }
+
+        return $entity;
     }
 
     private function checkData($entityType, $count)
@@ -129,16 +143,16 @@ class ImportService
         return 'App\\Ninja\\Import\\'.$source.'\\'.ucwords($entityType).'Transformer';
     }
 
-    public static function getTransformer($source, $entityType)
+    public static function getTransformer($source, $entityType, $maps)
     {
         $className = self::getTransformerClassName($source, $entityType);
 
-        return new $className();
+        return new $className($maps);
     }
 
     private function createPayment($source, $data, $maps, $clientId, $invoiceId)
     {
-        $paymentTransformer = $this->getTransformer($source, ENTITY_PAYMENT);
+        $paymentTransformer = $this->getTransformer($source, ENTITY_PAYMENT, $maps);
 
         $data->client_id = $clientId;
         $data->invoice_id = $invoiceId;
@@ -149,9 +163,10 @@ class ImportService
         }
     }
 
-    private function validate($data, $entityType)
+    private function validate($source, $data, $entityType)
     {
-        if ($entityType === ENTITY_CLIENT) {
+        // Harvest's contacts are listed separately
+        if ($entityType === ENTITY_CLIENT && $source != IMPORT_HARVEST) {
             $rules = [
                 'contacts' => 'valid_contacts',
             ];
@@ -183,25 +198,39 @@ class ImportService
         $clientMap = [];
         $clients = $this->clientRepo->all();
         foreach ($clients as $client) {
-            $clientMap[$client->name] = $client->public_id;
+            if ($name = strtolower(trim($client->name))) {
+                $clientMap[$name] = $client->id;
+            }
         }
 
         $invoiceMap = [];
         $invoices = $this->invoiceRepo->all();
         foreach ($invoices as $invoice) {
-            $invoiceMap[$invoice->invoice_number] = $invoice->public_id;
+            if ($number = strtolower(trim($invoice->invoice_number))) {
+                $invoiceMap[$number] = $invoice->id;
+            }
         }
 
         $countryMap = [];
+        $countryMap2 = [];
         $countries = Cache::get('countries');
         foreach ($countries as $country) {
-            $countryMap[$country->name] = $country->id;
+            $countryMap[strtolower($country->name)] = $country->id;
+            $countryMap2[strtolower($country->iso_3166_2)] = $country->id;
+        }
+
+        $currencyMap = [];
+        $currencies = Cache::get('currencies');
+        foreach ($currencies as $currency) {
+            $currencyMap[strtolower($currency->code)] = $currency->id;
         }
 
         return [
             ENTITY_CLIENT => $clientMap,
             ENTITY_INVOICE => $invoiceMap,
             'countries' => $countryMap,
+            'countries2' => $countryMap2,
+            'currencies' => $currencyMap,
         ];
     }
 
@@ -321,19 +350,21 @@ class ImportService
 
     public function importCSV($maps, $headers)
     {
-        $skipped = [];
+        $results = [];
 
         foreach ($maps as $entityType => $map) {
-            $result = $this->executeCSV($entityType, $map, $headers[$entityType]);
-            $skipped = array_merge($skipped, $result);
+            $results[$entityType] = $this->executeCSV($entityType, $map, $headers[$entityType]);
         }
 
-        return $skipped;
+        return $results;
     }
 
     private function executeCSV($entityType, $map, $hasHeaders)
     {
-        $skipped = [];
+        $results = [
+            RESULT_SUCCESS => [],
+            RESULT_FAILURE => [],
+        ];
         $source = IMPORT_CSV;
 
         $data = Session::get("{$entityType}-data");
@@ -349,14 +380,16 @@ class ImportService
             $row = $this->convertToObject($entityType, $row, $map);
             $result = $this->saveData($source, $entityType, $row, $maps);
 
-            if ( ! $result) {
-                $skipped[] = $row;
+            if ($result) {
+                $results[RESULT_SUCCESS][] = $result;
+            } else {
+                $results[RESULT_FAILURE][] = $row;
             }
         }
 
         Session::forget("{$entityType}-data");
 
-        return $skipped;
+        return $results;
     }
 
     private function convertToObject($entityType, $data, $map)

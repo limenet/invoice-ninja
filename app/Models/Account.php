@@ -5,6 +5,7 @@ use Utils;
 use Session;
 use DateTime;
 use Event;
+use Cache;
 use App;
 use File;
 use App\Events\UserSettingsChanged;
@@ -34,6 +35,7 @@ class Account extends Eloquent
     public static $advancedSettings = [
         ACCOUNT_INVOICE_SETTINGS,
         ACCOUNT_INVOICE_DESIGN,
+        ACCOUNT_EMAIL_SETTINGS,
         ACCOUNT_TEMPLATES_AND_REMINDERS,
         ACCOUNT_CHARTS_AND_REPORTS,
         ACCOUNT_DATA_VISUALIZATIONS,
@@ -185,6 +187,15 @@ class Account extends Eloquent
         return $format;
     }
 
+    public function getMomentDateFormat()
+    {
+        $format = $this->getMomentDateTimeFormat();
+        $format = str_replace('h:mm:ss a', '', $format);
+        $format = str_replace('H:mm:ss', '', $format);
+
+        return trim($format);
+    }
+
     public function getTimezone()
     {
         if ($this->timezone) {
@@ -204,10 +215,33 @@ class Account extends Eloquent
         return $this->date_format ? $this->date_format->format : DEFAULT_DATE_FORMAT;
     }
 
+    public function formatMoney($amount, $client = null, $hideSymbol = false)
+    {
+        if ($client && $client->currency_id) {
+            $currencyId = $client->currency_id;
+        } elseif ($this->currency_id) {
+            $currencyId = $this->currency_id;
+        } else {
+            $currencyId = DEFAULT_CURRENCY;
+        }
+
+        if ($client && $client->country_id) {
+            $countryId = $client->country_id;
+        } elseif ($this->country_id) {
+            $countryId = $this->country_id;
+        } else {
+            $countryId = false;
+        }
+
+        return Utils::formatMoney($amount, $currencyId, $countryId, $hideSymbol);
+    }
+
     public function formatDate($date)
     {
-        if (!$date) {
+        if ( ! $date) {
             return null;
+        } elseif ( ! $date instanceof \DateTime) {
+            $date = new \DateTime($date);
         }
 
         return $date->format($this->getCustomDateFormat());
@@ -215,11 +249,29 @@ class Account extends Eloquent
 
     public function formatDateTime($date)
     {
-        if (!$date) {
+        if ( ! $date) {
             return null;
+        } elseif ( ! $date instanceof \DateTime) {
+            $date = new \DateTime($date);
         }
 
         return $date->format($this->getCustomDateTimeFormat());
+    }
+
+    public function formatTime($date)
+    {
+        if ( ! $date) {
+            return null;
+        } elseif ( ! $date instanceof \DateTime) {
+            $date = new \DateTime($date);
+        }
+
+        return $date->format($this->getCustomTimeFormat());
+    }
+
+    public function getCustomTimeFormat()
+    {
+        return $this->military_time ? 'H:i' : 'g:i a';
     }
 
     public function getCustomDateTimeFormat()
@@ -407,6 +459,12 @@ class Account extends Eloquent
         return $isQuote && !$this->share_counter ? $this->quote_number_counter : $this->invoice_number_counter;
     }
 
+    public function previewNextInvoiceNumber($entityType = ENTITY_INVOICE)
+    {
+        $invoice = $this->createInvoice($entityType);
+        return $this->getNextInvoiceNumber($invoice);
+    }
+
     public function getNextInvoiceNumber($invoice)
     {
         if ($this->hasNumberPattern($invoice->is_quote)) {
@@ -419,7 +477,7 @@ class Account extends Eloquent
 
         // confirm the invoice number isn't already taken 
         do {
-            $number = $prefix.str_pad($counter, 4, '0', STR_PAD_LEFT);
+            $number = $prefix . str_pad($counter, 4, '0', STR_PAD_LEFT);
             $check = Invoice::scope(false, $this->id)->whereInvoiceNumber($number)->withTrashed()->first();
             $counter++;
             $counterOffset++;
@@ -518,7 +576,7 @@ class Account extends Eloquent
             'quote_number',
             'total',
             'invoice_issued_to',
-            'date',
+            //'date',
             'rate',
             'hours',
             'balance',
@@ -677,9 +735,9 @@ class Account extends Eloquent
             $entityType = ENTITY_INVOICE;
         }
 
-        $template = "<div>\$client,</div><br/>" .
-                    "<div>" . trans("texts.{$entityType}_message", ['amount' => '$amount']) . "</div><br/>" .
-                    "<div><a href=\"\$link\">\$link</a></div><br/>";
+        $template = "<div>\$client,</div><br>" .
+                    "<div>" . trans("texts.{$entityType}_message", ['amount' => '$amount']) . "</div><br>" .
+                    "<div>\$viewLink</div><br>";
 
         if ($message) {
             $template .= "$message<p/>\r\n\r\n";
@@ -690,16 +748,19 @@ class Account extends Eloquent
 
     public function getEmailTemplate($entityType, $message = false)
     {
+        $template = false;
+
         if ($this->isPro()) {
             $field = "email_template_{$entityType}";
             $template = $this->$field;
-
-            if ($template) {
-                return $template;
-            }
         }
         
-        return $this->getDefaultEmailTemplate($entityType, $message);
+        if (!$template) {
+            $template = $this->getDefaultEmailTemplate($entityType, $message);
+        }
+
+        // <br/> is causing page breaks with the email designs
+        return str_replace('/>', ' />', $template);
     }
 
     public function getEmailFooter()
@@ -708,7 +769,7 @@ class Account extends Eloquent
             // Add line breaks if HTML isn't already being used
             return strip_tags($this->email_footer) == $this->email_footer ? nl2br($this->email_footer) : $this->email_footer;
         } else {
-            return "<p>" . trans('texts.email_signature') . "\n<br>\$account</p>";
+            return "<p>" . trans('texts.email_signature') . "\n<br>\$account</ p>";
         }
     }
 

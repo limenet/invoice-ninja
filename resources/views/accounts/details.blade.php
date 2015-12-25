@@ -22,7 +22,7 @@
             ->addClass('warn-on-exit')
             ->autocomplete('on')
             ->rules([
-                'name' => 'required'
+                'name' => 'required',
             ]) !!}
 
 	{{ Former::populate($account) }}
@@ -41,6 +41,7 @@
                 {!! Former::text('name') !!}
                 {!! Former::text('id_number') !!}
                 {!! Former::text('vat_number') !!}
+                {!! Former::text('website') !!}
                 {!! Former::text('work_email') !!}
                 {!! Former::text('work_phone') !!}
                 {!! Former::file('logo')->max(2, 'MB')->accept('image')->inlineHelp(trans('texts.logo_help')) !!}
@@ -58,8 +59,14 @@
                 </div>
                 @endif
 
-                {!! Former::select('size_id')->addOption('','')->fromQuery($sizes, 'name', 'id') !!}
-                {!! Former::select('industry_id')->addOption('','')->fromQuery($industries, 'name', 'id') !!}
+                {!! Former::select('size_id')
+                        ->addOption('','')
+                        ->fromQuery($sizes, 'name', 'id') !!}
+
+                {!! Former::select('industry_id')
+                        ->addOption('','')
+                        ->fromQuery($industries, 'name', 'id')
+                        ->help('texts.industry_help') !!}
 
             </div>
         </div>
