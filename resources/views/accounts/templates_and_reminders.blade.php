@@ -33,11 +33,6 @@
         @endforeach
     @endforeach
 
-    {!! Former::populateField('enable_reminder1', intval($account->enable_reminder1)) !!}
-    {!! Former::populateField('enable_reminder2', intval($account->enable_reminder2)) !!}
-    {!! Former::populateField('enable_reminder3', intval($account->enable_reminder3)) !!}    
-
-
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">{!! trans('texts.email_templates') !!}</h3>
@@ -188,6 +183,17 @@
             $('.enable-reminder' + id).attr('disabled', !checked)
         }
 
+        function setDirectionShown(field) {
+            var val = $('#field_' + field).val();
+            if (val == {{ REMINDER_FIELD_INVOICE_DATE }}) {
+                $('#days_after_' + field).show();
+                $('#direction_' + field).hide();
+            } else {
+                $('#days_after_' + field).hide();
+                $('#direction_' + field).show();
+            }
+        }
+
         function processVariables(str) {
             if (!str) {
                 return '';
@@ -236,7 +242,9 @@
                 var fieldName = 'email_' + section + '_' + field;
                 var value = templates[field][section];
                 $('#' + fieldName).val(value);
-                editors[field].setHTML(value);
+                if (section == 'template') {
+                    editors[field].setHTML(value);
+                }
                 refreshPreview();
             }
 

@@ -22,12 +22,19 @@ class InvoiceTransformer extends EntityTransformer
 
     protected $defaultIncludes = [
         'invoice_items',
+        'payments'
     ];
     
     public function includeInvoiceItems(Invoice $invoice)
     {
         $transformer = new InvoiceItemTransformer($this->account, $this->serializer);
         return $this->includeCollection($invoice->invoice_items, $transformer, ENTITY_INVOICE_ITEMS);
+    }
+
+    public function includePayments(Invoice $invoice)
+    {
+        $transformer = new PaymentTransformer($this->account, $this->serializer);
+        return $this->includeCollection($invoice->payments, $transformer, ENTITY_PAYMENT);
     }
 
     public function transform(Invoice $invoice)
@@ -38,8 +45,8 @@ class InvoiceTransformer extends EntityTransformer
             'balance' => (float) $invoice->balance,
             'client_id' => (int) $invoice->client->public_id,
             'invoice_status_id' => (int) $invoice->invoice_status_id,
-            'updated_at' => $invoice->updated_at,
-            'deleted_at' => $invoice->deleted_at,
+            'updated_at' => $this->getTimestamp($invoice->updated_at),
+            'archived_at' => $this->getTimestamp($invoice->deleted_at),
             'invoice_number' => $invoice->invoice_number,
             'discount' => (double) $invoice->discount,
             'po_number' => $invoice->po_number,
@@ -48,6 +55,7 @@ class InvoiceTransformer extends EntityTransformer
             'terms' => $invoice->terms,
             'public_notes' => $invoice->public_notes,
             'is_deleted' => (bool) $invoice->is_deleted,
+            'is_quote' => (bool) $invoice->is_quote,
             'is_recurring' => (bool) $invoice->is_recurring,
             'frequency_id' => (int) $invoice->frequency_id,
             'start_date' => $invoice->start_date,
@@ -65,8 +73,8 @@ class InvoiceTransformer extends EntityTransformer
             'auto_bill' => (bool) $invoice->auto_bill,
             'account_key' => $this->account->account_key,
             'user_id' => (int) $invoice->user->public_id + 1,
-            'custom_value1' => $invoice->custom_value1,
-            'custom_value2' => $invoice->custom_value2,
+            'custom_value1' => (float) $invoice->custom_value1,
+            'custom_value2' => (float) $invoice->custom_value2,
             'custom_taxes1' => (bool) $invoice->custom_taxes1,
             'custom_taxes2' => (bool) $invoice->custom_taxes2,
         ];

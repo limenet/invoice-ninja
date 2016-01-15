@@ -143,7 +143,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('tasks/bulk', 'TaskController@bulk');
 
     Route::get('api/recurring_invoices/{client_id?}', array('as'=>'api.recurring_invoices', 'uses'=>'InvoiceController@getRecurringDatatable'));
-
+    
     Route::get('invoices/invoice_history/{invoice_id}', 'InvoiceController@invoiceHistory');
     Route::get('quotes/quote_history/{invoice_id}', 'InvoiceController@invoiceHistory');
 
@@ -201,6 +201,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'api/v1'], function()
     Route::resource('tasks', 'TaskApiController');
     Route::post('hooks', 'IntegrationController@subscribe');
     Route::post('email_invoice', 'InvoiceApiController@emailInvoice');
+    Route::get('user_accounts','AccountApiController@getUserAccounts');
 });
 
 // Redirects for legacy links
@@ -277,6 +278,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('ACCOUNT_ADVANCED_SETTINGS', 'advanced_settings');
     define('ACCOUNT_INVOICE_SETTINGS', 'invoice_settings');
     define('ACCOUNT_INVOICE_DESIGN', 'invoice_design');
+    define('ACCOUNT_CLIENT_PORTAL', 'client_portal');
     define('ACCOUNT_EMAIL_SETTINGS', 'email_settings');
     define('ACCOUNT_CHARTS_AND_REPORTS', 'charts_and_reports');
     define('ACCOUNT_USER_MANAGEMENT', 'user_management');
@@ -335,6 +337,8 @@ if (!defined('CONTACT_EMAIL')) {
     define('MAX_LOGO_FILE_SIZE', 200); // KB
     define('MAX_FAILED_LOGINS', 10);
     define('DEFAULT_FONT_SIZE', 9);
+    define('DEFAULT_HEADER_FONT', 1);// Roboto
+    define('DEFAULT_BODY_FONT', 1);// Roboto
     define('DEFAULT_SEND_RECURRING_HOUR', 8);
 
     define('IMPORT_CSV', 'CSV');
@@ -419,6 +423,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('GATEWAY_MOOLAH', 31);
     define('GATEWAY_BITPAY', 42);
     define('GATEWAY_DWOLLA', 43);
+    define('GATEWAY_CHECKOUT_COM', 47);
 
     define('EVENT_CREATE_CLIENT', 1);
     define('EVENT_CREATE_INVOICE', 2);
@@ -433,7 +438,7 @@ if (!defined('CONTACT_EMAIL')) {
     define('NINJA_GATEWAY_CONFIG', 'NINJA_GATEWAY_CONFIG');
     define('NINJA_WEB_URL', 'https://www.invoiceninja.com');
     define('NINJA_APP_URL', 'https://app.invoiceninja.com');
-    define('NINJA_VERSION', '2.4.8');
+    define('NINJA_VERSION', '2.4.9.5');
     define('NINJA_DATE', '2000-01-01');
 
     define('SOCIAL_LINK_FACEBOOK', 'https://www.facebook.com/invoiceninja');
@@ -488,6 +493,12 @@ if (!defined('CONTACT_EMAIL')) {
     define('REMINDER2', 'reminder2');
     define('REMINDER3', 'reminder3');
 
+    define('REMINDER_DIRECTION_AFTER', 1);
+    define('REMINDER_DIRECTION_BEFORE', 2);
+
+    define('REMINDER_FIELD_DUE_DATE', 1);
+    define('REMINDER_FIELD_INVOICE_DATE', 2);
+
     define('SOCIAL_GOOGLE', 'Google');
     define('SOCIAL_FACEBOOK', 'Facebook');
     define('SOCIAL_GITHUB', 'GitHub');
@@ -502,7 +513,8 @@ if (!defined('CONTACT_EMAIL')) {
     define('API_SERIALIZER_JSON', 'json');
 
     define('EMAIL_DESIGN_PLAIN', 1);
-    define('FLAT_BUTTON_CSS', 'border:0 none;border-radius:6px;padding:12px 40px;margin:0 6px;cursor:hand;display:inline-block;font-size:14px;color:#fff;text-transform:none');
+    define('EMAIL_DESIGN_LIGHT', 2);
+    define('EMAIL_DESIGN_DARK', 3);
 
     $creditCards = [
                 1 => ['card' => 'images/credit_cards/Test-Visa-Icon.png', 'text' => 'Visa'],
@@ -528,6 +540,7 @@ if (!defined('CONTACT_EMAIL')) {
         'invoiceStatus' => 'App\Models\InvoiceStatus',
         'frequencies' => 'App\Models\Frequency',
         'gateways' => 'App\Models\Gateway',
+        'fonts' => 'App\Models\Font',
     ];
     define('CACHED_TABLES', serialize($cachedTables));
 
@@ -551,8 +564,8 @@ if (!defined('CONTACT_EMAIL')) {
     }
 }
 
-// Log all SQL queries to laravel.log
 /*
+// Log all SQL queries to laravel.log
 if (Utils::isNinjaDev()) {
     Event::listen('illuminate.query', function($query, $bindings, $time, $name) {
         $data = compact('bindings', 'time', 'name');

@@ -76,6 +76,8 @@
       NINJA.primaryColor = "{{ $account->primary_color }}";
       NINJA.secondaryColor = "{{ $account->secondary_color }}";
       NINJA.fontSize = {{ $account->font_size }};
+      NINJA.headerFont = {!! json_encode($account->getHeaderFontName()) !!};
+      NINJA.bodyFont = {!! json_encode($account->getBodyFontName()) !!};
   @endif
   var invoiceLabels = {!! json_encode($account->getInvoiceLabels()) !!};
 
@@ -89,14 +91,15 @@
   var needsRefresh = false;
 
   function refreshPDF(force) {
+    //console.log('refresh PDF - force: ' + force + ' ' + (new Date()).getTime())
     return getPDFString(refreshPDFCB, force);
   }
   
   function refreshPDFCB(string) {
     if (!string) return;
     PDFJS.workerSrc = '{{ asset('js/pdf_viewer.worker.js') }}';
-    if ({{ Auth::check() && Auth::user()->force_pdfjs ? 'false' : 'true' }} && (isFirefox || (isChrome && !isChromium))) { 
-      $('#theFrame').attr('src', string).show();    
+    if ({{ Auth::check() && Auth::user()->force_pdfjs ? 'false' : 'true' }} && (isFirefox || isChrome)) { 
+      $('#theFrame').attr('src', string).show();
     } else {      
       if (isRefreshing) {
         //needsRefresh = true;

@@ -115,7 +115,7 @@ class TaskController extends BaseController
 
         $actions = [];
         if ($task->invoice) {
-            $actions[] = ['url' => URL::to("inovices/{$task->invoice->public_id}/edit"), 'label' => trans("texts.view_invoice")];
+            $actions[] = ['url' => URL::to("invoices/{$task->invoice->public_id}/edit"), 'label' => trans("texts.view_invoice")];
         } else {
             $actions[] = ['url' => 'javascript:submitAction("invoice")', 'label' => trans("texts.invoice_task")];
 
@@ -175,7 +175,7 @@ class TaskController extends BaseController
     {
         $action = Input::get('action');
 
-        if (in_array($action, ['archive', 'delete', 'invoice', 'restore', 'add_to_invoice'])) {
+        if (in_array($action, ['archive', 'delete', 'restore'])) {
             return self::bulk();
         }
 
@@ -189,6 +189,10 @@ class TaskController extends BaseController
 
         $task = $this->taskRepo->save($publicId, Input::all());
         Session::flash('message', trans($publicId ? 'texts.updated_task' : 'texts.created_task'));
+
+        if (in_array($action, ['invoice', 'add_to_invoice'])) {
+            return self::bulk();
+        }
 
         return Redirect::to("tasks/{$task->public_id}/edit");
     }

@@ -4,6 +4,9 @@
 	@parent
 
     @include('money_script')
+    @foreach ($account->getFontFolders() as $font)
+    <script src="{{ asset('js/vfs_fonts/'.$font.'.js') }}" type="text/javascript"></script>
+    @endforeach
 	<script src="{{ asset('js/pdf.built.js') }}" type="text/javascript"></script>
 
     <style type="text/css">
@@ -113,34 +116,17 @@
             @if ($entityType == ENTITY_INVOICE)
 			<div data-bind="visible: is_recurring" style="display: none">
 				{!! Former::select('frequency_id')->options($frequencies)->data_bind("value: frequency_id")
-                        ->appendIcon('question-sign')->addGroupClass('frequency_id') !!}
+                        ->appendIcon('question-sign')->addGroupClass('frequency_id')->onchange('onFrequencyChange()') !!}
 				{!! Former::text('start_date')->data_bind("datePicker: start_date, valueUpdate: 'afterkeydown'")
 							->data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT, DEFAULT_DATE_PICKER_FORMAT))->appendIcon('calendar')->addGroupClass('start_date') !!}
 				{!! Former::text('end_date')->data_bind("datePicker: end_date, valueUpdate: 'afterkeydown'")
 							->data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT, DEFAULT_DATE_PICKER_FORMAT))->appendIcon('calendar')->addGroupClass('end_date') !!}
+                {!! Former::select('recurring_due_date')->label(trans('texts.due_date'))->options($recurringDueDates)->data_bind("value: recurring_due_date")->appendIcon('question-sign')->addGroupClass('recurring_due_date') !!}
 			</div>
             @endif
 
             @if ($account->showCustomField('custom_invoice_text_label1', $invoice))
                 {!! Former::text('custom_text_value1')->label($account->custom_invoice_text_label1)->data_bind("value: custom_text_value1, valueUpdate: 'afterkeydown'") !!}
-            @endif
-
-            @if ($entityType == ENTITY_INVOICE)
-            <div class="form-group" style="margin-bottom: 8px">
-                <div class="col-lg-8 col-sm-8 col-sm-offset-4" style="padding-top: 10px">                    
-                	@if ($invoice->recurring_invoice)
-                        {!! trans('texts.created_by_invoice', ['invoice' => link_to('/invoices/'.$invoice->recurring_invoice->public_id, trans('texts.recurring_invoice'))]) !!}
-    				@elseif ($invoice->id)
-                        @if (isset($lastSent) && $lastSent)
-                            {!! trans('texts.last_sent_on', ['date' => link_to('/invoices/'.$lastSent->public_id, $invoice->last_sent_date, ['id' => 'lastSent'])]) !!} <br/>
-                        @endif
-                        @if ($invoice->is_recurring && $invoice->getNextSendDate())
-                            {!! trans('texts.next_send_on', ['date' => '<span data-bind="tooltip: {title: \''.$invoice->getPrettySchedule().'\', html: true}">'.$account->formatDate($invoice->getNextSendDate()).
-                                    '<span class="glyphicon glyphicon-info-sign" style="padding-left:10px;color:#B1B5BA"></span></span>']) !!}
-                        @endif
-                    @endif
-                </div>
-            </div>
             @endif
 		</div>
 
@@ -166,7 +152,30 @@
             @if ($account->showCustomField('custom_invoice_text_label2', $invoice))
                 {!! Former::text('custom_text_value2')->label($account->custom_invoice_text_label2)->data_bind("value: custom_text_value2, valueUpdate: 'afterkeydown'") !!}
             @endif
-
+            
+            @if ($entityType == ENTITY_INVOICE)
+            <div class="form-group" style="margin-bottom: 8px">
+                <div class="col-lg-8 col-sm-8 col-sm-offset-4" style="padding-top: 10px">                    
+                	@if ($invoice->recurring_invoice)
+                        {!! trans('texts.created_by_invoice', ['invoice' => link_to('/invoices/'.$invoice->recurring_invoice->public_id, trans('texts.recurring_invoice'))]) !!}
+    				@elseif ($invoice->id)
+                        <span class="smaller">
+                        @if (isset($lastSent) && $lastSent)
+                            {!! trans('texts.last_sent_on', ['date' => link_to('/invoices/'.$lastSent->public_id, $invoice->last_sent_date, ['id' => 'lastSent'])]) !!} <br/>
+                        @endif
+                        @if ($invoice->is_recurring && $invoice->getNextSendDate())
+                           {!! trans('texts.next_send_on', ['date' => '<span data-bind="tooltip: {title: \''.$invoice->getPrettySchedule().'\', html: true}">'.$account->formatDate($invoice->getNextSendDate()).
+                                '<span class="glyphicon glyphicon-info-sign" style="padding-left:10px;color:#B1B5BA"></span></span>']) !!}
+                            @if ($invoice->getDueDate())
+                                <br>
+                                {!! trans('texts.next_due_on', ['date' => '<span>'.$account->formatDate($invoice->getDueDate($invoice->getNextSendDate())).'</span>']) !!}
+                            @endif
+                        @endif
+                        </span>
+                    @endif
+                </div>
+            </div>
+            @endif
 		</div>
 	</div>
 
@@ -194,7 +203,6 @@
                 {!! Former::text('product_key')->useDatalist($products->toArray(), 'product_key')
                         ->data_bind("value: product_key, valueUpdate: 'afterkeydown', attr: {name: 'invoice_items[' + \$index() + '][product_key]'}")
                         ->addClass('datalist')
-                        ->onkeyup('onItemChange()')
                         ->raw()
                          !!}
 				</td>
@@ -204,12 +212,12 @@
                         <input type="text" data-bind="value: task_public_id, attr: {name: 'invoice_items[' + $index() + '][task_public_id]'}" style="display: none"/>
 				</td>
 				<td>
-					<input onkeyup="onItemChange()" data-bind="value: prettyCost, valueUpdate: 'afterkeydown', attr: {name: 'invoice_items[' + $index() + '][cost]'}" 
-                        style="text-align: right" class="form-control"/>
+					<input data-bind="value: prettyCost, valueUpdate: 'afterkeydown', attr: {name: 'invoice_items[' + $index() + '][cost]'}" 
+                        style="text-align: right" class="form-control invoice-item"/>
 				</td>
 				<td style="{{ $account->hide_quantity ? 'display:none' : '' }}">
-					<input onkeyup="onItemChange()" data-bind="value: prettyQty, valueUpdate: 'afterkeydown', attr: {name: 'invoice_items[' + $index() + '][qty]'}" 
-                        style="text-align: right" class="form-control" name="quantity"/>
+					<input data-bind="value: prettyQty, valueUpdate: 'afterkeydown', attr: {name: 'invoice_items[' + $index() + '][qty]'}" 
+                        style="text-align: right" class="form-control invoice-item" name="quantity"/>
 				</td>
 				<td style="display:none;" data-bind="visible: $root.invoice_item_taxes.show">
 					<select class="form-control" style="width:100%" data-bind="value: tax, options: $root.tax_rates, optionsText: 'displayName', attr: {name: 'invoice_items[' + $index() + '][tax]'}"></select>
@@ -385,6 +393,11 @@
             {!! Former::text('pdfupload') !!}
 		</div>
 
+        @if ($account->hasLargeFont())
+            <label for="livePreview" class="control-label" style="padding-right:10px">
+                <input id="livePreview" type="checkbox"/> {{ trans('texts.live_preview') }}
+            </label>
+        @endif
 
 		@if (!Utils::isPro() || \App\Models\InvoiceDesign::count() == COUNT_FREE_DESIGNS_SELF_HOST)
 			{!! Former::select('invoice_design_id')->style('display:inline;width:150px;background-color:white !important')->raw()->fromQuery($invoiceDesigns, 'name', 'id')->data_bind("value: invoice_design_id")->addOption(trans('texts.more_designs') . '...', '-1') !!}
@@ -590,6 +603,26 @@
 	    </div>
 	  </div>
 	</div>
+        
+    <div class="modal fade" id="recurringDueDateModal" tabindex="-1" role="dialog" aria-labelledby="recurringDueDateModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" style="min-width:150px">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	        <h4 class="modal-title" id="recurringDueDateModalLabel">{{ trans('texts.recurring_due_dates') }}</h4>
+	      </div>
+
+	    <div style="background-color: #fff; padding-left: 16px; padding-right: 16px">
+	    	&nbsp; {!! isset($recurringDueDateHelp) ? $recurringDueDateHelp : '' !!} &nbsp;
+		</div>
+
+	     <div class="modal-footer" style="margin-top: 0px">
+	      	<button type="button" class="btn btn-primary" data-dismiss="modal">{{ trans('texts.close') }}</button>
+	     </div>
+	  		
+	    </div>
+	  </div>
+	</div>
 
 	{!! Former::close() !!}
 
@@ -614,6 +647,8 @@
     var clientMap = {};
     var $clientSelect = $('select#client');
     var invoiceDesigns = {!! $invoiceDesigns !!};
+    var invoiceFonts = {!! $invoiceFonts !!};
+        
 
 	$(function() {
         // create client dictionary
@@ -725,7 +760,8 @@
 		
 		var $input = $('select#client');
 		$input.combobox().on('change', function(e) {
-			var clientId = parseInt($('input[name=client]').val(), 10);
+            var oldId = model.invoice().client().public_id();
+            var clientId = parseInt($('input[name=client]').val(), 10) || 0;
             if (clientId > 0) { 
                 var selected = clientMap[clientId];
 				model.loadClient(selected);
@@ -733,11 +769,12 @@
                 $('.client-input').val(getClientDisplayName(selected));
                 // if there's an invoice number pattern we'll apply it now
                 setInvoiceNumber(selected);
-			} else {
+                refreshPDF(true);
+			} else if (oldId) {
 				model.loadClient($.parseJSON(ko.toJSON(new ClientModel())));
 				model.invoice().client().country = false;
+                refreshPDF(true);
 			}
-            refreshPDF(true);
 		});
 
 		// If no clients exists show the client form when clicking on the client select input
@@ -748,13 +785,17 @@
 		}		
 
 		$('#invoice_footer, #terms, #public_notes, #invoice_number, #invoice_date, #due_date, #start_date, #po_number, #discount, #currency_id, #invoice_design_id, #recurring, #is_amount_discount, #partial, #custom_text_value1, #custom_text_value2').change(function() {
-			setTimeout(function() {                
+			setTimeout(function() {
 				refreshPDF(true);
 			}, 1);
 		});
 
         $('.frequency_id .input-group-addon').click(function() {
             showLearnMore();
+        });
+
+        $('.recurring_due_date .input-group-addon').click(function() {
+            showRecurringDueDateLearnMore();
         });
 
         var fields = ['invoice_date', 'due_date', 'start_date', 'end_date', 'last_sent_date'];
@@ -787,8 +828,6 @@
 		});
 
 		$('label.radio').addClass('radio-inline');
-
-		applyComboboxListeners();
 		
 		@if ($invoice->client->id)
 			$input.trigger('change');
@@ -804,22 +843,49 @@
         @if (isset($tasks) && $tasks)
             NINJA.formIsChanged = true;
         @endif
+
+        applyComboboxListeners();
 	});	
+        
+    function onFrequencyChange(){
+        var currentName = $('#frequency_id').find('option:selected').text()
+        var currentDueDateNumber = $('#recurring_due_date').find('option:selected').attr('data-num');
+        var optionClass = currentName && currentName.toLowerCase().indexOf('week') > -1 ? 'weekly' :  'monthly';
+        var replacementOption = $('#recurring_due_date option[data-num=' + currentDueDateNumber + '].' + optionClass);
+        
+        $('#recurring_due_date option').hide();
+        $('#recurring_due_date option.' + optionClass).show();
+        
+        // Switch to an equivalent option
+        if(replacementOption.length){
+            replacementOption.attr('selected','selected');
+        }
+        else{
+            $('#recurring_due_date').val('');
+        }
+    }
 
 	function applyComboboxListeners() {
-        var selectorStr = '.invoice-table input, .invoice-table select, .invoice-table textarea';		
-		$(selectorStr).off('blur').on('blur', function() {
-			refreshPDF(true);
+        var selectorStr = '.invoice-table input, .invoice-table textarea';
+		$(selectorStr).off('change').on('change', function(event) {
+            onItemChange();
+            refreshPDF(true);
 		});
 
-        $('textarea').on('keyup focus', function(e) {            
+        var selectorStr = '.invoice-table select';
+        $(selectorStr).off('blur').on('blur', function(event) {
+            onItemChange();
+            refreshPDF(true);
+        });
+
+        $('textarea').on('keyup focus', function(e) {
             while($(this).outerHeight() < this.scrollHeight + parseFloat($(this).css("borderTopWidth")) + parseFloat($(this).css("borderBottomWidth"))) {
                 $(this).height($(this).height()+1);
             };
         });
 
 		@if (Auth::user()->account->fill_products)
-			$('.datalist').on('input', function() {
+			$('.datalist').off('input').on('input', function() {
 				var key = $(this).val();
 				for (var i=0; i<products.length; i++) {
 					var product = products[i];
@@ -837,11 +903,11 @@
                                 model.tax(self.model.getTaxRateById(product.default_tax_rate.public_id));
                             }
                         @endif
-						break;
+                        model.product_key(key);
+                        onItemChange();
+                        break;
 					}
 				}
-                onItemChange();
-                refreshPDF();
 			});
 		@endif
 	}
@@ -853,7 +919,7 @@
 		invoice.contact = _.findWhere(invoice.client.contacts, {send_invoice: true});
 
         if (invoice.is_recurring) {
-            invoice.invoice_number = '0000';
+            invoice.invoice_number = "{{ trans('texts.assigned_when_sent') }}";
             if (invoice.start_date) {
                 invoice.invoice_date = invoice.start_date;
             }
@@ -881,11 +947,20 @@
         return invoice;
 	}
 
+    window.generatedPDF = false;
 	function getPDFString(cb, force) {
+        @if ($account->hasLargeFont())
+            console.log('checked: %s', $('#livePreview').is(':checked'));
+            if (!$('#livePreview').is(':checked') && window.generatedPDF) {
+                console.log('returning');
+                return;
+            }
+        @endif
         var invoice = createInvoiceModel();
 		var design  = getDesignJavascript();
 		if (!design) return;
         generatePDF(invoice, design, force, cb);
+        window.generatedPDF = true;
 	}
 
 	function getDesignJavascript() {
@@ -961,14 +1036,14 @@
             if (contact.send_invoice()) {
                 parts.push(contact.displayName());
             }
-        }        
+        }
 
         return parts.join('\n');
     }
 
     function preparePdfData(action) {
         var invoice = createInvoiceModel();
-        var design  = getDesignJavascript();
+        var design = getDesignJavascript();
         if (!design) return;
         
         doc = generatePDF(invoice, design, true);
@@ -1124,6 +1199,10 @@
 
     function showLearnMore() {
         $('#recurringModal').modal('show');
+    }
+
+    function showRecurringDueDateLearnMore() {
+        $('#recurringDueDateModal').modal('show');
     }
 
     function setInvoiceNumber(client) {

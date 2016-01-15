@@ -60,8 +60,25 @@ class AccountApiController extends BaseAPIController
     public function show(Request $request)
     {
         $account = Auth::user()->account;
-        $account->loadAllData();
-        
+        $updatedAt = $request->updated_at ? date('Y-m-d H:i:s', $request->updated_at) : false;
+
+        $map = [
+            'users' => [],
+            'clients' => ['contacts'],
+            'invoices' => ['invoice_items', 'user', 'client', 'payments'],
+            'products' => [],
+            'tax_rates' => [],
+        ];
+
+        foreach ($map as $key => $values) {
+            $account->load([$key => function($query) use ($values, $updatedAt) {
+                $query->withTrashed()->with($values);
+                if ($updatedAt) {
+                    $query->where('updated_at', '>=', $updatedAt);
+                }
+            }]);
+        }
+
         $transformer = new AccountTransformer(null, $request->serializer);
         $account = $this->createItem($account, $transformer, 'account');
 
@@ -78,5 +95,10 @@ class AccountApiController extends BaseAPIController
         }
 
         return $this->response($data);
+    }
+
+    public function getUserAccounts(Request $request)
+    {
+        return $this->processLogin($request);
     }
 }

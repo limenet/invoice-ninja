@@ -177,6 +177,8 @@ class PaymentController extends BaseController
             'account' => $client->account,
             'hideLogo' => $account->isWhiteLabel(),
             'hideHeader' => $account->isNinjaAccount(),
+            'clientViewCSS' => $account->clientViewCSS(),
+            'clientFontUrl' => $account->getFontsUrl(),
             'showAddress' => $accountGateway->show_address,
         ];
 
@@ -225,9 +227,12 @@ class PaymentController extends BaseController
             'client' => false,
             'contact' => false,
             'gateway' => $gateway,
+            'account' => $account,
+            'accountGateway' => $accountGateway,
             'acceptedCreditCardTypes' => $acceptedCreditCardTypes,
             'countries' => Cache::get('countries'),
             'currencyId' => 1,
+            'currencyCode' => 'USD',
             'paymentTitle' => $affiliate->payment_title,
             'paymentSubtitle' => $affiliate->payment_subtitle,
             'showAddress' => true,
@@ -422,8 +427,7 @@ class PaymentController extends BaseController
                         $details['customerReference'] = $token;
                     } else {
                         $this->error('Token-No-Ref', $this->paymentService->lastError, $accountGateway);
-                        return Redirect::to('payment/'.$invitationKey)
-                                ->withInput(Request::except('cvv'));
+                        return Redirect::to('payment/'.$invitationKey)->withInput(Request::except('cvv'));
                     }
                 }
             }
@@ -468,8 +472,12 @@ class PaymentController extends BaseController
                 Session::save();
                 $response->redirect();
             } else {
-                $this->error('Fatal', $response->getMessage(), $accountGateway);
-                return Utils::fatalError('Sorry, there was an error processing your payment. Please try again later.<p>', $response->getMessage());
+                $this->error('Unknown', $response->getMessage(), $accountGateway);
+                if ($onSite) {
+                    return Redirect::to('payment/'.$invitationKey)->withInput(Request::except('cvv'));
+                } else {
+                    return Redirect::to('view/'.$invitationKey);
+                }
             }
         } catch (\Exception $e) {
             $this->error('Uncaught', false, $accountGateway, $e);
@@ -489,7 +497,6 @@ class PaymentController extends BaseController
         if (!$token) {
             $token = Session::pull('transaction_reference');
         }
-
         if (!$token) {
             return redirect(NINJA_WEB_URL);
         }
@@ -499,7 +506,17 @@ class PaymentController extends BaseController
         $client = $invoice->client;
         $account = $client->account;
 
-        $accountGateway = $account->getGatewayByType(Session::get($invitation->id . 'payment_type'));
+        if ($payerId) {
+            $paymentType = PAYMENT_TYPE_PAYPAL;
+        } else {
+            $paymentType = Session::get($invitation->id . 'payment_type');
+        }
+        if (!$paymentType) {
+            $this->error('No-Payment-Type', false, false);
+            return Redirect::to($invitation->getLink());
+        }
+
+        $accountGateway = $account->getGatewayByType($paymentType);
         $gateway = $this->paymentService->createGateway($accountGateway);
 
         // Check for Dwolla payment error
@@ -582,7 +599,7 @@ class PaymentController extends BaseController
         return Redirect::to('payments');
     }
 
-    private function error($type, $error, $accountGateway, $exception = false)
+    private function error($type, $error, $accountGateway = false, $exception = false)
     {
         $message = '';
         if ($accountGateway && $accountGateway->gateway) {

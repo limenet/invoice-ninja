@@ -14,7 +14,6 @@ class AccountTransformer extends EntityTransformer
         'users',
     //    'clients',
         'invoices',
-        'contacts',
         'products',
         'taxRates'
     ];
@@ -37,12 +36,6 @@ class AccountTransformer extends EntityTransformer
         return $this->includeCollection($account->invoices, $transformer, 'invoices');
     }
 
-    public function includeContacts(Account $account)
-    {
-        $transformer = new ContactTransformer($account, $this->serializer);
-        return $this->includeCollection($account->contacts, $transformer, 'contacts');
-    }
-
     public function includeProducts(Account $account)
     {
         $transformer = new ProductTransformer($account, $this->serializer);
@@ -55,7 +48,6 @@ class AccountTransformer extends EntityTransformer
         return $this->includeCollection($account->tax_rates, $transformer, 'taxRates');
     }
 
-
     public function transform(Account $account)
     {
         return [
@@ -65,8 +57,8 @@ class AccountTransformer extends EntityTransformer
             'timezone_id' => (int) $account->timezone_id,
             'date_format_id' => (int) $account->date_format_id,
             'datetime_format_id' => (int) $account->datetime_format_id,
-            'updated_at' => $account->updated_at,
-            'deleted_at' => $account->deleted_at,
+            'updated_at' => $this->getTimestamp($account->updated_at),
+            'archived_at' => $this->getTimestamp($account->deleted_at),
             'address1' => $account->address1,
             'address2' => $account->address2,
             'city' => $account->city,
@@ -80,6 +72,7 @@ class AccountTransformer extends EntityTransformer
             'invoice_taxes' => (bool) $account->invoice_taxes,
             'invoice_item_taxes' => (bool) $account->invoice_item_taxes,
             'invoice_design_id' => (int) $account->invoice_design_id,
+            'client_view_css' => (string) $account->client_view_css,
             'work_phone' => $account->work_phone,
             'work_email' => $account->work_email,
             'language_id' => (int) $account->language_id,
