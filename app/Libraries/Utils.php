@@ -46,6 +46,11 @@ class Utils
         return file_exists(storage_path() . '/framework/down');
     }
 
+    public static function isCron()
+    {
+        return php_sapi_name() == 'cli';
+    }
+
     public static function isNinja()
     {
         return self::isNinjaProd() || self::isNinjaDev();
@@ -137,7 +142,7 @@ class Utils
         $history = Session::get(RECENTLY_VIEWED);
         $last = $history[0];
         $penultimate = count($history) > 1 ? $history[1] : $last;
-        
+
         return Request::url() == $last->url ? $penultimate->url : $last->url;
     }
 
@@ -249,7 +254,7 @@ class Utils
         $data = Cache::get($type)->filter(function($item) use ($id) {
             return $item->id == $id;
         });
-        
+
         return $data->first();
     }
 
@@ -270,6 +275,7 @@ class Utils
         $currency = self::getFromCache($currencyId, 'currencies');
         $thousand = $currency->thousand_separator;
         $decimal = $currency->decimal_separator;
+        $code = $currency->code;
         $swapSymbol = false;
 
         if ($countryId && $currencyId == CURRENCY_EURO) {
@@ -288,6 +294,8 @@ class Utils
 
         if ($hideSymbol) {
             return $value;
+        } elseif (!$symbol) {
+            return "{$value} {$code}";
         } elseif ($swapSymbol) {
             return "{$value} " . trim($symbol);
         } else {
@@ -301,6 +309,39 @@ class Utils
         $string = trans("texts.$field", ['count' => $count]);
 
         return $string;
+    }
+
+    public static function maskAccountNumber($value)
+    {
+        $length = strlen($value);
+        if ($length < 4) {
+            str_repeat('*', 16);
+        }
+
+        $lastDigits = substr($value, -4);
+        return str_repeat('*', $length - 4) . $lastDigits;
+    }
+
+    // http://wephp.co/detect-credit-card-type-php/
+    public static function getCardType($number)
+    {
+        $number = preg_replace('/[^\d]/', '', $number);
+
+        if (preg_match('/^3[47][0-9]{13}$/', $number)) {
+            return 'American Express';
+        } elseif (preg_match('/^3(?:0[0-5]|[68][0-9])[0-9]{11}$/', $number)) {
+            return 'Diners Club';
+        } elseif (preg_match('/^6(?:011|5[0-9][0-9])[0-9]{12}$/', $number)) {
+            return 'Discover';
+        } elseif (preg_match('/^(?:2131|1800|35\d{3})\d{11}$/', $number)) {
+            return 'JCB';
+        } elseif (preg_match('/^5[1-5][0-9]{14}$/', $number)) {
+            return 'MasterCard';
+        } elseif (preg_match('/^4[0-9]{12}(?:[0-9]{3})?$/', $number)) {
+            return 'Visa';
+        } else {
+            return 'Unknown';
+        }
     }
 
     public static function toArray($data)
@@ -344,7 +385,7 @@ class Utils
         if (!$date) {
             return false;
         }
-        
+
         $dateTime = new DateTime($date);
         $timestamp = $dateTime->getTimestamp();
         $format = Session::get(SESSION_DATE_FORMAT, DEFAULT_DATE_FORMAT);
@@ -392,7 +433,10 @@ class Utils
         $format = Session::get(SESSION_DATE_FORMAT, DEFAULT_DATE_FORMAT);
         $dateTime = DateTime::createFromFormat('Y-m-d', $date);
 
-        return $formatResult ? $dateTime->format($format) : $dateTime;
+        if(!$dateTime)
+            return $date;
+        else
+            return $formatResult ? $dateTime->format($format) : $dateTime;
     }
 
     public static function fromSqlDateTime($date, $formatResult = true)
@@ -468,7 +512,7 @@ class Utils
         }
 
         array_unshift($data, $object);
-        
+
         if (isset($counts[Auth::user()->account_id]) && $counts[Auth::user()->account_id] > RECENTLY_VIEWED_LIMIT) {
             array_pop($data);
         }
@@ -577,6 +621,17 @@ class Utils
         }
     }
 
+    public static function getVendorDisplayName($model)
+    {
+        if(is_null($model))
+            return '';
+
+        if($model->vendor_name)
+            return $model->vendor_name;
+
+        return 'No vendor name';
+    }
+
     public static function getPersonDisplayName($firstName, $lastName, $email)
     {
         if ($firstName || $lastName) {
@@ -608,7 +663,9 @@ class Utils
             return EVENT_CREATE_QUOTE;
         } elseif ($eventName == 'create_payment') {
             return EVENT_CREATE_PAYMENT;
-        } else {
+        } elseif ($eventName == 'create_vendor') {
+            return EVENT_CREATE_VENDOR;
+        }else {
             return false;
         }
     }
@@ -666,7 +723,7 @@ class Utils
         if ($publicId) {
             $data['id'] = $publicId;
         }
-        
+
         return $data;
     }
 
@@ -712,7 +769,7 @@ class Utils
                 $str .= 'ENTITY_DELETED ';
             }
         }
-        
+
         if ($model->deleted_at && $model->deleted_at != '0000-00-00') {
             $str .= 'ENTITY_ARCHIVED ';
         }
@@ -732,7 +789,7 @@ class Utils
 
         fwrite($output, "\n");
     }
-    
+
     public static function getFirst($values)
     {
         if (is_array($values)) {
@@ -897,7 +954,7 @@ class Utils
         if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
             $url = "http://" . $url;
         }
-        
+
         return $url;
     }
 }

@@ -26,6 +26,7 @@ class Account extends Eloquent
         ACCOUNT_USER_DETAILS,
         ACCOUNT_LOCALIZATION,
         ACCOUNT_PAYMENTS,
+        ACCOUNT_BANKS,
         ACCOUNT_TAX_RATES,
         ACCOUNT_PRODUCTS,
         ACCOUNT_NOTIFICATIONS,
@@ -77,6 +78,11 @@ class Account extends Eloquent
     public function account_gateways()
     {
         return $this->hasMany('App\Models\AccountGateway');
+    }
+
+    public function bank_accounts()
+    {
+        return $this->hasMany('App\Models\BankAccount');
     }
 
     public function tax_rates()
@@ -320,12 +326,19 @@ class Account extends Eloquent
 
     public function hasLogo()
     {
-        return file_exists($this->getLogoPath());
+        return file_exists($this->getLogoFullPath());
     }
 
     public function getLogoPath()
     {
         $fileName = 'logo/' . $this->account_key;
+
+        return file_exists($fileName.'.png') ? $fileName.'.png' : $fileName.'.jpg';
+    }
+
+    public function getLogoFullPath()
+    {
+        $fileName = public_path() . '/logo/' . $this->account_key;
 
         return file_exists($fileName.'.png') ? $fileName.'.png' : $fileName.'.jpg';
     }
@@ -348,7 +361,7 @@ class Account extends Eloquent
 
     public function getLogoWidth()
     {
-        $path = $this->getLogoPath();
+        $path = $this->getLogoFullPath();
         if (!file_exists($path)) {
             return 0;
         }
@@ -359,7 +372,7 @@ class Account extends Eloquent
 
     public function getLogoHeight()
     {
-        $path = $this->getLogoPath();
+        $path = $this->getLogoFullPath();
         if (!file_exists($path)) {
             return 0;
         }
@@ -656,7 +669,7 @@ class Account extends Eloquent
             return 0;
         }
 
-        $filename = $this->getLogoPath();
+        $filename = $this->getLogoFullPath();
         return round(File::size($filename) / 1000);
     }
 

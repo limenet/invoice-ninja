@@ -30298,6 +30298,17 @@ function getClientDisplayName(client)
   return '';
 }
 
+function getVendorDisplayName(vendor)
+{
+  var contact = vendor.contacts ? vendor.vendorcontacts[0] : false;
+  if (vendor.name) {
+    return vendor.name;
+  } else if (contact) {
+    return getContactDisplayName(contact);
+  }
+  return '';
+}
+
 function populateInvoiceComboboxes(clientId, invoiceId) {
   var clientMap = {};
   var invoiceMap = {};
@@ -30394,8 +30405,9 @@ var CONSTS = {};
 CONSTS.INVOICE_STATUS_DRAFT = 1;
 CONSTS.INVOICE_STATUS_SENT = 2;
 CONSTS.INVOICE_STATUS_VIEWED = 3;
-CONSTS.INVOICE_STATUS_PARTIAL = 4;
-CONSTS.INVOICE_STATUS_PAID = 5;
+CONSTS.INVOICE_STATUS_APPROVED = 4;
+CONSTS.INVOICE_STATUS_PARTIAL = 5;
+CONSTS.INVOICE_STATUS_PAID = 6;
 
 $.fn.datepicker.defaults.autoclose = true;
 $.fn.datepicker.defaults.todayHighlight = true;
@@ -30866,6 +30878,7 @@ function actionListHandler() {
         }
     });
 }
+
 var NINJA = NINJA || {};
 
 NINJA.TEMPLATES = {

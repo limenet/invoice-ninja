@@ -7,6 +7,7 @@ use App\Models\InvoiceItem;
 use App\Models\Invitation;
 use App\Models\Product;
 use App\Models\Task;
+use App\Models\Expense;
 use App\Services\PaymentService;
 use App\Ninja\Repositories\BaseRepository;
 
@@ -149,7 +150,8 @@ class InvoiceRepository extends BaseRepository
           ->where('invoices.is_deleted', '=', false)
           ->where('clients.deleted_at', '=', null)
           ->where('invoices.is_recurring', '=', false)
-          ->where('invoices.invoice_status_id', '>=', INVOICE_STATUS_SENT)
+          // This needs to be a setting to also hide the activity on the dashboard page
+          //->where('invoices.invoice_status_id', '>=', INVOICE_STATUS_SENT) 
           ->select(
                 DB::raw('COALESCE(clients.currency_id, accounts.currency_id) currency_id'),
                 DB::raw('COALESCE(clients.country_id, accounts.country_id) country_id'),
@@ -176,7 +178,7 @@ class InvoiceRepository extends BaseRepository
             $table->addColumn('balance', function ($model) {
                 return $model->partial > 0 ?
                     trans('texts.partial_remaining', [
-                        'partial' => Utils::formatMoney($model->partial, $model->currency_id, $model->country_id), 
+                        'partial' => Utils::formatMoney($model->partial, $model->currency_id, $model->country_id),
                         'balance' => Utils::formatMoney($model->balance, $model->currency_id, $model->country_id)
                     ]) :
                     Utils::formatMoney($model->balance, $model->currency_id, $model->country_id);
@@ -204,6 +206,9 @@ class InvoiceRepository extends BaseRepository
             $invoice = $account->createInvoice($entityType, $data['client_id']);
             if (isset($data['has_tasks']) && filter_var($data['has_tasks'], FILTER_VALIDATE_BOOLEAN)) {
                 $invoice->has_tasks = true;
+            }
+            if (isset($data['has_expenses']) && filter_var($data['has_expenses'], FILTER_VALIDATE_BOOLEAN)) {
+                $invoice->has_expenses = true;
             }
         } else {
             $invoice = Invoice::scope($publicId)->firstOrFail();
@@ -275,7 +280,7 @@ class InvoiceRepository extends BaseRepository
         if (isset($data['po_number'])) {
             $invoice->po_number = trim($data['po_number']);
         }
-        
+
         $invoice->invoice_design_id = isset($data['invoice_design_id']) ? $data['invoice_design_id'] : $account->invoice_design_id;
 
         if (isset($data['tax_name']) && isset($data['tax_rate']) && $data['tax_name']) {
@@ -397,6 +402,13 @@ class InvoiceRepository extends BaseRepository
                 $task->save();
             }
 
+            if (isset($item['expense_public_id']) && $item['expense_public_id']) {
+                $expense = Expense::scope($item['expense_public_id'])->where('invoice_id', '=', null)->firstOrFail();
+                $expense->invoice_id = $invoice->id;
+                $expense->client_id = $invoice->client_id;
+                $expense->save();
+            }
+
             if ($item['product_key']) {
                 $productKey = trim($item['product_key']);
                 if (\Auth::user()->account->update_products && ! strtotime($productKey)) {
@@ -405,7 +417,10 @@ class InvoiceRepository extends BaseRepository
                         $product = Product::createNew();
                         $product->product_key = trim($item['product_key']);
                     }
+
                     $product->notes = $invoice->has_tasks ? '' : $item['notes'];
+                    $product->notes = $invoice->has_expenses ? '' : $item['notes'];
+
                     $product->cost = $item['cost'];
                     $product->save();
                 }
@@ -603,7 +618,6 @@ class InvoiceRepository extends BaseRepository
         $invoice->custom_text_value2 = $recurInvoice->custom_text_value2;
         $invoice->is_amount_discount = $recurInvoice->is_amount_discount;
         $invoice->due_date = $recurInvoice->getDueDate();
-
         $invoice->save();
 
         foreach ($recurInvoice->invoice_items as $recurItem) {
@@ -642,7 +656,7 @@ class InvoiceRepository extends BaseRepository
     public function findNeedingReminding($account)
     {
         $dates = [];
-        
+
         for ($i=1; $i<=3; $i++) {
             if ($date = $account->getReminderDate($i)) {
                 $field = $account->{"field_reminder{$i}"} == REMINDER_FIELD_DUE_DATE ? 'due_date' : 'invoice_date';
