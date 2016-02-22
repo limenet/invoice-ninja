@@ -5,6 +5,8 @@ var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Const
 var isEdge = navigator.userAgent.indexOf('Edge/') >= 0;
 var isChrome = !!window.chrome && !isOpera && !isEdge; // Chrome 1+
 var isChromium = isChrome && navigator.userAgent.indexOf('Chromium') >= 0;
+// https://code.google.com/p/chromium/issues/detail?id=574648
+var isChrome48 = isChrome && navigator.userAgent.indexOf('Chrome/48') >= 0;
 var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
 
 var refreshTimer;
@@ -428,7 +430,7 @@ if (window.ko) {
 function getContactDisplayName(contact)
 {
     if (contact.first_name || contact.last_name) {
-        return contact.first_name + ' ' + contact.last_name;
+        return (contact.first_name || '') + ' ' + (contact.last_name || '');
     } else {
         return contact.email;
     }

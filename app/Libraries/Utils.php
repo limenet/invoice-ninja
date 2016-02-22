@@ -58,6 +58,10 @@ class Utils
 
     public static function isNinjaProd()
     {
+        if (Utils::isReseller()) {
+            return true;
+        }
+
         return isset($_ENV['NINJA_PROD']) && $_ENV['NINJA_PROD'] == 'true';
     }
 
@@ -68,7 +72,21 @@ class Utils
 
     public static function requireHTTPS()
     {
+        if (Request::root() === 'http://ninja.dev') {
+            return false;
+        }
+
         return Utils::isNinjaProd() || (isset($_ENV['REQUIRE_HTTPS']) && $_ENV['REQUIRE_HTTPS'] == 'true');
+    }
+
+    public static function isReseller()
+    {
+        return Utils::getResllerType() ? true : false;
+    }
+
+    public static function getResllerType()
+    {
+        return isset($_ENV['RESELLER_TYPE']) ? $_ENV['RESELLER_TYPE'] : false;
     }
 
     public static function isOAuthEnabled()
@@ -98,6 +116,11 @@ class Utils
     public static function isPro()
     {
         return Auth::check() && Auth::user()->isPro();
+    }
+
+    public static function isTrial()
+    {
+        return Auth::check() && Auth::user()->isTrial();
     }
 
     public static function isEnglish()
@@ -210,7 +233,7 @@ class Utils
 
         $count = Session::get('error_count', 0);
         Session::put('error_count', ++$count);
-        if ($count > 100) {
+        if ($count > 200) {
             return 'logged';
         }
 
@@ -663,7 +686,7 @@ class Utils
             return EVENT_CREATE_PAYMENT;
         } elseif ($eventName == 'create_vendor') {
             return EVENT_CREATE_VENDOR;
-        }else {
+        } else {
             return false;
         }
     }
@@ -671,7 +694,7 @@ class Utils
     public static function notifyZapier($subscription, $data)
     {
         $curl = curl_init();
-        $jsonEncodedData = json_encode($data->toPublicArray());
+        $jsonEncodedData = json_encode($data);
 
         $opts = [
             CURLOPT_URL => $subscription->target_url,
@@ -692,37 +715,6 @@ class Utils
         if ($status == 410) {
             $subscription->delete();
         }
-    }
-
-    public static function hideIds($data, $mapped = false)
-    {
-        $publicId = null;
-
-        if (!$mapped) {
-            $mapped = [];
-        }
-
-        foreach ($data as $key => $val) {
-            if (is_array($val)) {
-                if ($key == 'account' || isset($mapped[$key])) {
-                    // do nothing
-                } else {
-                    $mapped[$key] = true;
-                    $data[$key] = Utils::hideIds($val, $mapped);
-                }
-            } elseif ($key == 'id' || strpos($key, '_id')) {
-                if ($key == 'public_id') {
-                    $publicId = $val;
-                }
-                unset($data[$key]);
-            }
-        }
-
-        if ($publicId) {
-            $data['id'] = $publicId;
-        }
-
-        return $data;
     }
 
     public static function getApiHeaders($count = 0)
@@ -945,6 +937,25 @@ class Utils
         $interval = $today->diff($datePaid);
 
         return $interval->y == 0;
+    }
+
+    public static function getInterval($date)
+    {
+        if (!$date || $date == '0000-00-00') {
+            return false;
+        }
+
+        $today = new DateTime('now');
+        $datePaid = DateTime::createFromFormat('Y-m-d', $date);
+
+        return $today->diff($datePaid);
+    }
+
+    public static function withinPastTwoWeeks($date)
+    {
+        $interval = Utils::getInterval($date);
+
+        return $interval && $interval->d <= 14;
     }
 
     public static function addHttp($url)
