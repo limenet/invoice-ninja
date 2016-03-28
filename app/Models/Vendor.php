@@ -5,6 +5,7 @@ use DB;
 use Carbon;
 use App\Events\VendorWasCreated;
 use App\Events\VendorWasUpdated;
+use App\Events\VendorWasDeleted;
 use Laracasts\Presenter\PresentableTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -122,6 +123,11 @@ class Vendor extends EntityModel
     public function industry()
     {
         return $this->belongsTo('App\Models\Industry');
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany('App\Models\Expense','vendor_id','id');
     }
 
     public function addVendorContact($data, $isPrimary = false)

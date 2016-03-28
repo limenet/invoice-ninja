@@ -7,9 +7,9 @@
     <thead>
     <tr>
         @foreach($columns as $i => $c)
-        <th align="center" valign="middle" class="head{{ $i }}" 
+        <th align="center" valign="middle" class="head{{ $i }}"
             @if ($c == 'checkbox')
-                style="width:20px"            
+                style="width:20px"
             @endif
         >
             @if ($c == 'checkbox' && $hasCheckboxes = true)
@@ -42,9 +42,13 @@
         });
     @endif
 
+    function refreshDatatable() {
+        window.dataTable.api().ajax.reload();
+    }
+
     function load_{{ $class }}() {
-        jQuery('.{{ $class }}').dataTable({
-            "fnRowCallback": function(row, data) { 
+        window.dataTable = jQuery('.{{ $class }}').dataTable({
+            "fnRowCallback": function(row, data) {
                 if (data[0].indexOf('ENTITY_DELETED') > 0) {
                     $(row).addClass('entityDeleted');
                 }
@@ -56,7 +60,7 @@
             @if (isset($hasCheckboxes) && $hasCheckboxes)
             'aaSorting': [['1', 'asc']],
             // Disable sorting on the first column
-            "aoColumnDefs": [ 
+            "aoColumnDefs": [
                 {
                     'bSortable': false,
                     'aTargets': [ 0, {{ count($columns) - 1 }} ]

@@ -1,7 +1,9 @@
 <?php namespace App\Services;
 
+use HtmlString;
 use Utils;
 use Datatable;
+use Auth;
 
 class DatatableService
 {
@@ -12,7 +14,9 @@ class DatatableService
 
         if ($actions && $showCheckbox) {
             $table->addColumn('checkbox', function ($model) {
-                return '<input type="checkbox" name="ids[]" value="' . $model->public_id
+                $can_edit = Auth::user()->hasPermission('edit_all') || (isset($model->user_id) && Auth::user()->id == $model->user_id);
+                
+                return !$can_edit?'':'<input type="checkbox" name="ids[]" value="' . $model->public_id
                         . '" ' . Utils::getEntityRowClass($model) . '>';
             });
         }
@@ -41,8 +45,11 @@ class DatatableService
     private function createDropdown($entityType, $table, $actions)
     {
         $table->addColumn('dropdown', function ($model) use ($entityType, $actions) {
+            $hasAction = false;
             $str = '<center style="min-width:100px">';
 
+            $can_edit = Auth::user()->hasPermission('edit_all') || (isset($model->user_id) && Auth::user()->id == $model->user_id);
+            
             if (property_exists($model, 'is_deleted') && $model->is_deleted) {
                 $str .= '<button type="button" class="btn btn-sm btn-danger tr-status">'.trans('texts.deleted').'</button>';
             } elseif ($model->deleted_at && $model->deleted_at !== '0000-00-00') {
@@ -68,8 +75,15 @@ class DatatableService
                         }
                         list($value, $url, $visible) = $action;
                         if ($visible($model)) {
-                            $str .= "<li><a href=\"{$url($model)}\">{$value}</a></li>";
-                            $lastIsDivider = false;
+                            if($value == '--divider--'){
+                                $str .= "<li class=\"divider\"></li>";
+                                $lastIsDivider = true;
+                            }
+                            else {
+                                $str .= "<li><a href=\"{$url($model)}\">{$value}</a></li>";
+                                $hasAction = true;
+                                $lastIsDivider = false;
+                            }
                         }
                     } elseif ( ! $lastIsDivider) {
                         $str .= "<li class=\"divider\"></li>";
@@ -77,20 +91,24 @@ class DatatableService
                     }
                 }
 
-                if ( ! $lastIsDivider) {
+                if ( ! $hasAction) {
+                    return '';
+                }
+
+                if ( $can_edit && ! $lastIsDivider) {
                     $str .= "<li class=\"divider\"></li>";
                 }
 
-                if ($entityType != ENTITY_USER || $model->public_id) {
+                if (($entityType != ENTITY_USER || $model->public_id) && $can_edit) {
                     $str .= "<li><a href=\"javascript:archiveEntity({$model->public_id})\">"
                             . trans("texts.archive_{$entityType}") . "</a></li>";
                 }
-            } else {
+            } else if($can_edit) {
                 $str .= "<li><a href=\"javascript:restoreEntity({$model->public_id})\">"
                         . trans("texts.restore_{$entityType}") . "</a></li>";
             }
 
-            if (property_exists($model, 'is_deleted') && !$model->is_deleted) {
+            if (property_exists($model, 'is_deleted') && !$model->is_deleted && $can_edit) {
                 $str .= "<li><a href=\"javascript:deleteEntity({$model->public_id})\">"
                         . trans("texts.delete_{$entityType}") . "</a></li>";
             }

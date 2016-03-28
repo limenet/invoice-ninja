@@ -1,7 +1,6 @@
 <?php
 
 use Codeception\Util\Fixtures;
-use \AcceptanceTester;
 use Faker\Factory;
 
 class CheckBalanceCest
@@ -45,6 +44,7 @@ class CheckBalanceCest
         $I->amOnPage('/invoices/create');
         $I->selectDropdown($I, $clientEmail, '.client_select .dropdown-toggle');
         $I->fillField('table.invoice-table tbody tr:nth-child(1) #product_key', $productKey);
+        $I->click('table.invoice-table tbody tr:nth-child(1) .tt-selectable');
         $I->click('Save');
         $I->wait(1);
         $I->see($clientEmail);

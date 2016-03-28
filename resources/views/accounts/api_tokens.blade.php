@@ -5,7 +5,7 @@
 	@include('accounts.nav', ['selected' => ACCOUNT_API_TOKENS, 'advanced' => true])
 
   <div class="pull-right">
-  {!! Button::normal(trans('texts.documentation'))->asLinkTo(NINJA_WEB_URL.'/knowledgebase/api-documentation/')->withAttributes(['target' => '_blank'])->appendIcon(Icon::create('info-sign')) !!}
+  {!! Button::normal(trans('texts.documentation'))->asLinkTo(NINJA_WEB_URL.'/api-documentation/')->withAttributes(['target' => '_blank'])->appendIcon(Icon::create('info-sign')) !!}
   @if (Utils::isNinja())  
     {!! Button::normal(trans('texts.zapier'))->asLinkTo(ZAPIER_URL)->withAttributes(['target' => '_blank']) !!}
   @endif
@@ -42,9 +42,18 @@
 
     function setTrashVisible() {
         var checked = $('#trashed').is(':checked');
-        window.location = '{!! URL::to('view_archive/token') !!}' + (checked ? '/true' : '/false');
+        var url = '{{ URL::to('view_archive/token') }}' + (checked ? '/true' : '/false');
+
+        $.get(url, function(data) {
+            refreshDatatable();
+        })
     }
-    
+
   </script>
 
+  @if (Utils::isNinja() && !Utils::isReseller())
+    <p>&nbsp;</p>
+    <script src="https://zapier.com/zapbook/embed/widget.js?services=invoice-ninja&container=false&limit=6"></script>
+  @endif
+  
 @stop
