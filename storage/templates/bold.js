@@ -12,13 +12,13 @@
         },
         {
             "canvas": [
-            { 
-                "type": "rect", 
-                "x": 0, 
-                "y": 0, 
-                "w": 225, 
+            {
+                "type": "rect",
+                "x": 0,
+                "y": 0,
+                "w": 225,
                 "h": "$invoiceDetailsHeight",
-                "r":0, 
+                "r":0,
                 "lineWidth": 1,
                 "color": "$primaryColor:#36a498"
             }
@@ -26,8 +26,8 @@
             "width":10,
             "margin":[-10,100,0,10]
         },
-        {	
-            "table": { 
+        {
+            "table": {
                 "body": "$invoiceDetails"
             },
             "layout": "noBorders",
@@ -45,9 +45,9 @@
         "layout": {
             "hLineWidth": "$none",
             "vLineWidth": "$none",
-            "paddingLeft": "$amount:8", 
-            "paddingRight": "$amount:8", 
-            "paddingTop": "$amount:14", 
+            "paddingLeft": "$amount:8",
+            "paddingRight": "$amount:8",
+            "paddingTop": "$amount:14",
             "paddingBottom": "$amount:14"
         }
     },
@@ -66,10 +66,10 @@
             "layout": {
                 "hLineWidth": "$none",
                 "vLineWidth": "$none",
-                "paddingLeft": "$amount:8", 
-                "paddingRight": "$amount:8", 
-                "paddingTop": "$amount:4", 
-                "paddingBottom": "$amount:4"  
+                "paddingLeft": "$amount:8",
+                "paddingRight": "$amount:8",
+                "paddingTop": "$amount:4",
+                "paddingBottom": "$amount:4"
             }
         }]
     },
@@ -112,7 +112,7 @@
           },
           {
             "columns": [
-              { 
+              {
                 "image": "$accountLogo",
                 "fit": [120, 60],
                 "margin": [30, 16, 0, 0]
@@ -216,8 +216,8 @@
             },
             "yourInvoice": {
                 "font": "$headerFont",
-                "bold": true, 
-                "fontSize": 14, 
+                "bold": true,
+                "fontSize": 14,
                 "color": "$primaryColor:#36a498",
                 "margin": [0,0,0,8]
             },
