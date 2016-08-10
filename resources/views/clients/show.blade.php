@@ -39,7 +39,9 @@
                 </div>
 
                 @if ($gatewayLink)
-                    {!! Button::normal(trans('texts.view_in_stripe'))->asLinkTo($gatewayLink)->withAttributes(['target' => '_blank']) !!}
+                    {!! Button::normal(trans('texts.view_in_gateway', ['gateway'=>$gatewayName]))
+                            ->asLinkTo($gatewayLink)
+                            ->withAttributes(['target' => '_blank']) !!}
                 @endif
 
                 @if ($client->trashed())
@@ -145,6 +147,9 @@
                 @endif
                 @if ($contact->phone)
                     <i class="fa fa-phone" style="width: 20px"></i>{{ $contact->phone }}<br/>
+                @endif
+                @if ($client->account->enable_client_portal)
+                    <i class="fa fa-dashboard" style="width: 20px"></i><a href="{{ $contact->link }}" target="_blank">{{ trans('texts.view_client_portal') }}</a><br/>
                 @endif
 		  	@endforeach
 		</div>
@@ -290,8 +295,10 @@
 			    			trans('texts.invoice'),
 			    			trans('texts.transaction_reference'),
 			    			trans('texts.method'),
+                            trans('texts.source'),
 			    			trans('texts.payment_amount'),
-			    			trans('texts.payment_date'))
+			    			trans('texts.payment_date'),
+                            trans('texts.status'))
 				->setUrl(url('api/payments/' . $client->public_id))
                 ->setCustomValues('entityType', 'payments')
 				->setOptions('sPaginationType', 'bootstrap')

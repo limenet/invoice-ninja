@@ -425,6 +425,34 @@ if (window.ko) {
         trigger: "hover"
     }
   };
+
+  ko.bindingHandlers.typeahead = {
+      init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+          var $element = $(element);
+          var allBindings = allBindingsAccessor();
+
+          $element.typeahead({
+              highlight: true,
+              minLength: 0,
+          },
+          {
+              name: 'data',
+              display: allBindings.key,
+              limit: 50,
+              source: searchData(allBindings.items, allBindings.key)
+          }).on('typeahead:change', function(element, datum, name) {
+              var value = valueAccessor();
+              value(datum);
+          });
+      },
+
+      update: function (element, valueAccessor) {
+          var value = ko.utils.unwrapObservable(valueAccessor());
+          if (value) {
+              $(element).typeahead('val', value);
+          }
+      }
+  };
 }
 
 function getContactDisplayName(contact)
@@ -473,7 +501,11 @@ function populateInvoiceComboboxes(clientId, invoiceId) {
   $clientSelect.append(new Option('', ''));
   for (var i=0; i<clients.length; i++) {
     var client = clients[i];
-    $clientSelect.append(new Option(getClientDisplayName(client), client.public_id));
+    var clientName = getClientDisplayName(client);
+    if (!clientName) {
+        continue;
+    }
+    $clientSelect.append(new Option(clientName, client.public_id));
   }
 
   if (clientId) {
@@ -497,7 +529,7 @@ function populateInvoiceComboboxes(clientId, invoiceId) {
     for (var i=0; i<list.length; i++) {
       var invoice = list[i];
       var client = clientMap[invoice.client.public_id];
-      if (!client) continue; // client is deleted/archived
+      if (!client || !getClientDisplayName(client)) continue; // client is deleted/archived
       $invoiceCombobox.append(new Option(invoice.invoice_number + ' - ' + invoice.invoice_status.name + ' - ' +
                 getClientDisplayName(client) + ' - ' + formatMoneyInvoice(invoice.amount, invoice) + ' | ' +
                 formatMoneyInvoice(invoice.balance, invoice),  invoice.public_id));
@@ -556,7 +588,7 @@ function formatAddress(city, state, zip, swap) {
         str += zip ? zip + ' ' : '';
         str += city ? city : '';
         str += (city && state) ? ', ' : (city ? ' ' : '');
-        str += state;        
+        str += state;
     } else {
         str += city ? city : '';
         str += (city && state) ? ', ' : (state ? ' ' : '');
@@ -586,7 +618,7 @@ function calculateAmounts(invoice) {
   var hasTaxes = false;
   var taxes = {};
   invoice.has_product_key = false;
-  
+
   // Bold designs currently breaks w/o the product column
   if (invoice.invoice_design_id == 2) {
       invoice.has_product_key = true;
@@ -615,12 +647,12 @@ function calculateAmounts(invoice) {
         invoice.has_product_key = true;
     }
 
-    if (item.tax_rate1 && parseFloat(item.tax_rate1)) {
+    if (item.tax_name1) {
       taxRate1 = parseFloat(item.tax_rate1);
       taxName1 = item.tax_name1;
     }
 
-    if (item.tax_rate2 && parseFloat(item.tax_rate2)) {
+    if (item.tax_name2) {
       taxRate2 = parseFloat(item.tax_rate2);
       taxName2 = item.tax_name2;
     }
@@ -634,9 +666,9 @@ function calculateAmounts(invoice) {
             lineTotal -= roundToTwo(lineTotal * (invoice.discount/100));
         }
     }
-    
+
     var taxAmount1 = roundToTwo(lineTotal * taxRate1 / 100);
-    if (taxAmount1) {
+    if (taxName1) {
       var key = taxName1 + taxRate1;
       if (taxes.hasOwnProperty(key)) {
         taxes[key].amount += taxAmount1;
@@ -646,7 +678,7 @@ function calculateAmounts(invoice) {
     }
 
     var taxAmount2 = roundToTwo(lineTotal * taxRate2 / 100);
-    if (taxAmount2) {
+    if (taxName2) {
       var key = taxName2 + taxRate2;
       if (taxes.hasOwnProperty(key)) {
         taxes[key].amount += taxAmount2;
@@ -711,7 +743,7 @@ function calculateAmounts(invoice) {
   invoice.tax_amount1 = taxAmount1;
   invoice.tax_amount2 = taxAmount2;
   invoice.item_taxes = taxes;
-  
+
   if (NINJA.parseFloat(invoice.partial)) {
     invoice.balance_amount = roundToTwo(invoice.partial);
   } else {
@@ -1036,9 +1068,9 @@ function truncate(string, length){
    }
 };
 
-// Show/hide the 'Select' option in the datalists 
+// Show/hide the 'Select' option in the datalists
 function actionListHandler() {
-    $('tbody tr').mouseover(function() {
+    $('tbody tr .tr-action').closest('tr').mouseover(function() {
         $(this).closest('tr').find('.tr-action').show();
         $(this).closest('tr').find('.tr-status').hide();
     }).mouseout(function() {
@@ -1102,7 +1134,7 @@ function searchData(data, key, fuzzy) {
     }
     cb(matches);
     }
-}; 
+};
 
 function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");

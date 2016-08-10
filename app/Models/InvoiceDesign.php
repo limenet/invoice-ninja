@@ -3,13 +3,21 @@
 use Eloquent;
 use Auth;
 use Cache;
-use App\Models\InvoiceDesign;
 
+/**
+ * Class InvoiceDesign
+ */
 class InvoiceDesign extends Eloquent
 {
+    /**
+     * @var bool
+     */
     public $timestamps = false;
 
-    public static function getDesigns($forceUtf8 = false)
+    /**
+     * @return mixed
+     */
+    public static function getDesigns()
     {
         $account = Auth::user()->account;
         $designs = Cache::get('invoiceDesigns');
