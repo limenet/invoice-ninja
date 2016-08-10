@@ -608,7 +608,11 @@ function concatStrings() {
   }
   for (var i=0; i<data.length; i++) {
     concatStr += data[i];
-    concatStr += ' ';
+    if (i == 0 && data.length > 1) {
+      concatStr += ', ';
+    } else if (i < data.length -1) {
+      concatStr += ' ';
+    }
   }
   return data.length ? concatStr : "";
 }
