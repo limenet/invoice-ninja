@@ -18,7 +18,7 @@ class UpdateSeeder extends Seeder
         $this->call('PaymentStatusSeeder');
         $this->call('CurrenciesSeeder');
         $this->call('DateFormatsSeeder');
-        $this->call('InvoiceDesignsSeeder');
+        // $this->call('InvoiceDesignsSeeder');
         $this->call('PaymentTermsSeeder');
         $this->call('PaymentTypesSeeder');
         $this->call('LanguageSeeder');
