@@ -12,7 +12,7 @@
     <style type="text/css">
 
     input.time-input {
-        width: 110px;
+        width: 100%;
         font-size: 14px !important;
     }
 
@@ -170,7 +170,7 @@
          var value = ko.utils.unwrapObservable(valueAccessor());
          // http://xdsoft.net/jqplugins/datetimepicker/
          $(element).datetimepicker({
-            lang: '{{ Utils::getLocaleRegion() }}',
+            lang: '{{ $appLanguage }}',
             lazyInit: true,
             validateOnBlur: false,
             step: 30,

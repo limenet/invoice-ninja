@@ -3,6 +3,7 @@
 use Auth;
 use Eloquent;
 use Utils;
+use Validator;
 
 /**
  * Class EntityModel
@@ -84,6 +85,21 @@ class EntityModel extends Eloquent
     public function getActivityKey()
     {
         return '[' . $this->getEntityType().':'.$this->public_id.':'.$this->getDisplayName() . ']';
+    }
+
+    public function entityKey()
+    {
+        return $this->public_id . ':' . $this->getEntityType();
+    }
+
+    public function subEntityType()
+    {
+        return $this->getEntityType();
+    }
+
+    public function isEntityType($type)
+    {
+        return $this->getEntityType() === $type;
     }
 
     /*
@@ -190,4 +206,56 @@ class EntityModel extends Eloquent
         $name = $parts[count($parts)-1];
         return strtolower($name) . '_id';
     }
+
+    /**
+     * @param $data
+     * @param $entityType
+     * @return bool|string
+     */
+    public static function validate($data, $entityType, $entity = false)
+    {
+        // Use the API request if it exists
+        $action = $entity ? 'update' : 'create';
+        $requestClass = sprintf('App\\Http\\Requests\\%s%sAPIRequest', ucwords($action), ucwords($entityType));
+        if ( ! class_exists($requestClass)) {
+            $requestClass = sprintf('App\\Http\\Requests\\%s%sRequest', ucwords($action), ucwords($entityType));
+        }
+
+        $request = new $requestClass();
+        $request->setUserResolver(function() { return Auth::user(); });
+        $request->setEntity($entity);
+        $request->replace($data);
+
+        if ( ! $request->authorize()) {
+            return trans('texts.not_allowed');
+        }
+
+        $validator = Validator::make($data, $request->rules());
+
+        if ($validator->fails()) {
+            return $validator->messages()->first();
+        } else {
+            return true;
+        }
+    }
+
+    public static function getIcon($entityType)
+    {
+        $icons = [
+            'dashboard' => 'tachometer',
+            'clients' => 'users',
+            'invoices' => 'file-pdf-o',
+            'payments' => 'credit-card',
+            'recurring_invoices' => 'files-o',
+            'credits' => 'credit-card',
+            'quotes' => 'file-text-o',
+            'tasks' => 'clock-o',
+            'expenses' => 'file-image-o',
+            'vendors' => 'building',
+            'settings' => 'cog',
+        ];
+
+        return array_get($icons, $entityType);
+    }
+
 }
