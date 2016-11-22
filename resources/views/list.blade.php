@@ -7,6 +7,7 @@
 	<div style="display:none">
 		{!! Former::text('action') !!}
         {!! Former::text('public_id') !!}
+        {!! Former::text('datatable')->value('true') !!}
 	</div>
 
 	@can('create', 'invoice')
@@ -18,7 +19,7 @@
 		@endif
 	@endcan
 
-    @if ($entityType == ENTITY_EXPENSE_CATEGORY)
+    @if (in_array($entityType, [ENTITY_EXPENSE_CATEGORY, ENTITY_PRODUCT]))
         {!! Button::normal(trans('texts.archive'))->asLinkTo('javascript:submitForm("archive")')->appendIcon(Icon::create('trash')) !!}
     @else
     	{!! DropdownButton::normal(trans('texts.archive'))->withContents([
@@ -88,7 +89,7 @@
 	@endif
 
     {!! Former::close() !!}
-    
+
     <script type="text/javascript">
 
 	function submitForm(action) {
