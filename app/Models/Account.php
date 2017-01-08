@@ -7,6 +7,7 @@ use DateTime;
 use Event;
 use Cache;
 use App;
+use Carbon;
 use App\Events\UserSettingsChanged;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -301,6 +302,14 @@ class Account extends Eloquent
     public function expense_categories()
     {
         return $this->hasMany('App\Models\ExpenseCategory','account_id','id')->withTrashed();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function projects()
+    {
+        return $this->hasMany('App\Models\Project','account_id','id')->withTrashed();
     }
 
     /**
@@ -1387,7 +1396,7 @@ class Account extends Eloquent
             $date = date_create();
         }
 
-        return $date->format('Y-m-d');
+        return Carbon::instance($date);
     }
 
     /**
@@ -1882,7 +1891,7 @@ class Account extends Eloquent
             return false;
         }
 
-        return $invoice->is_quote ? $this->show_accept_quote_terms : $this->show_accept_invoice_terms;
+        return $invoice->isQuote() ? $this->show_accept_quote_terms : $this->show_accept_invoice_terms;
     }
 
     public function showSignature($invoice)
@@ -1891,7 +1900,7 @@ class Account extends Eloquent
             return false;
         }
 
-        return $invoice->is_quote ? $this->require_quote_signature : $this->require_invoice_signature;
+        return $invoice->isQuote() ? $this->require_quote_signature : $this->require_invoice_signature;
     }
 }
 

@@ -32,7 +32,7 @@
 
     @if (isset($quotes) && $quotes && count($quotes))
         <tr><td>{{ strtoupper(trans('texts.quotes')) }}</td></tr>
-        @include('export.invoices', ['entityType' => ENTITY_QUOTE])
+        @include('export.invoices', ['invoices' => $quotes, 'entityType' => ENTITY_QUOTE])
     @endif
 
     @if (isset($recurringInvoices) && $recurringInvoices && count($recurringInvoices))
@@ -43,6 +43,16 @@
     @if (isset($payments) && $payments && count($payments))
         <tr><td>{{ strtoupper(trans('texts.payments')) }}</td></tr>
         @include('export.payments')
+    @endif
+
+    @if (isset($products) && $products && count($products))
+        <tr><td>{{ strtoupper(trans('texts.products')) }}</td></tr>
+        @include('export.products')
+    @endif
+
+    @if (isset($expenses) && $expenses && count($expenses))
+        <tr><td>{{ strtoupper(trans('texts.expenses')) }}</td></tr>
+        @include('export.expenses')
     @endif
 
     @if (isset($vendors) && $vendors && count($vendors))
