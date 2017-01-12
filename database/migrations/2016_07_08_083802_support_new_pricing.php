@@ -30,8 +30,17 @@ class SupportNewPricing extends Migration
         // https://github.com/invoiceninja/invoiceninja/pull/955
         Schema::table('activities', function (Blueprint $table) {
             $table->integer('task_id')->after('invitation_id')->nullable();
-            $table->dropForeign('activities_client_id_foreign');
+            $table->unsignedInteger('client_id')->nullable()->change();
         });
+
+        // This may fail if the table was created as MyISAM
+        try {
+            Schema::table('activities', function (Blueprint $table) {
+                $table->dropForeign('activities_client_id_foreign');
+            });
+        } catch (Exception $e) {
+            // do nothing
+        }
 
         // https://github.com/invoiceninja/invoiceninja/pull/950
         Schema::table('accounts', function (Blueprint $table) {
