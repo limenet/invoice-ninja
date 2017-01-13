@@ -550,7 +550,7 @@ class Invoice extends EntityModel implements BalanceAffecting
 
     public function canBePaid()
     {
-        return floatval($this->balance) > 0 && ! $this->is_deleted && $this->isInvoice();
+        return floatval($this->balance) > 0 && ! $this->is_deleted && $this->isInvoice() && $this->is_public;
     }
 
     /**
@@ -601,7 +601,7 @@ class Invoice extends EntityModel implements BalanceAffecting
      */
     public function isSent()
     {
-        return $this->invoice_status_id >= INVOICE_STATUS_SENT;
+        return $this->invoice_status_id >= INVOICE_STATUS_SENT && $this->is_public;
     }
 
     /**
@@ -1201,7 +1201,7 @@ class Invoice extends EntityModel implements BalanceAffecting
         }
 
         foreach ($this->invoice_items as $invoiceItem) {
-            $itemTaxAmount = $this->getItemTaxable($invoiceItem, $taxable);
+            $taxable = $this->getItemTaxable($invoiceItem, $taxable);
 
             if ($invoiceItem->tax_name1) {
                 $itemTaxAmount = round($taxable * ($invoiceItem->tax_rate1 / 100), 2);

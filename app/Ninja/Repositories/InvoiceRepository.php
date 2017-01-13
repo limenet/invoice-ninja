@@ -336,7 +336,7 @@ class InvoiceRepository extends BaseRepository
             $account->save();
         }
 
-        if (isset($data['invoice_number']) && !$invoice->is_recurring) {
+        if (!empty($data['invoice_number']) && !$invoice->is_recurring) {
             $invoice->invoice_number = trim($data['invoice_number']);
         }
 
@@ -797,7 +797,7 @@ class InvoiceRepository extends BaseRepository
         }
 
         $invoice = $invitation->invoice;
-        if (!$invoice || $invoice->is_deleted || ! $invoice->is_public) {
+        if (!$invoice || $invoice->is_deleted) {
             return false;
         }
 
