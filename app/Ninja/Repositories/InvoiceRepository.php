@@ -144,6 +144,7 @@ class InvoiceRepository extends BaseRepository
                         'invoices.start_date',
                         'invoices.end_date',
                         'invoices.last_sent_date',
+                        'invoices.last_sent_date as last_sent',
                         'contacts.first_name',
                         'contacts.last_name',
                         'contacts.email',
@@ -300,7 +301,7 @@ class InvoiceRepository extends BaseRepository
                 $entityType = ENTITY_QUOTE;
             }
             $invoice = $account->createInvoice($entityType, $data['client_id']);
-            $invoice->invoice_date = Utils::today();
+            $invoice->invoice_date = date_create()->format('Y-m-d');
             if (isset($data['has_tasks']) && filter_var($data['has_tasks'], FILTER_VALIDATE_BOOLEAN)) {
                 $invoice->has_tasks = true;
             }
@@ -365,15 +366,15 @@ class InvoiceRepository extends BaseRepository
         }
 
         if ($invoice->is_recurring) {
-            if ($invoice->start_date && $invoice->start_date != Utils::toSqlDate($data['start_date'])) {
+            if (isset($data['start_date']) && $invoice->start_date && $invoice->start_date != Utils::toSqlDate($data['start_date'])) {
                 $invoice->last_sent_date = null;
             }
 
-            $invoice->frequency_id = $data['frequency_id'] ? $data['frequency_id'] : 0;
-            $invoice->start_date = Utils::toSqlDate($data['start_date']);
-            $invoice->end_date = Utils::toSqlDate($data['end_date']);
+            $invoice->frequency_id = array_get($data, 'frequency_id', 0);
+            $invoice->start_date = Utils::toSqlDate(array_get($data, 'start_date'));
+            $invoice->end_date = Utils::toSqlDate(array_get($data, 'end_date'));
             $invoice->client_enable_auto_bill = isset($data['client_enable_auto_bill']) && $data['client_enable_auto_bill'] ? true : false;
-            $invoice->auto_bill = isset($data['auto_bill']) ? intval($data['auto_bill']) : AUTO_BILL_OFF;
+            $invoice->auto_bill = array_get($data, 'auto_bill_id') ?: array_get($data, 'auto_bill', AUTO_BILL_OFF);
 
             if ($invoice->auto_bill < AUTO_BILL_OFF || $invoice->auto_bill > AUTO_BILL_ALWAYS ) {
                 $invoice->auto_bill = AUTO_BILL_OFF;
@@ -665,7 +666,7 @@ class InvoiceRepository extends BaseRepository
             }
         }
         $clone->invoice_number = $invoiceNumber ?: $account->getNextNumber($clone);
-        $clone->invoice_date = Utils::today();
+        $clone->invoice_date = date_create()->format('Y-m-d');
 
         foreach ([
           'client_id',
@@ -756,8 +757,12 @@ class InvoiceRepository extends BaseRepository
      */
     public function emailInvoice(Invoice $invoice)
     {
-        app('App\Ninja\Mailers\ContactMailer')->sendInvoice($invoice);
-        //dispatch(new SendInvoiceEmail($invoice));
+        // TODO remove this with Laravel 5.3 (https://github.com/invoiceninja/invoiceninja/issues/1303)
+        if (config('queue.default') === 'sync') {
+            app('App\Ninja\Mailers\ContactMailer')->sendInvoice($invoice);
+        } else {
+            dispatch(new SendInvoiceEmail($invoice));
+        }
     }
 
     /**
@@ -868,7 +873,7 @@ class InvoiceRepository extends BaseRepository
         $invoice->invoice_number = $recurInvoice->account->getNextNumber($invoice);
         $invoice->amount = $recurInvoice->amount;
         $invoice->balance = $recurInvoice->amount;
-        $invoice->invoice_date = Utils::today();
+        $invoice->invoice_date = date_create()->format('Y-m-d');
         $invoice->discount = $recurInvoice->discount;
         $invoice->po_number = $recurInvoice->po_number;
         $invoice->public_notes = Utils::processVariables($recurInvoice->public_notes);
@@ -952,6 +957,7 @@ class InvoiceRepository extends BaseRepository
                     ->whereAccountId($account->id)
                     ->where('balance', '>', 0)
                     ->where('is_recurring', '=', false)
+                    ->whereIsPublic(true)
                     ->whereRaw('('.$sql.')')
                     ->get();
 

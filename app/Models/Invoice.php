@@ -610,7 +610,7 @@ class Invoice extends EntityModel implements BalanceAffecting
 
     public static function calcStatusClass($statusId, $balance, $dueDate)
     {
-        if (static::calcIsOverdue($balance, $dueDate)) {
+        if ($statusId >= INVOICE_STATUS_SENT && static::calcIsOverdue($balance, $dueDate)) {
             return 'danger';
         }
 
@@ -637,7 +637,7 @@ class Invoice extends EntityModel implements BalanceAffecting
 
     public function statusClass()
     {
-        return static::calcStatusClass($this->invoice_status_id, $this->balance, $this->due_date);
+        return static::calcStatusClass($this->invoice_status_id, $this->balance, $this->getOriginal('due_date'));
     }
 
     public function statusLabel()
@@ -1030,10 +1030,16 @@ class Invoice extends EntityModel implements BalanceAffecting
                 if($dueDate) {
                     return date('Y-m-d', $dueDate);// SQL format
                 }
-            }
-            else if ($this->client->payment_terms != 0) {
+            } elseif ($this->client->payment_terms != 0) {
                 // No custom due date set for this invoice; use the client's payment terms
                 $days = $this->client->payment_terms;
+                if ($days == -1) {
+                    $days = 0;
+                }
+                return date('Y-m-d', strtotime('+'.$days.' day', $now));
+            } elseif ($this->account->payment_terms != 0) {
+                // No custom due date set for this invoice; use the client's payment terms
+                $days = $this->account->payment_terms;
                 if ($days == -1) {
                     $days = 0;
                 }
@@ -1207,7 +1213,7 @@ class Invoice extends EntityModel implements BalanceAffecting
             }
 
             $pdfString = strip_tags($pdfString);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Utils::logError("PhantomJS - Failed to create pdf: {$exception->getMessage()}");
             return false;
         }

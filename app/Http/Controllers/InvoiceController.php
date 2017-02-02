@@ -101,7 +101,7 @@ class InvoiceController extends BaseController
             $invoice->invoice_number = $account->getNextNumber($invoice);
             $invoice->balance = $invoice->amount;
             $invoice->invoice_status_id = 0;
-            $invoice->invoice_date = Utils::today();
+            $invoice->invoice_date = date_create()->format('Y-m-d');
             $method = 'POST';
             $url = "{$entityType}s";
         } else {
@@ -415,9 +415,13 @@ class InvoiceController extends BaseController
         if ($invoice->is_recurring) {
             $response = $this->emailRecurringInvoice($invoice);
         } else {
-            return app('App\Ninja\Mailers\ContactMailer')->sendInvoice($invoice, false, $pdfUpload);
-            //$this->dispatch(new SendInvoiceEmail($invoice, false, $pdfUpload));
-            //return true;
+            // TODO remove this with Laravel 5.3 (https://github.com/invoiceninja/invoiceninja/issues/1303)
+            if (config('queue.default') === 'sync') {
+                $response = app('App\Ninja\Mailers\ContactMailer')->sendInvoice($invoice, false, $pdfUpload);
+            } else {
+                $this->dispatch(new SendInvoiceEmail($invoice, false, $pdfUpload));
+                $response = true;
+            }
         }
 
         if ($response === true) {
@@ -447,9 +451,13 @@ class InvoiceController extends BaseController
         if ($invoice->isPaid()) {
             return true;
         } else {
-            return app('App\Ninja\Mailers\ContactMailer')->sendInvoice($invoice);
-            //$this->dispatch(new SendInvoiceEmail($invoice));
-            //return true;
+            // TODO remove this with Laravel 5.3 (https://github.com/invoiceninja/invoiceninja/issues/1303)
+            if (config('queue.default') === 'sync') {
+                return app('App\Ninja\Mailers\ContactMailer')->sendInvoice($invoice);
+            } else {
+                $this->dispatch(new SendInvoiceEmail($invoice));
+                return true;
+            }
         }
     }
 

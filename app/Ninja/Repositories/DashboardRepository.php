@@ -205,8 +205,7 @@ class DashboardRepository
         if ($startDate) {
             $paidToDate->where('payments.payment_date', '>=', $startDate);
         } elseif ($account->financial_year_start) {
-            $yearStart = str_replace('2000', date('Y'), $account->financial_year_start);
-            $paidToDate->where('payments.payment_date', '>=', $yearStart);
+            $paidToDate->where('payments.payment_date', '>=', $account->financialYearStart());
         }
 
         return $paidToDate->groupBy('payments.account_id')
@@ -236,8 +235,7 @@ class DashboardRepository
         }
 
         if ($account->financial_year_start) {
-            $yearStart = str_replace('2000', date('Y'), $account->financial_year_start);
-            $averageInvoice->where('invoices.invoice_date', '>=', $yearStart);
+            $averageInvoice->where('invoices.invoice_date', '>=', $account->financialYearStart());
         }
 
         return $averageInvoice->groupBy('accounts.id')

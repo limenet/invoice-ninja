@@ -612,7 +612,7 @@ class BasePaymentDriver
         $payment->client_id = $invoice->client_id;
         $payment->contact_id = $invitation->contact_id;
         $payment->transaction_reference = $ref;
-        $payment->payment_date = Utils::today();
+        $payment->payment_date = date_create()->format('Y-m-d');
         $payment->ip = Request::ip();
 
         $payment = $this->creatingPayment($payment, $paymentMethod);
@@ -661,7 +661,7 @@ class BasePaymentDriver
 
                 if(
                     $company->plan != $plan
-                    || DateTime::createFromFormat('Y-m-d', $account->company->plan_expires) >= date_create('-7 days')
+                    || DateTime::createFromFormat('Y-m-d', $account->company->plan_expires) <= date_create('-7 days')
                 ) {
                     // Either this is a different plan, or the subscription expired more than a week ago
                     // Reset any grandfathering
