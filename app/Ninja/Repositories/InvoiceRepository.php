@@ -79,7 +79,8 @@ class InvoiceRepository extends BaseRepository
                 'invoices.is_deleted',
                 'invoices.partial',
                 'invoices.user_id',
-                'invoices.is_public'
+                'invoices.is_public',
+                'invoices.is_recurring'
             );
 
         $this->applyFilters($query, $entityType, ENTITY_INVOICE);
@@ -96,7 +97,8 @@ class InvoiceRepository extends BaseRepository
                 if (in_array(INVOICE_STATUS_OVERDUE, $statuses)) {
                     $query->orWhere(function ($query) use ($statuses) {
                         $query->where('invoices.balance', '>', 0)
-                              ->where('invoices.due_date', '<', date('Y-m-d'));
+                              ->where('invoices.due_date', '<', date('Y-m-d'))
+                              ->where('invoices.is_public', '=', true);
                     });
                 }
             });
@@ -730,6 +732,8 @@ class InvoiceRepository extends BaseRepository
                 'tax_rate1',
                 'tax_name2',
                 'tax_rate2',
+                'custom_value1',
+                'custom_value2',
             ] as $field) {
                 $cloneItem->$field = $item->$field;
             }
