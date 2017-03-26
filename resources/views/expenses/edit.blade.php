@@ -21,6 +21,7 @@
             ->method($method) !!}
     <div style="display:none">
         {!! Former::text('action') !!}
+        {!! Former::text('data')->data_bind('value: ko.mapping.toJSON(model)') !!}
     </div>
 
 	@if ($expense)
@@ -306,9 +307,8 @@
             @else
                 // otherwise create blank model
                 window.model = new ViewModel({!! $expense !!});
-
-                ko.applyBindings(model);
             @endif
+            ko.applyBindings(model);
 
             @if (!$expense && $clientPublicId)
                 onClientChange();
