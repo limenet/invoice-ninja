@@ -68,6 +68,7 @@ class ClientPortalController extends BaseController
         }
 
         $account->loadLocalizationSettings($client);
+        $this->invoiceRepo->clearGatewayFee($invoice);
 
         if (! Input::has('phantomjs') && ! session('silent:' . $client->id) && ! Session::has($invitation->invitation_key)
             && (! Auth::check() || Auth::user()->account_id != $invoice->account_id)) {
@@ -146,6 +147,7 @@ class ClientPortalController extends BaseController
             'paymentTypes' => $paymentTypes,
             'paymentURL' => $paymentURL,
             'phantomjs' => Input::has('phantomjs'),
+            'gatewayTypeId' => count($paymentTypes) == 1 ? $paymentTypes[0]['gatewayTypeId'] : false,
         ];
 
         if ($paymentDriver = $account->paymentDriver($invitation, GATEWAY_TYPE_CREDIT_CARD)) {
@@ -324,14 +326,20 @@ class ClientPortalController extends BaseController
         }
 
         $color = $account->primary_color ? $account->primary_color : '#0b4d78';
+        $columns = ['frequency', 'start_date', 'end_date', 'invoice_total'];
+        $client = $contact->client;
+
+        if ($client->hasAutoBillConfigurableInvoices()) {
+            $columns[] = 'auto_bill';
+        }
 
         $data = [
             'color' => $color,
             'account' => $account,
-            'client' => $contact->client,
+            'client' => $client,
             'title' => trans('texts.recurring_invoices'),
             'entityType' => ENTITY_RECURRING_INVOICE,
-            'columns' => Utils::trans(['frequency', 'start_date', 'end_date', 'invoice_total', 'auto_bill']),
+            'columns' => Utils::trans($columns),
         ];
 
         return response()->view('public_list', $data);
@@ -521,7 +529,7 @@ class ClientPortalController extends BaseController
           'account' => $account,
           'title' => trans('texts.credits'),
           'entityType' => ENTITY_CREDIT,
-          'columns' => Utils::trans(['credit_date', 'credit_amount', 'credit_balance']),
+          'columns' => Utils::trans(['credit_date', 'credit_amount', 'credit_balance', 'notes']),
         ];
 
         return response()->view('public_list', $data);

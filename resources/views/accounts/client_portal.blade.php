@@ -77,28 +77,31 @@
                                         ->help($account->iframe_url ? 'domain_help_website' : 'domain_help') !!}
                             @endif
 
-                            {!! Former::inline_radios('custom_invoice_link')
-                                    ->onchange('onCustomLinkChange()')
-                                    ->label(trans('texts.customize'))
-                                    ->radios([
-                                        trans('texts.subdomain') => ['value' => 'subdomain', 'name' => 'custom_link'],
-                                        trans('texts.website') => ['value' => 'website', 'name' => 'custom_link'],
-                                    ])->check($account->iframe_url ? 'website' : 'subdomain') !!}
-                            {{ Former::setOption('capitalize_translations', false) }}
+                            @if (Utils::isNinja())
 
-                            {!! Former::text('subdomain')
-                                        ->placeholder(Utils::isNinja() ? 'app' : trans('texts.www'))
-                                        ->onchange('onSubdomainChange()')
-                                        ->addGroupClass('subdomain')
-                                        ->label(' ')
-                                        ->help(trans('texts.subdomain_help')) !!}
+                                {!! Former::inline_radios('custom_invoice_link')
+                                        ->onchange('onCustomLinkChange()')
+                                        ->label(trans('texts.customize'))
+                                        ->radios([
+                                            trans('texts.subdomain') => ['value' => 'subdomain', 'name' => 'custom_link'],
+                                            trans('texts.website') => ['value' => 'website', 'name' => 'custom_link'],
+                                        ])->check($account->iframe_url ? 'website' : 'subdomain') !!}
+                                {{ Former::setOption('capitalize_translations', false) }}
+
+                                {!! Former::text('subdomain')
+                                            ->placeholder(Utils::isNinja() ? 'app' : trans('texts.www'))
+                                            ->onchange('onSubdomainChange()')
+                                            ->addGroupClass('subdomain')
+                                            ->label(' ')
+                                            ->help(trans('texts.subdomain_help')) !!}
+                            @endif
 
                             {!! Former::text('iframe_url')
                                         ->placeholder('https://www.example.com/invoice')
                                         ->appendIcon('question-sign')
                                         ->addGroupClass('iframe_url')
-                                        ->label(' ')
-                                        ->help(trans('texts.subdomain_help')) !!}
+                                        ->label(Utils::isNinja() ? ' ' : trans('texts.website'))
+                                        ->help(trans(Utils::isNinja() ? 'texts.subdomain_help' : 'texts.website_help')) !!}
 
                             {!! Former::plaintext('preview')
                                         ->value($account->getSampleLink()) !!}
@@ -236,13 +239,11 @@
                                 ->inlineHelp('buy_now_buttons_warning')
                                 ->addGroupClass('product-select') !!}
 
-                            {!! Former::inline_checkboxes('client_fields')
-                                    ->onchange('updateBuyNowButtons()')
-                                    ->checkboxes([
-                                        trans('texts.email') => ['value' => 'email', 'name' => 'email'],
-                                        trans('texts.first_name') => ['value' => 'first_name', 'name' => 'first_name'],
-                                        trans('texts.last_name') => ['value' => 'last_name', 'name' => 'last_name'],
-                                    ]) !!}
+                            @if (count($account->present()->customTextFields))
+                                {!! Former::inline_checkboxes('custom_fields')
+                                        ->onchange('updateBuyNowButtons()')
+                                        ->checkboxes($account->present()->customTextFields) !!}
+                            @endif
 
                             {!! Former::inline_radios('landing_page')
                                     ->onchange('showPaymentTypes();updateBuyNowButtons();')
@@ -342,7 +343,7 @@
             </div>
 
             <div class="container" style="width: 100%; padding-bottom: 0px !important">
-            <div class="panel panel-default" style="margin-bottom: 0px">
+            <div class="panel panel-default">
             <div class="panel-body">
                 <p>{{ trans('texts.iframe_url_help1') }}</p>
                 <pre>&lt;center&gt;
@@ -351,7 +352,7 @@
 &lt;script language="javascript"&gt;
 var iframe = document.getElementById('invoiceIFrame');
 iframe.src = '{{ rtrim(SITE_URL ,'/') }}/view/'
-             + window.location.search.substring(1);
+             + window.location.search.substring(1, 33);
 &lt;/script&gt;</pre>
                 <p>{{ trans('texts.iframe_url_help2') }}</p>
                 <p><b>{{ trans('texts.iframe_url_help3') }}</b></p>
@@ -359,7 +360,7 @@ iframe.src = '{{ rtrim(SITE_URL ,'/') }}/view/'
             </div>
             </div>
 
-            <div class="modal-footer" style="margin-top: 2px">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-dismiss="modal">{{ trans('texts.close') }}</button>
             </div>
 
@@ -430,10 +431,10 @@ iframe.src = '{{ rtrim(SITE_URL ,'/') }}/view/'
 
             var form = '<form action="' + link + '" method="post" target="_top">' + "\n";
 
-            @foreach (['first_name', 'last_name', 'email'] as $field)
-                if ($('input#{{ $field }}').is(':checked')) {
-                    form += '<input type="{{ $field == 'email' ? 'email' : 'text' }}" name="{{ $field }}" placeholder="{{ trans("texts.{$field}") }}" required/>' + "\n";
-                    link += '&{{ $field }}=';
+            @foreach ($account->present()->customTextFields as $field => $val)
+                if ($('input#{{ $val['name'] }}').is(':checked')) {
+                    form += '<input type="text" name="{{ $val['name'] }}" placeholder="{{ $field }}" required/>' + "\n";
+                    link += '&{{ $val['name'] }}=';
                 }
             @endforeach
 
