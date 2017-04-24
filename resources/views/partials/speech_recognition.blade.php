@@ -1,5 +1,6 @@
 <i id="microphone" class="fa fa-microphone form-control-feedback"
-  title="{{ trans('texts.microphone_help') }}"
+  title="Say &quot;new invoice for [client]&quot; or &quot;show me [client]\'s archived payments&quot;"
+  data-toggle="tooltip" data-placement="bottom"
   onclick="onMicrophoneClick()" aria-hidden="true"></i>
 
 <style type="text/css">
@@ -125,10 +126,8 @@
       recognition.onend = function() {
         recognizing = false;
         $('.fa-microphone').show();
-        if (ignore_onend) {
-          return;
-        }
-        if (!final_transcript) {
+        if (ignore_onend || !final_transcript) {
+          $('#search').val('');
           return;
         }
         $('#search-form').submit();
@@ -140,6 +139,7 @@
           recognition.onend = null;
           recognition.stop();
           $('.fa-microphone').hide();
+          $('#search').val('');
           return;
         }
         for (var i = event.resultIndex; i < event.results.length; ++i) {
