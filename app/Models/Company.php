@@ -24,6 +24,18 @@ class Company extends Eloquent
     /**
      * @var array
      */
+    protected $fillable = [
+        'plan',
+        'plan_term',
+        'plan_price',
+        'plan_paid',
+        'plan_started',
+        'plan_expires',
+    ];
+
+    /**
+     * @var array
+     */
     protected $dates = [
         'deleted_at',
         'promo_expires',
@@ -146,6 +158,12 @@ class Company extends Eloquent
         return false;
     }
 
+    public function getPlanDetails($includeInactive = false, $includeTrial = true)
+    {
+        $account = $this->accounts()->first();
+        return $account->getPlanDetails($includeInactive, $includeTrial);
+    }
+
     public function processRefund($user)
     {
         if (! $this->payment) {
@@ -174,3 +192,17 @@ class Company extends Eloquent
         return false;
     }
 }
+
+Company::deleted(function ($company)
+{
+    if (! env('MULTI_DB_ENABLED')) {
+        return;
+    }
+
+    $server = \App\Models\DbServer::whereName(config('database.default'))->firstOrFail();
+
+    LookupCompany::deleteWhere([
+        'company_id' => $company->id,
+        'db_server_id' => $server->id,
+    ]);
+});

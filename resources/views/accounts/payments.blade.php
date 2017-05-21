@@ -35,7 +35,7 @@
             {!! Former::actions( Button::success(trans('texts.save'))->withAttributes(['id' => 'formSave'])->submit()->appendIcon(Icon::create('floppy-disk')) ) !!}
         </div>
     </div>
-	
+
     {!! Former::close() !!}
 
   @if ($showAdd)

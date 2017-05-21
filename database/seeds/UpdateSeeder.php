@@ -11,6 +11,7 @@ class UpdateSeeder extends Seeder
     {
         $this->command->info('Running UpdateSeeder...');
 
+        $this->call('CountriesSeeder');
         $this->call('PaymentLibrariesSeeder');
         $this->call('FontsSeeder');
         $this->call('GatewayTypesSeeder');
@@ -25,7 +26,8 @@ class UpdateSeeder extends Seeder
         $this->call('LanguageSeeder');
         $this->call('IndustrySeeder');
         $this->call('FrequencySeeder');
-        
+        $this->call('DbServerSeeder');
+
         Cache::flush();
     }
 }

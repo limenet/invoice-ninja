@@ -58,7 +58,7 @@
 
 	{!! Former::open($url)
             ->method($method)
-            ->addClass('warn-on-exit main-form')
+            ->addClass('warn-on-exit main-form search') // 'search' prevents LastPass auto-fill http://stackoverflow.com/a/30921628/497368
             ->autocomplete('off')
             ->onsubmit('return onFormSubmit(event)')
             ->rules(array(
@@ -101,7 +101,11 @@
 				<div style="display:none">
     		@endif
 
-            {!! Former::select('client')->addOption('', '')->data_bind("dropdown: client")->addClass('client-input')->addGroupClass('client_select closer-row') !!}
+            {!! Former::select('client')
+					->addOption('', '')
+					->data_bind("dropdown: client, dropdownOptions: {highlighter: comboboxHighlighter, matcher: comboboxMatcher}")
+					->addClass('client-input')
+					->addGroupClass('client_select closer-row') !!}
 
 			<div class="form-group" style="margin-bottom: 8px">
 				<div class="col-lg-8 col-sm-8 col-lg-offset-4 col-sm-offset-4">
@@ -149,7 +153,7 @@
 			<div data-bind="visible: !is_recurring()">
 				{!! Former::text('invoice_date')->data_bind("datePicker: invoice_date, valueUpdate: 'afterkeydown'")->label(trans("texts.{$entityType}_date"))
 							->data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT, DEFAULT_DATE_PICKER_FORMAT))->appendIcon('calendar')->addGroupClass('invoice_date') !!}
-				{!! Former::text('due_date')->data_bind("datePicker: due_date, valueUpdate: 'afterkeydown'")->label(trans("texts.{$entityType}_due_date"))
+				{!! Former::text('due_date')->data_bind("datePicker: due_date, valueUpdate: 'afterkeydown'")->label($account->getLabel($invoice->getDueDateLabel()))
 							->placeholder($invoice->exists || $invoice->isQuote() ? ' ' : $account->present()->dueDatePlaceholder())
 							->data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT, DEFAULT_DATE_PICKER_FORMAT))->appendIcon('calendar')->addGroupClass('due_date') !!}
 				{!! Former::text('partial')->data_bind("value: partial, valueUpdate: 'afterkeydown'")->onkeyup('onPartialChange()')
@@ -205,7 +209,7 @@
                     </div>
                 </div>
             </span>
-			{!! Former::text('po_number')->label(trans('texts.po_number_short'))->data_bind("value: po_number, valueUpdate: 'afterkeydown'") !!}
+			{!! Former::text('po_number')->label($account->getLabel('po_number', 'po_number_short'))->data_bind("value: po_number, valueUpdate: 'afterkeydown'") !!}
 			{!! Former::text('discount')->data_bind("value: discount, valueUpdate: 'afterkeydown'")
 					->addGroupClass('discount-group')->type('number')->min('0')->step('any')->append(
 						Former::select('is_amount_discount')->addOption(trans('texts.discount_percent'), '0')
@@ -342,8 +346,8 @@
                         @if ($account->hasFeature(FEATURE_DOCUMENTS))
                             <li role="presentation"><a href="#attached-documents" aria-controls="attached-documents" role="tab" data-toggle="tab">
                                 {{ trans("texts.invoice_documents") }}
-                                @if (count($invoice->documents))
-                                    ({{ count($invoice->documents) }})
+                                @if ($count = $invoice->countDocuments())
+                                    ({{ $count }})
                                 @endif
                             </a></li>
                         @endif
@@ -389,9 +393,11 @@
                                 @if ($invoice->hasExpenseDocuments())
                                     <h4>{{trans('texts.documents_from_expenses')}}</h4>
                                     @foreach($invoice->expenses as $expense)
-                                        @foreach($expense->documents as $document)
-                                            <div>{{$document->name}}</div>
-                                        @endforeach
+										@if ($expense->invoice_documents)
+	                                        @foreach($expense->documents as $document)
+	                                            <div>{{$document->name}}</div>
+	                                        @endforeach
+										@endif
                                     @endforeach
                                 @endif
                             </div>
@@ -695,6 +701,18 @@
                         {!! Former::password('password')->data_bind("value: (typeof password=='function'?password():null)?'-%unchanged%-':'', valueUpdate: 'afterkeydown',
                             attr: {name: 'client[contacts][' + \$index() + '][password]'}")->autocomplete('new-password') !!}
                     @endif
+					@if (Auth::user()->hasFeature(FEATURE_INVOICE_SETTINGS))
+	                    @if ($account->custom_contact_label1)
+	                        {!! Former::text('custom_contact1')->data_bind("value: custom_value1, valueUpdate: 'afterkeydown',
+		                            attr: {name: 'client[contacts][' + \$index() + '][custom_value1]'}")
+	                            ->label($account->custom_contact_label1) !!}
+	                    @endif
+	                    @if ($account->custom_contact_label2)
+							{!! Former::text('custom_contact2')->data_bind("value: custom_value2, valueUpdate: 'afterkeydown',
+									attr: {name: 'client[contacts][' + \$index() + '][custom_value2]'}")
+								->label($account->custom_contact_label2) !!}
+	                    @endif
+	                @endif
                     <div class="form-group">
                         <div class="col-lg-8 col-lg-offset-4">
                             <span class="redlink bold" data-bind="visible: $parent.contacts().length > 1">
@@ -824,7 +842,7 @@
     Dropzone.autoDiscover = false;
 
     var products = {!! $products !!};
-    var clients = {!! $clients !!};
+	var clients = {!! $clients !!};
     var account = {!! Auth::user()->account !!};
     var dropzone;
 
@@ -838,21 +856,21 @@
         for (var i=0; i<clients.length; i++) {
             var client = clients[i];
             clientMap[client.public_id] = client;
-            var clientName = getClientDisplayName(client);
             @if (! $invoice->id)
-	            if (!clientName) {
+	            if (!getClientDisplayName(client)) {
 	                continue;
 	            }
             @endif
-            for (var j=0; j<client.contacts.length; j++) {
+			var clientName = client.name;
+			for (var j=0; j<client.contacts.length; j++) {
                 var contact = client.contacts[j];
-                var contactName = getContactDisplayName(contact);
-                if (contact.is_primary === '1') {
-                    contact.send_invoice = true;
-                }
-                if (contactName && clientName != contactName) {
-                    $clientSelect.append(new Option(contactName, client.public_id));
-                }
+                var contactName = getContactDisplayNameWithEmail(contact);
+				if (clientName && contactName) {
+					clientName += '<br/>  • ';
+				}
+				if (contactName) {
+					clientName += contactName;
+				}
             }
             $clientSelect.append(new Option(clientName, client.public_id));
         }
@@ -891,7 +909,7 @@
             @if (isset($tasks) && $tasks)
                 // move the blank invoice line item to the end
                 var blank = model.invoice().invoice_items.pop();
-                var tasks = {!! $tasks !!};
+                var tasks = {!! json_encode($tasks) !!};
 
                 for (var i=0; i<tasks.length; i++) {
                     var task = tasks[i];
@@ -1081,7 +1099,7 @@
                 addRemoveLinks:true,
                 dictRemoveFileConfirmation:"{{trans('texts.are_you_sure')}}",
                 @foreach(['default_message', 'fallback_message', 'fallback_text', 'file_too_big', 'invalid_file_type', 'response_error', 'cancel_upload', 'cancel_upload_confirmation', 'remove_file'] as $key)
-                    "dict{{Utils::toClassCase($key)}}":"{{trans('texts.dropzone_'.$key)}}",
+                    "dict{{ Utils::toClassCase($key) }}" : "{!! strip_tags(addslashes(trans('texts.dropzone_'.$key))) !!}",
                 @endforeach
                 maxFilesize:{{floatval(MAX_DOCUMENT_SIZE/1000)}},
 				parallelUploads:1,
@@ -1250,7 +1268,7 @@
 		if (!design) return;
 		var doc = generatePDF(invoice, design, true);
         var type = invoice.is_quote ? '{{ trans('texts.'.ENTITY_QUOTE) }}' : '{{ trans('texts.'.ENTITY_INVOICE) }}';
-		doc.save(type +'-' + $('#invoice_number').val() + '.pdf');
+		doc.save(type + '-' + $('#invoice_number').val() + '.pdf');
 	}
 
     function onRecurrClick() {

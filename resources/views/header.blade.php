@@ -298,7 +298,7 @@
                 ])
             @endif
             <li class="divider"></li>
-            @if (Utils::isAdmin())
+            @if (Utils::isAdmin() && Auth::user()->confirmed && Utils::getResllerType() != RESELLER_ACCOUNT_COUNT)
               @if (count(session(SESSION_USER_ACCOUNTS)) > 1)
                   <li>{!! link_to('/manage_companies', trans('texts.manage_companies')) !!}</li>
               @elseif (!session(SESSION_USER_ACCOUNTS) || count(session(SESSION_USER_ACCOUNTS)) < 5)
@@ -313,7 +313,7 @@
 
       {!! Former::open('/handle_command')->id('search-form')->addClass('navbar-form navbar-right')->role('search') !!}
         <div class="form-group has-feedback">
-          <input type="text" name="command" id="search" style="width: 240px;padding-top:0px;padding-bottom:0px;margin-right:12px;"
+          <input type="text" name="command" id="search" style="width: 280px;padding-top:0px;padding-bottom:0px;margin-right:12px;"
             class="form-control" placeholder="{{ trans('texts.search') . ': ' . trans('texts.search_hotkey')}}"/>
             @if (env('SPEECH_ENABLED'))
                 @include('partials/speech_recognition')

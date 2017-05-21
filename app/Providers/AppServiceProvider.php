@@ -8,6 +8,8 @@ use Request;
 use URL;
 use Utils;
 use Validator;
+use Queue;
+use Illuminate\Queue\Events\JobProcessing;
 
 /**
  * Class AppServiceProvider.
@@ -21,6 +23,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // support selecting job database 
+        Queue::before(function (JobProcessing $event) {
+            $body = $event->job->getRawBody();
+            preg_match('/db-ninja-[\d+]/', $body, $matches);
+            if (count($matches)) {
+                config(['database.default' => $matches[0]]);
+            }
+        });
+
         Form::macro('image_data', function ($image, $contents = false) {
             if (! $contents) {
                 $contents = file_get_contents($image);
@@ -28,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
                 $contents = $image;
             }
 
-            return 'data:image/jpeg;base64,' . base64_encode($contents);
+            return $contents ? 'data:image/jpeg;base64,' . base64_encode($contents) : '';
         });
 
         Form::macro('nav_link', function ($url, $text) {

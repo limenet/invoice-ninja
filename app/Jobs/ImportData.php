@@ -8,7 +8,9 @@ use Illuminate\Queue\SerializesModels;
 use Monolog\Logger;
 use App\Services\ImportService;
 use App\Ninja\Mailers\UserMailer;
+use App\Models\User;
 use Auth;
+use App;
 
 /**
  * Class SendInvoiceEmail.
@@ -33,16 +35,22 @@ class ImportData extends Job implements ShouldQueue
     protected $settings;
 
     /**
+     * @var string
+     */
+    protected $server;
+
+    /**
      * Create a new job instance.
      *
      * @param mixed   $files
      * @param mixed   $settings
      */
-    public function __construct($user, $type, $settings)
+    public function __construct(User $user, $type, $settings)
     {
         $this->user = $user;
         $this->type = $type;
         $this->settings = $settings;
+        $this->server = config('database.default');
     }
 
     /**
@@ -54,8 +62,10 @@ class ImportData extends Job implements ShouldQueue
     {
         $includeSettings = false;
 
-        Auth::onceUsingId($this->user->id);
-        $this->user->account->loadLocalizationSettings();
+        if (App::runningInConsole()) {
+            Auth::onceUsingId($this->user->id);
+            $this->user->account->loadLocalizationSettings();
+        }
 
         if ($this->type === IMPORT_JSON) {
             $includeData = $this->settings['include_data'];
@@ -76,5 +86,9 @@ class ImportData extends Job implements ShouldQueue
         $subject = trans('texts.import_complete');
         $message = $importService->presentResults($results, $includeSettings);
         $userMailer->sendMessage($this->user, $subject, $message);
+
+        if (App::runningInConsole()) {
+            Auth::logout();
+        }
     }
 }

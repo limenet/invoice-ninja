@@ -151,7 +151,9 @@
             @endforeach
             @foreach ($invoice->expenses as $expense)
                 @foreach ($expense->documents as $document)
-                    <li><a target="_blank" href="{{ $document->getClientUrl($invitation) }}">{{$document->name}} ({{Form::human_filesize($document->size)}})</a></li>
+					@if ($expense->invoice_documents)
+                    	<li><a target="_blank" href="{{ $document->getClientUrl($invitation) }}">{{$document->name}} ({{Form::human_filesize($document->size)}})</a></li>
+					@endif
                 @endforeach
             @endforeach
             </ul>
@@ -174,14 +176,14 @@
         @endif
 		<script type="text/javascript">
 
-			window.invoice = {!! $invoice->toJson() !!};
+			window.invoice = {!! $invoice !!};
 			invoice.features = {
                 customize_invoice_design:{{ $invoice->client->account->hasFeature(FEATURE_CUSTOMIZE_INVOICE_DESIGN) ? 'true' : 'false' }},
                 remove_created_by:{{ $invoice->client->account->hasFeature(FEATURE_REMOVE_CREATED_BY) ? 'true' : 'false' }},
                 invoice_settings:{{ $invoice->client->account->hasFeature(FEATURE_INVOICE_SETTINGS) ? 'true' : 'false' }}
             };
 			invoice.is_quote = {{ $invoice->isQuote() ? 'true' : 'false' }};
-			invoice.contact = {!! $contact->toJson() !!};
+			invoice.contact = {!! $contact !!};
 
 			function getPDFString(cb) {
     	  	    return generatePDF(invoice, invoice.invoice_design.javascript, true, cb);

@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Auth;
 use Session;
+use DB;
 
 class TaskRepository extends BaseRepository
 {
@@ -17,7 +18,7 @@ class TaskRepository extends BaseRepository
 
     public function find($clientPublicId = null, $filter = null)
     {
-        $query = \DB::table('tasks')
+        $query = DB::table('tasks')
                     ->leftJoin('clients', 'tasks.client_id', '=', 'clients.id')
                     ->leftJoin('contacts', 'contacts.client_id', '=', 'clients.id')
                     ->leftJoin('invoices', 'invoices.id', '=', 'tasks.invoice_id')
@@ -30,7 +31,7 @@ class TaskRepository extends BaseRepository
                     ->where('contacts.deleted_at', '=', null)
                     ->select(
                         'tasks.public_id',
-                        \DB::raw("COALESCE(NULLIF(clients.name,''), NULLIF(CONCAT(contacts.first_name, ' ', contacts.last_name),''), NULLIF(contacts.email,'')) client_name"),
+                        DB::raw("COALESCE(NULLIF(clients.name,''), NULLIF(CONCAT(contacts.first_name, ' ', contacts.last_name),''), NULLIF(contacts.email,'')) client_name"),
                         'clients.public_id as client_public_id',
                         'clients.user_id as client_user_id',
                         'contacts.first_name',
@@ -49,7 +50,7 @@ class TaskRepository extends BaseRepository
                         'tasks.time_log',
                         'tasks.time_log as duration',
                         'tasks.created_at',
-                        'tasks.created_at as date',
+                        DB::raw("SUBSTRING(time_log, 3, 10) date"),
                         'tasks.user_id',
                         'projects.name as project',
                         'projects.public_id as project_public_id',
@@ -133,6 +134,10 @@ class TaskRepository extends BaseRepository
             $timeLog = [];
         }
 
+        if(isset($data['client_id'])) {
+            $task->client_id = Client::getPrivateId($data['client_id']);
+        }
+
         array_multisort($timeLog);
 
         if (isset($data['action'])) {
@@ -145,6 +150,8 @@ class TaskRepository extends BaseRepository
             } elseif ($data['action'] == 'stop' && $task->is_running) {
                 $timeLog[count($timeLog) - 1][1] = time();
                 $task->is_running = false;
+            } elseif ($data['action'] == 'offline'){
+                $task->is_running = $data['is_running'] ? 1 : 0;
             }
         }
 

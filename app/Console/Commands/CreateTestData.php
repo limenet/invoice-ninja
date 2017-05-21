@@ -18,7 +18,6 @@ use Utils;
  */
 class CreateTestData extends Command
 {
-    //protected $name = 'ninja:create-test-data';
     /**
      * @var string
      */
@@ -26,7 +25,7 @@ class CreateTestData extends Command
     /**
      * @var string
      */
-    protected $signature = 'ninja:create-test-data {count=1} {create_account=false}';
+    protected $signature = 'ninja:create-test-data {count=1} {create_account=false} {--database}';
 
     /**
      * @var
@@ -69,11 +68,16 @@ class CreateTestData extends Command
     public function fire()
     {
         if (Utils::isNinjaProd()) {
+            $this->info('Unable to run in production');
             return false;
         }
 
         $this->info(date('Y-m-d').' Running CreateTestData...');
         $this->count = $this->argument('count');
+
+        if ($database = $this->option('database')) {
+            config(['database.default' => $database]);
+        }
 
         if (filter_var($this->argument('create_account'), FILTER_VALIDATE_BOOLEAN)) {
             $this->info('Creating new account...');
@@ -126,6 +130,7 @@ class CreateTestData extends Command
     {
         for ($i = 0; $i < $this->count; $i++) {
             $data = [
+                'is_public' => true,
                 'client_id' => $client->id,
                 'invoice_date_sql' => date_create()->modify(rand(-100, 100) . ' days')->format('Y-m-d'),
                 'due_date_sql' => date_create()->modify(rand(-100, 100) . ' days')->format('Y-m-d'),

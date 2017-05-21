@@ -170,13 +170,22 @@ class UserController extends BaseController
 
                 $rules['email'] = 'required|email|unique:users,email,'.$user->id.',id';
             } else {
+                $user = false;
                 $rules['email'] = 'required|email|unique:users';
             }
 
             $validator = Validator::make(Input::all(), $rules);
 
             if ($validator->fails()) {
-                return Redirect::to($userPublicId ? 'users/edit' : 'users/create')->withInput()->withErrors($validator);
+                return Redirect::to($userPublicId ? 'users/edit' : 'users/create')
+                            ->withErrors($validator)
+                            ->withInput();
+            }
+
+            if (! \App\Models\LookupUser::validateField('email', Input::get('email'), $user)) {
+                return Redirect::to($userPublicId ? 'users/edit' : 'users/create')
+                    ->withError(trans('texts.email_taken'))
+                    ->withInput();
             }
 
             if ($userPublicId) {
@@ -247,11 +256,12 @@ class UserController extends BaseController
             $notice_msg = trans('texts.security_confirmation');
 
             $user->confirmed = true;
-            $user->confirmation_code = '';
+            $user->confirmation_code = null;
             $user->save();
 
             if ($user->public_id) {
                 Auth::logout();
+                Session::flush();
                 $token = Password::getRepository()->create($user);
 
                 return Redirect::to("/password/reset/{$token}");
@@ -270,7 +280,7 @@ class UserController extends BaseController
                 return Redirect::to($url)->with('message', $notice_msg);
             }
         } else {
-            $error_msg = trans('texts.security.wrong_confirmation');
+            $error_msg = trans('texts.wrong_confirmation');
 
             return Redirect::to('/login')->with('error', $error_msg);
         }

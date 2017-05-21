@@ -94,53 +94,22 @@ class Invoice extends EntityModel implements BalanceAffecting
     ];
 
     /**
-     * @var string
-     */
-    public static $fieldInvoiceNumber = 'invoice_number';
-    /**
-     * @var string
-     */
-    public static $fieldPONumber = 'po_number';
-    /**
-     * @var string
-     */
-    public static $fieldInvoiceDate = 'invoice_date';
-    /**
-     * @var string
-     */
-    public static $fieldDueDate = 'due_date';
-    /**
-     * @var string
-     */
-    public static $fieldAmount = 'amount';
-    /**
-     * @var string
-     */
-    public static $fieldPaid = 'paid';
-    /**
-     * @var string
-     */
-    public static $fieldNotes = 'notes';
-    /**
-     * @var string
-     */
-    public static $fieldTerms = 'terms';
-
-    /**
      * @return array
      */
     public static function getImportColumns()
     {
         return [
-            Client::$fieldName,
-            self::$fieldInvoiceNumber,
-            self::$fieldPONumber,
-            self::$fieldInvoiceDate,
-            self::$fieldDueDate,
-            self::$fieldAmount,
-            self::$fieldPaid,
-            self::$fieldNotes,
-            self::$fieldTerms,
+            'name',
+            'invoice_number',
+            'po_number',
+            'invoice_date',
+            'due_date',
+            'amount',
+            'paid',
+            'notes',
+            'terms',
+            'product',
+            'quantity',
         ];
     }
 
@@ -159,6 +128,8 @@ class Invoice extends EntityModel implements BalanceAffecting
             'due date' => 'due_date',
             'terms' => 'terms',
             'notes' => 'notes',
+            'product|item' => 'product',
+            'quantity|qty' => 'quantity',
         ];
     }
 
@@ -930,6 +901,8 @@ class Invoice extends EntityModel implements BalanceAffecting
                 'last_name',
                 'email',
                 'phone',
+                'custom_value1',
+                'custom_value2',
             ]);
         }
 
@@ -1061,7 +1034,7 @@ class Invoice extends EntityModel implements BalanceAffecting
                         $dueDay = $lastDayOfMonth;
                     }
 
-                    if ($currentDay >= $dueDay) {
+                    if ($currentDay > $dueDay) {
                         // Wait until next month
                         // We don't need to handle the December->January wraparaound, since PHP handles month 13 as January of next year
                         $dueMonth++;
@@ -1440,6 +1413,22 @@ class Invoice extends EntityModel implements BalanceAffecting
     }
 
     /**
+     * @return int
+     */
+    public function countDocuments()
+    {
+        $count = count($this->documents);
+
+        foreach ($this->expenses as $expense) {
+            if ($expense->invoice_documents) {
+                $count += count($expense->documents);
+            }
+        }
+
+        return $count;
+    }
+
+    /**
      * @return bool
      */
     public function hasDocuments()
@@ -1457,7 +1446,7 @@ class Invoice extends EntityModel implements BalanceAffecting
     public function hasExpenseDocuments()
     {
         foreach ($this->expenses as $expense) {
-            if (count($expense->documents)) {
+            if ($expense->invoice_documents && count($expense->documents)) {
                 return true;
             }
         }
@@ -1521,6 +1510,11 @@ class Invoice extends EntityModel implements BalanceAffecting
                 ->whereIn('activity_type_id', [ACTIVITY_TYPE_EMAIL_INVOICE, ACTIVITY_TYPE_EMAIL_QUOTE])
                 ->orderBy('id', 'desc')
                 ->get();
+    }
+
+    public function getDueDateLabel()
+    {
+        return $this->isQuote() ? 'valid_until' : 'due_date';
     }
 }
 
