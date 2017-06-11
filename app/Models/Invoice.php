@@ -46,6 +46,7 @@ class Invoice extends EntityModel implements BalanceAffecting
         'tax_rate1',
         'tax_name2',
         'tax_rate2',
+        'last_sent_date',
     ];
 
     /**
@@ -492,6 +493,7 @@ class Invoice extends EntityModel implements BalanceAffecting
     public function markInvitationSent($invitation, $messageId = false, $notify = true, $notes = false)
     {
         if (! $this->isSent()) {
+            $this->is_public = true;
             $this->invoice_status_id = INVOICE_STATUS_SENT;
             $this->save();
         }
@@ -1034,7 +1036,7 @@ class Invoice extends EntityModel implements BalanceAffecting
                         $dueDay = $lastDayOfMonth;
                     }
 
-                    if ($currentDay > $dueDay) {
+                    if ($currentDay >= $dueDay) {
                         // Wait until next month
                         // We don't need to handle the December->January wraparaound, since PHP handles month 13 as January of next year
                         $dueMonth++;

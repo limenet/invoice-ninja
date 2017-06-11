@@ -321,10 +321,7 @@ class AccountRepository
         $item->product_key = 'Plan - '.ucfirst($plan).' ('.ucfirst($term).')';
         $invoice->invoice_items()->save($item);
 
-        $invitation = new Invitation();
-        $invitation->account_id = $account->id;
-        $invitation->user_id = $account->users()->first()->id;
-        $invitation->public_id = $publicId;
+        $invitation = Invitation::createNew($invoice);
         $invitation->invoice_id = $invoice->id;
         $invitation->contact_id = $client->contacts()->first()->id;
         $invitation->invitation_key = strtolower(str_random(RANDOM_KEY_LENGTH));
@@ -335,7 +332,7 @@ class AccountRepository
 
     public function getNinjaAccount()
     {
-        $account = Account::whereAccountKey(NINJA_ACCOUNT_KEY)->first();
+        $account = Account::where('account_key', 'LIKE', substr(NINJA_ACCOUNT_KEY, 0, 30) . '%')->orderBy('id')->first();
 
         if ($account) {
             return $account;
