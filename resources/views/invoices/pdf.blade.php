@@ -114,7 +114,20 @@
   var needsRefresh = false;
 
   function refreshPDF(force) {
-    return getPDFString(refreshPDFCB, force);
+    try {
+        return getPDFString(refreshPDFCB, force);
+    } catch (exception) {
+        console.warn('Failed to generate PDF: %s', exception.message);
+        var href = location.href;
+        if (href.indexOf('/view/') > 0 && href.indexOf('phantomjs') == -1) {
+            var url = href.replace('/view/', '/download/') + '?base64=true';
+            $.get(url, function(result) {
+                if (result && result.indexOf('data:application/pdf') == 0) {
+                    refreshPDFCB(result);
+                }
+            })
+        }
+    }
   }
 
   function refreshPDFCB(string) {

@@ -91,8 +91,8 @@ class ClientPortalController extends BaseController
         ];
         $invoice->invoice_fonts = $account->getFontsData();
 
-        if ($invoice->invoice_design_id == CUSTOM_DESIGN) {
-            $invoice->invoice_design->javascript = $account->custom_design;
+        if ($design = $account->getCustomDesign($invoice->invoice_design_id)) {
+            $invoice->invoice_design->javascript = $design;
         } else {
             $invoice->invoice_design->javascript = $invoice->invoice_design->pdfmake;
         }
@@ -150,19 +150,21 @@ class ClientPortalController extends BaseController
             'gatewayTypeId' => count($paymentTypes) == 1 ? $paymentTypes[0]['gatewayTypeId'] : false,
         ];
 
-        if ($paymentDriver = $account->paymentDriver($invitation, GATEWAY_TYPE_CREDIT_CARD)) {
-            $data += [
-                'transactionToken' => $paymentDriver->createTransactionToken(),
-                'partialView' => $paymentDriver->partialView(),
-                'accountGateway' => $paymentDriver->accountGateway,
-            ];
-        }
+        if ($invoice->canBePaid()) {
+            if ($paymentDriver = $account->paymentDriver($invitation, GATEWAY_TYPE_CREDIT_CARD)) {
+                $data += [
+                    'transactionToken' => $paymentDriver->createTransactionToken(),
+                    'partialView' => $paymentDriver->partialView(),
+                    'accountGateway' => $paymentDriver->accountGateway,
+                ];
+            }
 
-        if ($accountGateway = $account->getGatewayByType(GATEWAY_TYPE_CUSTOM)) {
-            $data += [
-                'customGatewayName' => $accountGateway->getConfigField('name'),
-                'customGatewayText' => $accountGateway->getConfigField('text'),
-            ];
+            if ($accountGateway = $account->getGatewayByType(GATEWAY_TYPE_CUSTOM)) {
+                $data += [
+                    'customGatewayName' => $accountGateway->getConfigField('name'),
+                    'customGatewayText' => $accountGateway->getConfigField('text'),
+                ];
+            }
         }
 
         if ($account->hasFeature(FEATURE_DOCUMENTS) && $this->canCreateZip()) {
@@ -200,7 +202,8 @@ class ClientPortalController extends BaseController
         }
 
         $invoice = $invitation->invoice;
-        $pdfString = $invoice->getPDFString();
+        $decode = ! request()->base64;
+        $pdfString = $invoice->getPDFString($decode);
 
         header('Content-Type: application/pdf');
         header('Content-Length: ' . strlen($pdfString));
