@@ -39,6 +39,23 @@ class AccountRepository
             $company->utm_term = Input::get('utm_term');
             $company->utm_content = Input::get('utm_content');
             $company->referral_code = Session::get(SESSION_REFERRAL_CODE);
+
+            if (Input::get('utm_campaign')) {
+                if (env('PROMO_CAMPAIGN') && hash_equals(Input::get('utm_campaign'), env('PROMO_CAMPAIGN'))) {
+                    $company->discount = .75;
+                    $company->promo_expires = date_create()->modify('14 days')->format('Y-m-d');
+                }
+
+                if (env('PARTNER_CAMPAIGN') && hash_equals(Input::get('utm_campaign'), env('PARTNER_CAMPAIGN'))) {
+                    $company->plan = PLAN_PRO;
+                    $company->plan_term = PLAN_TERM_YEARLY;
+                    $company->plan_price = PLAN_PRICE_PRO_MONTHLY;
+                    $company->plan_started = date_create()->format('Y-m-d');
+                    $company->plan_paid = date_create()->format('Y-m-d');
+                    $company->plan_expires = date_create()->modify('1 year')->format('Y-m-d');
+                }
+            }
+
             $company->save();
         }
 
@@ -654,6 +671,18 @@ class AccountRepository
     public function findWithReminders()
     {
         return Account::whereRaw('enable_reminder1 = 1 OR enable_reminder2 = 1 OR enable_reminder3 = 1')->get();
+    }
+
+    public function findWithFees()
+    {
+        return Account::whereHas('account_email_settings', function($query) {
+            $query->where('late_fee1_amount', '>', 0)
+                    ->orWhere('late_fee1_percent', '>', 0)
+                    ->orWhere('late_fee2_amount', '>', 0)
+                    ->orWhere('late_fee2_percent', '>', 0)
+                    ->orWhere('late_fee3_amount', '>', 0)
+                    ->orWhere('late_fee3_percent', '>', 0);
+        })->get();
     }
 
     public function createTokens($user, $name)

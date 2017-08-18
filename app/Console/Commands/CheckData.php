@@ -64,7 +64,7 @@ class CheckData extends Command
 
     public function fire()
     {
-        $this->logMessage(date('Y-m-d') . ' Running CheckData...');
+        $this->logMessage(date('Y-m-d h:i:s') . ' Running CheckData...');
 
         if ($database = $this->option('database')) {
             config(['database.default' => $database]);
@@ -84,9 +84,9 @@ class CheckData extends Command
         if (! $this->option('client_id')) {
             $this->checkOAuth();
             $this->checkInvitations();
-            $this->checkFailedJobs();
             $this->checkAccountData();
             $this->checkLookupData();
+            $this->checkFailedJobs();
         }
 
         $this->logMessage('Done: ' . strtoupper($this->isValid ? RESULT_SUCCESS : RESULT_FAILURE));
@@ -125,42 +125,53 @@ class CheckData extends Command
 
         if ($this->option('fix') == 'true') {
             foreach ($invoices as $invoice) {
+                $dispatcher = $invoice->getEventDispatcher();
                 if ($invoice->is_deleted) {
                     $invoice->unsetEventDispatcher();
                 }
-                $invoice->markSent();
+                $invoice->is_public = true;
+                $invoice->save();
+                $invoice->markInvitationsSent();
+                $invoice->setEventDispatcher($dispatcher);
             }
         }
     }
 
     private function checkInvoices()
     {
-        if (! env('PHANTOMJS_BIN_PATH')) {
+        if (! env('PHANTOMJS_BIN_PATH') || ! Utils::isNinjaProd()) {
             return;
         }
 
+        if ($this->option('fix') == 'true') {
+            return;
+        }
+
+        $isValid = true;
         $date = new Carbon();
         $date = $date->subDays(1)->format('Y-m-d');
 
         $invoices = Invoice::with('invitations')
             ->where('created_at', '>',  $date)
             ->orderBy('id')
-            ->get(['id', 'balance']);
+            ->get();
 
         foreach ($invoices as $invoice) {
             $link = $invoice->getInvitationLink('view', true, true);
-            $this->logMessage('Checking invoice: ' . $invoice->id . ' - ' . $invoice->balance);
             $result = CurlUtils::phantom('GET', $link . '?phantomjs=true&phantomjs_balances=true&phantomjs_secret=' . env('PHANTOMJS_SECRET'));
             $result = floatval(strip_tags($result));
-            $this->logMessage('Result: ' . $result);
+            $invoice = $invoice->fresh();
+
+            //$this->logMessage('Checking invoice: ' . $invoice->id . ' - ' . $invoice->balance);
+            //$this->logMessage('Result: ' . $result);
 
             if ($result && $result != $invoice->balance) {
-                $this->logMessage("Amounts do not match {$link} - PHP: {$invoice->balance}, JS: {$result}");
-                $this->isValid = false;
+                $this->logMessage("PHP/JS amounts do not match {$link}?silent=true | PHP: {$invoice->balance}, JS: {$result}");
+                $this->isValid = $isValid = false;
             }
         }
 
-        if ($this->isValid) {
+        if ($isValid) {
             $this->logMessage('0 invoices with mismatched PHP/JS balances');
         }
     }
@@ -367,6 +378,13 @@ class CheckData extends Command
 
     private function checkFailedJobs()
     {
+        if (Utils::isTravis()) {
+            return;
+        }
+
+        $current = config('database.default');
+        config(['database.default' => env('QUEUE_DATABASE')]);
+
         $count = DB::table('failed_jobs')->count();
 
         if ($count > 0) {
@@ -374,6 +392,8 @@ class CheckData extends Command
         }
 
         $this->logMessage($count . ' failed jobs');
+
+        config(['database.default' => $current]);
     }
 
     private function checkBlankInvoiceHistory()

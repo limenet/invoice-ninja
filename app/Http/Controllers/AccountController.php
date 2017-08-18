@@ -164,9 +164,7 @@ class AccountController extends BaseController
             Session::flash('warning', trans('texts.plan_refunded'));
         }
 
-        $hasPaid = false;
         if (! empty($planDetails['paid']) && $plan != PLAN_FREE) {
-            $hasPaid = true;
             $time_used = $planDetails['paid']->diff(date_create());
             $days_used = $time_used->days;
 
@@ -182,11 +180,7 @@ class AccountController extends BaseController
 
         if ($newPlan['price'] > $credit) {
             $invitation = $this->accountRepo->enablePlan($newPlan, $credit);
-            if ($hasPaid) {
-                return Redirect::to('view/' . $invitation->invitation_key);
-            } else {
-                return Redirect::to('payment/' . $invitation->invitation_key);
-            }
+            return Redirect::to('view/' . $invitation->invitation_key);
         } else {
             if ($plan == PLAN_FREE) {
                 $company->discount = 0;
@@ -423,7 +417,6 @@ class AccountController extends BaseController
             'timezones' => Cache::get('timezones'),
             'dateFormats' => Cache::get('dateFormats'),
             'datetimeFormats' => Cache::get('datetimeFormats'),
-            'currencies' => Cache::get('currencies'),
             'title' => trans('texts.localization'),
             'weekdays' => Utils::getTranslatedWeekdayNames(),
             'months' => Utils::getMonthOptions(),
@@ -823,6 +816,10 @@ class AccountController extends BaseController
                 $account->{"num_days_{$type}"} = Input::get("num_days_{$type}");
                 $account->{"field_{$type}"} = Input::get("field_{$type}");
                 $account->{"direction_{$type}"} = Input::get("field_{$type}") == REMINDER_FIELD_INVOICE_DATE ? REMINDER_DIRECTION_AFTER : Input::get("direction_{$type}");
+
+                $number = preg_replace('/[^0-9]/', '', $type);
+                $account->account_email_settings->{"late_fee{$number}_amount"} = Input::get("late_fee{$number}_amount");
+                $account->account_email_settings->{"late_fee{$number}_percent"} = Input::get("late_fee{$number}_percent");
             }
 
             $account->save();
