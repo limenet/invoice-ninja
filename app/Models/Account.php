@@ -100,7 +100,9 @@ class Account extends Eloquent
         'pdf_email_attachment',
         'font_size',
         'invoice_labels',
-        'custom_design',
+        'custom_design1',
+        'custom_design2',
+        'custom_design3',
         'show_item_taxes',
         'military_time',
         'enable_reminder1',
@@ -224,6 +226,7 @@ class Account extends Eloquent
 
     public static $customLabels = [
         'balance_due',
+        'credit_card',
         'description',
         'discount',
         'due_date',
@@ -231,6 +234,7 @@ class Account extends Eloquent
         'id_number',
         'item',
         'line_total',
+        'outstanding',
         'paid_to_date',
         'partial_due',
         'po_number',
