@@ -147,6 +147,16 @@ class Payment extends EntityModel
     }
 
     /**
+     * @param $query
+     *
+     * @return mixed
+     */
+    public function scopeDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('payment_date', [$startDate, $endDate]);
+    }
+
+    /**
      * @return mixed
      */
     public function getName()
@@ -285,6 +295,10 @@ class Payment extends EntityModel
      */
     public function getCompletedAmount()
     {
+        if ($this->isFailed() || $this->isVoided()) {
+            return 0;
+        }
+
         return $this->amount - $this->refunded;
     }
 

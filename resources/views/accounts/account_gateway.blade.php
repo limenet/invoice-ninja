@@ -1,5 +1,12 @@
 @extends('header')
 
+@section('top-right')
+    @if (env('WEPAY_CLIENT_ID') && isset($accountGatewaysIds) && ! count($accountGatewaysIds))
+        {!! Button::primary(trans('texts.sign_up_with_wepay'))
+                ->asLinkTo(URL::to('/gateways/create?wepay=true')) !!}
+    @endif
+@stop
+
 @section('content')
     @parent
 
