@@ -29,13 +29,12 @@ The self-host zip includes all third party libraries whereas downloading the cod
 * MySQL
 
 ## Recommended Providers
-* [WePay](https://www.invoiceninja.com/wepay-accept-online-payments-instantly/)
 * [Stripe](https://stripe.com/)
 * [Postmark](https://postmarkapp.com/)
 
 ## Videos
 * [Feature Overview](https://www.youtube.com/watch?v=xHGKvadapbA)
-* [Getting Started](https://www.youtube.com/watch?v=B4NVAJ8PFO8)
+* [Getting Started](https://www.youtube.com/watch?v=i7fqfi5HWeo)
 * [Time Tracker](https://www.youtube.com/watch?v=hFp5DOkFhTk)
 * [Voice Commands](https://www.youtube.com/watch?v=w1ylz-q58cU)
 
