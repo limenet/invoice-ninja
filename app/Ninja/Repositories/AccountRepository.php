@@ -48,6 +48,9 @@ class AccountRepository
                 if (env('PARTNER_CAMPAIGN') && hash_equals(Input::get('utm_campaign'), env('PARTNER_CAMPAIGN'))) {
                     $company->applyFreeYear();
                 }
+            } else {
+                //$company->applyDiscount(.5);
+                //session()->flash('warning', $company->present()->promoMessage());
             }
 
             $company->save();
@@ -57,6 +60,7 @@ class AccountRepository
         $account->ip = Request::getClientIp();
         $account->account_key = strtolower(str_random(RANDOM_KEY_LENGTH));
         $account->company_id = $company->id;
+        $account->currency_id = DEFAULT_CURRENCY;
 
         // Set default language/currency based on IP
         if (\Cache::get('currencies')) {
@@ -148,12 +152,17 @@ class AccountRepository
         if ($user->hasPermission('view_all')) {
             $clients = Client::scope()
                         ->with('contacts', 'invoices')
-                        ->get();
+                        ->withArchived()
+                        ->with(['contacts', 'invoices' => function ($query) use ($user) {
+                            $query->withArchived();
+                        }])->get();
         } else {
             $clients = Client::scope()
                         ->where('user_id', '=', $user->id)
+                        ->withArchived()
                         ->with(['contacts', 'invoices' => function ($query) use ($user) {
-                            $query->where('user_id', '=', $user->id);
+                            $query->withArchived()
+                                  ->where('user_id', '=', $user->id);
                         }])->get();
         }
 

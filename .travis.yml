@@ -2,6 +2,9 @@ language: php
 
 sudo: true
 
+# Prevent tests from taking more than 50 minutes
+group: deprecated-2017Q4
+
 php:
 #  - 5.5.9
 #  - 5.6
@@ -114,6 +117,8 @@ after_script:
   - mysql -u root -e 'select * from credits;' ninja
   - mysql -u root -e 'select * from expenses;' ninja
   - mysql -u root -e 'select * from accounts;' ninja
+  - mysql -u root -e 'select * from fonts;' ninja
+  - mysql -u root -e 'select * from banks;' ninja
   - cat storage/logs/laravel-error.log
   - cat storage/logs/laravel-info.log
   - FILES=$(find tests/_output -type f -name '*.png' | sort -nr)

@@ -53,7 +53,7 @@
   <ul>
     <li>{{ trans('texts.enterprise_upgrade_feature1') }}</li>
     <li>{{ trans('texts.enterprise_upgrade_feature2') }}</li>
-    <li>{{ trans('texts.much_more') }}</li>
+    <li>{{ trans('texts.all_pro_fetaures') }}</li>
   </ul>
   {!! Button::success(trans('texts.go_enterprise'))->withAttributes(['onclick' => 'submitUpgradeForm("enterprise")'])->large() !!}
 </div>
@@ -65,7 +65,10 @@
 <script type="text/javascript">
 
   function showUpgradeModal() {
-    @if ( ! Auth::check() || ! Auth::user()->confirmed)
+    @if ( ! Auth::check() || ! Auth::user()->registered)
+        swal("{!! trans('texts.please_register') !!}");
+        return;
+    @elseif ( ! Auth::check() || ! Auth::user()->confirmed)
         swal("{!! trans('texts.confirmation_required') !!}");
         return;
     @endif

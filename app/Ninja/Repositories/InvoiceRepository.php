@@ -336,6 +336,9 @@ class InvoiceRepository extends BaseRepository
             } elseif ($model->invoice_status_id == INVOICE_STATUS_PARTIAL) {
                 $label = trans('texts.status_partial');
                 $class = 'info';
+            } elseif ($entityType == ENTITY_QUOTE && ($model->invoice_status_id >= INVOICE_STATUS_APPROVED || $model->quote_invoice_id)) {
+                $label = trans('texts.status_approved');
+                $class = 'success';
             } elseif (Invoice::calcIsOverdue($model->balance, $model->due_date)) {
                 $class = 'danger';
                 if ($entityType == ENTITY_INVOICE) {
@@ -343,9 +346,6 @@ class InvoiceRepository extends BaseRepository
                 } else {
                     $label = trans('texts.expired');
                 }
-            } elseif ($entityType == ENTITY_QUOTE && ($model->invoice_status_id >= INVOICE_STATUS_APPROVED || $model->quote_invoice_id)) {
-                $label = trans('texts.status_approved');
-                $class = 'success';
             } else {
                 $class = 'default';
                 if ($entityType == ENTITY_INVOICE) {
@@ -607,10 +607,12 @@ class InvoiceRepository extends BaseRepository
             $total += $invoice->custom_value2;
         }
 
-        $taxAmount1 = round($total * ($invoice->tax_rate1 ? $invoice->tax_rate1 : 0) / 100, 2);
-        $taxAmount2 = round($total * ($invoice->tax_rate2 ? $invoice->tax_rate2 : 0) / 100, 2);
-        $total = round($total + $taxAmount1 + $taxAmount2, 2);
-        $total += $itemTax;
+        if (! $account->inclusive_taxes) {
+            $taxAmount1 = round($total * ($invoice->tax_rate1 ? $invoice->tax_rate1 : 0) / 100, 2);
+            $taxAmount2 = round($total * ($invoice->tax_rate2 ? $invoice->tax_rate2 : 0) / 100, 2);
+            $total = round($total + $taxAmount1 + $taxAmount2, 2);
+            $total += $itemTax;
+        }
 
         // custom fields not charged taxes
         if ($invoice->custom_value1 && ! $invoice->custom_taxes1) {
@@ -861,6 +863,10 @@ class InvoiceRepository extends BaseRepository
                     ->whereInvoiceNumber($invoiceNumber)
                     ->first()) {
                 $invoiceNumber = false;
+            } else {
+                // since we aren't using the counter we need to offset it by one
+                $account->invoice_number_counter -= 1;
+                $account->save();
             }
         }
 
@@ -1170,7 +1176,10 @@ class InvoiceRepository extends BaseRepository
 
         $sql = implode(' OR ', $dates);
         $invoices = Invoice::invoiceType(INVOICE_TYPE_STANDARD)
-                    ->with('invoice_items')
+                    ->with('client', 'invoice_items')
+                    ->whereHas('client', function ($query) {
+                        $query->whereSendReminders(true);
+                    })
                     ->whereAccountId($account->id)
                     ->where('balance', '>', 0)
                     ->where('is_recurring', '=', false)

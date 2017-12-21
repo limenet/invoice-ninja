@@ -96,7 +96,7 @@ class Utils
 
     public static function requireHTTPS()
     {
-        if (Request::root() === 'http://ninja.dev' || Request::root() === 'http://ninja.dev:8000') {
+        if (in_array(Request::root(), ['http://ninja.dev', 'http://ninja.dev:8000', 'http://www.ninja.test'])) {
             return false;
         }
 
@@ -106,6 +106,11 @@ class Utils
     public static function isReseller()
     {
         return self::getResllerType() ? true : false;
+    }
+
+    public static function isRootFolder()
+    {
+        return strlen(preg_replace('/[^\/]/', '', url('/'))) == 2;
     }
 
 	public static function clientViewCSS()
@@ -459,6 +464,11 @@ class Utils
 
     public static function parseFloat($value)
     {
+        // check for comma as decimal separator
+        if (preg_match('/,[\d]{1,2}$/', $value)) {
+            $value = str_replace(',', '.', $value);
+        }
+
         $value = preg_replace('/[^0-9\.\-]/', '', $value);
 
         return floatval($value);

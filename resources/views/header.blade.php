@@ -345,8 +345,10 @@
             'products' => false,
             'invoices' => false,
             'payments' => false,
+            'recurring_invoices' => 'recurring',
             'credits' => false,
             'quotes' => false,
+            'projects' => false,
             'tasks' => false,
             'expenses' => false,
             'vendors' => false,
@@ -371,8 +373,10 @@
                 'products',
                 'invoices',
                 'payments',
+                'recurring_invoices',
                 'credits',
                 'quotes',
+                'projects',
                 'tasks',
                 'expenses',
                 'vendors',
@@ -470,7 +474,11 @@
             <div class="col-md-12">
 
               @if (Utils::isNinjaProd())
-                @if (Auth::check() && Auth::user()->isTrial())
+                @if (Auth::check() && Auth::user()->hasActivePromo())
+                    {!! trans('texts.promotion_footer', [
+                            'link' => '<a href="javascript:showUpgradeModal()">' . trans('texts.click_here') . '</a>'
+                        ]) !!}
+                @elseif (Auth::check() && Auth::user()->isTrial())
                   {!! trans(Auth::user()->account->getCountTrialDaysLeft() == 0 ? 'texts.trial_footer_last_day' : 'texts.trial_footer', [
                           'count' => Auth::user()->account->getCountTrialDaysLeft(),
                           'link' => '<a href="javascript:showUpgradeModal()">' . trans('texts.click_here') . '</a>'

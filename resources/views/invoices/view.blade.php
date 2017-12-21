@@ -38,14 +38,14 @@
         <script type="text/javascript" src="https://js.braintreegateway.com/js/braintree-2.23.0.min.js"></script>
         <script type="text/javascript" >
             $(function() {
-                var paypalLink = $('.dropdown-menu a[href$="paypal"]'),
+                var paypalLink = $('a[href$="paypal"]'),
                     paypalUrl = paypalLink.attr('href'),
                     checkout;
                 paypalLink.parent().attr('id', 'paypal-container');
                 braintree.setup("{{ $transactionToken }}", "custom", {
                     onReady: function (integration) {
                         checkout = integration;
-                        $('.dropdown-menu a[href$="#braintree_paypal"]').each(function(){
+                        $('a[href$="#braintree_paypal"]').each(function(){
                             var el=$(this);
                             el.attr('href', el.attr('href').replace('#braintree_paypal','?device_data='+encodeURIComponent(integration.deviceData)))
                         })
@@ -79,33 +79,77 @@
     @elseif(!empty($enableWePayACH))
         <script type="text/javascript" src="https://static.wepay.com/js/tokenization.v2.js"></script>
         <script type="text/javascript">
+			function payWithWepay() {
+				var achLink = $('a[href$="/bank_transfer"]');
+				$('#wepay-error').remove();
+				var email = {!! json_encode($contact->email) !!} || prompt('{{ trans('texts.ach_email_prompt') }}');
+				if (!email) {
+					return;
+				}
+
+				WePay.bank_account.create({
+					'client_id': '{{ WEPAY_CLIENT_ID }}',
+					'email':email
+				}, function(data){
+					dataObj = JSON.parse(data);
+					if(dataObj.bank_account_id) {
+						window.location.href = achLink.attr('href') + '/' + dataObj.bank_account_id + "?details=" + encodeURIComponent(data);
+					} else if(dataObj.error) {
+						$('#wepay-error').remove();
+						achLink.closest('.container').prepend($('<div id="wepay-error" style="margin-top:20px" class="alert alert-danger"></div>').text(dataObj.error_description));
+					}
+				});
+			}
+
             $(function() {
-                var achLink = $('.dropdown-menu a[href$="/bank_transfer"]'),
-                    achUrl = achLink.attr('href');
+                var achLink = $('a[href$="/bank_transfer"]');
                 WePay.set_endpoint('{{ WEPAY_ENVIRONMENT }}');
-                achLink.click(function(e) {
-                    e.preventDefault();
-
-                    $('#wepay-error').remove();
-                    var email = {!! json_encode($contact->email) !!} || prompt('{{ trans('texts.ach_email_prompt') }}');
-                    if(!email)return;
-
-                    WePay.bank_account.create({
-                        'client_id': '{{ WEPAY_CLIENT_ID }}',
-                        'email':email
-                    }, function(data){
-                        dataObj = JSON.parse(data);
-                        if(dataObj.bank_account_id) {
-                            window.location.href = achLink.attr('href') + '/' + dataObj.bank_account_id + "?details=" + encodeURIComponent(data);
-                        } else if(dataObj.error) {
-                            $('#wepay-error').remove();
-                            achLink.closest('.container').prepend($('<div id="wepay-error" style="margin-top:20px" class="alert alert-danger"></div>').text(dataObj.error_description));
-                        }
-                    });
+				achLink.click(function(e) {
+                	e.preventDefault();
+					@if ($account->requiresAuthorization($invoice))
+						window.pendingPaymentFunction = window.payWithWepay;
+						showAuthorizationModal();
+					@else
+                    	payWithWepay();
+					@endif
                 });
             });
         </script>
-    @endif
+	@elseif (! empty($accountGateway) && $accountGateway->getApplePayEnabled())
+		<script type="text/javascript" src="https://js.stripe.com/v3/"></script>
+	    <script type="text/javascript">
+	        // https://stripe.com/docs/stripe-js/elements/payment-request-button
+	        var stripe = Stripe('{{ $accountGateway->getPublishableStripeKey() }}');
+	        var paymentRequest = stripe.paymentRequest({
+	            country: '{{ $invoice->client->getCountryCode() }}',
+	            currency: '{{ strtolower($invoice->client->getCurrencyCode()) }}',
+	            total: {
+	                label: '{{ trans('texts.invoice') . ' ' . $invitation->invoice->invoice_number }}',
+	                amount: {{ $invitation->invoice->getRequestedAmount() * 100 }},
+	            },
+	        });
+
+	        var elements = stripe.elements();
+	        var prButton = elements.create('paymentRequestButton', {
+	            paymentRequest: paymentRequest,
+	        });
+
+	        $(function() {
+	            // Check the availability of the Payment Request API first.
+	            paymentRequest.canMakePayment().then(function(result) {
+	                if (result) {
+	                    // do nothing
+	                } else {
+	                    console.log('not supported');
+						$('#paymentButtons ul.dropdown-menu li').last().remove();
+	                }
+	            });
+
+	        });
+
+	    </script>
+
+	@endif
 @stop
 
 @section('content')
@@ -119,7 +163,7 @@
             @if ($invoice->isQuote())
                 {!! Button::normal(trans('texts.download_pdf'))->withAttributes(['onclick' => 'onDownloadClick()'])->large() !!}&nbsp;&nbsp;
                 @if ($showApprove)
-                    {!! Button::success(trans('texts.approve'))->asLinkTo(URL::to('/approve/' . $invitation->invitation_key))->large() !!}
+                    {!! Button::success(trans('texts.approve'))->withAttributes(['id' => 'approveButton', 'onclick' => 'onApproveClick()'])->large() !!}
                 @endif
 			@elseif ( ! $invoice->canBePaid())
 				{!! Button::normal(trans('texts.download_pdf'))->withAttributes(['onclick' => 'onDownloadClick()'])->large() !!}
@@ -243,6 +287,11 @@
 					$('#termsCheckbox').attr('checked', false);
 				@endif
 				$('#authorizationModal').modal('show');
+			}
+
+			function onApproveClick() {
+				$('#approveButton').prop('disabled', true);
+				location.href = "{{ url('/approve/' . $invitation->invitation_key) }}";
 			}
 
 			function onDownloadClick() {

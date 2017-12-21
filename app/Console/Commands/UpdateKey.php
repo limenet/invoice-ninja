@@ -6,19 +6,21 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use App\Models\AccountGateway;
 use App\Models\BankAccount;
+use App\Models\User;
 use Artisan;
 use Crypt;
 use Illuminate\Encryption\Encrypter;
+use Laravel\LegacyEncrypter\McryptEncrypter;
 
 /**
- * Class PruneData.
+ * Class UpdateKey
  */
 class UpdateKey extends Command
 {
     /**
      * @var string
      */
-    protected $name = 'ninja:update-key';
+    protected $name = 'ninja:update-key {--database=}';
 
     /**
      * @var string
@@ -29,21 +31,47 @@ class UpdateKey extends Command
     {
         $this->info(date('r') . ' Running UpdateKey...');
 
+        if ($database = $this->option('database')) {
+            config(['database.default' => $database]);
+        }
+
         if (! env('APP_KEY') || ! env('APP_CIPHER')) {
             $this->info(date('r') . ' Error: app key and cipher are not set');
             exit;
         }
 
+        $legacy = false;
+        if ($this->option('legacy') == 'true') {
+            $legacy = new McryptEncrypter(env('APP_KEY'));
+        }
+
         // load the current values
         $gatewayConfigs = [];
         $bankUsernames = [];
+        $twoFactorSecrets = [];
 
         foreach (AccountGateway::all() as $gateway) {
-            $gatewayConfigs[$gateway->id] = $gateway->getConfig();
+            if ($legacy) {
+                $gatewayConfigs[$gateway->id] = json_decode($legacy->decrypt($gateway->config));
+            } else {
+                $gatewayConfigs[$gateway->id] = $gateway->getConfig();
+            }
         }
 
         foreach (BankAccount::all() as $bank) {
-            $bankUsernames[$bank->id] = $bank->getUsername();
+            if ($legacy) {
+                $bankUsernames[$bank->id] = $legacy->decrypt($bank->username);
+            } else {
+                $bankUsernames[$bank->id] = $bank->getUsername();
+            }
+        }
+
+        foreach (User::where('google_2fa_secret', '!=', '')->get() as $user) {
+            if ($legacy) {
+                $twoFactorSecrets[$user->id] = $legacy->decrypt($user->google_2fa_secret);
+            } else {
+                $twoFactorSecrets[$user->id] = Crypt::decrypt($user->google_2fa_secret);
+            }
         }
 
         // check if we can write to the .env file
@@ -57,7 +85,8 @@ class UpdateKey extends Command
             $key = str_random(32);
         }
 
-        $crypt = new Encrypter($key, config('app.cipher'));
+        $cipher = $legacy ? 'AES-256-CBC' : config('app.cipher');
+        $crypt = new Encrypter($key, $cipher);
 
         // update values using the new key/encrypter
         foreach (AccountGateway::all() as $gateway) {
@@ -72,11 +101,27 @@ class UpdateKey extends Command
             $bank->save();
         }
 
-        if ($envWriteable) {
-            $this->info(date('r') . ' Successfully update the key');
-        } else {
-            $this->info(date('r') . ' Successfully update data, make sure to set the new app key: ' . $key);
+        foreach (User::where('google_2fa_secret', '!=', '')->get() as $user) {
+            $secret = $twoFactorSecrets[$user->id];
+            $user->google_2fa_secret = $crypt->encrypt($secret);
+            $user->save();
         }
+
+        $message = date('r') . ' Successfully updated ';
+        if ($envWriteable) {
+            if ($legacy) {
+                $message .= 'the key, set the cipher in the .env file to AES-256-CBC';
+            } else {
+                $message .= 'the key';
+            }
+        } else {
+            if ($legacy) {
+                $message .= 'the data, make sure to set the new cipher/key: AES-256-CBC/' . $key;
+            } else {
+                $message .= 'the data, make sure to set the new key: ' . $key;
+            }
+        }
+        $this->info($message);
     }
 
     /**
@@ -92,6 +137,9 @@ class UpdateKey extends Command
      */
     protected function getOptions()
     {
-        return [];
+        return [
+            ['legacy', null, InputOption::VALUE_OPTIONAL, 'Legacy', null],
+            ['database', null, InputOption::VALUE_OPTIONAL, 'Database', null],
+        ];
     }
 }

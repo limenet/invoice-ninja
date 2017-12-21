@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use Carbon;
 use DateTime;
+use Utils;
 
 /**
  * Class HasRecurrence
@@ -40,7 +41,7 @@ trait HasRecurrence
             $monthsSinceLastSent = ($diff->format('%y') * 12) + $diff->format('%m');
 
             // check we don't send a few hours early due to timezone difference
-            if (Carbon::now()->format('Y-m-d') != Carbon::now($timezone)->format('Y-m-d')) {
+            if (Utils::isNinja() && Carbon::now()->format('Y-m-d') != Carbon::now($timezone)->format('Y-m-d')) {
                 return false;
             }
 
