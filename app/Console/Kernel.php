@@ -65,5 +65,13 @@ class Kernel extends ConsoleKernel
             ->command('updater:check-for-update --prefixVersionWith=v')
             ->sendOutputTo($logFile)
             ->daily();
+
+        $schedule
+            ->command('backup:run')
+            ->dailyAt('04:00');
+
+        $schedule
+            ->command('backup:clean')
+            ->dailyAt('04:05');
     }
 }
