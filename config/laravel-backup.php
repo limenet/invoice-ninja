@@ -15,96 +15,105 @@ return [
             'files' => [
 
                 /*
-                 * The list of directories that should be part of the backup. You can
-                 * specify individual files as well.
+                 * The list of directories and files that will be included in the backup.
                  */
                 'include' => [
                     base_path(),
                 ],
 
                 /*
-                 * These directories will be excluded from the backup.
-                 * You can specify individual files as well.
+                 * These directories and files will be excluded from the backup.
+                 *
+                 * Directories used by the backup process will automatically be excluded.
                  */
                 'exclude' => [
                     base_path('vendor'),
-                    storage_path(),
+                    base_path('node_modules'),
                 ],
+
+                /*
+                 * Determines if symlinks should be followed.
+                 */
+                'followLinks' => false,
             ],
 
             /*
-             * The names of the connections to the databases  that should be part of the backup.
-             * Currently only MySQL-databases are supported.
+             * The names of the connections to the databases that should be backed up
+             * MySQL, PostgreSQL, SQLite and Mongo databases are supported.
              */
             'databases' => [
-                'mysql'
+                'mysql',
             ],
         ],
+
+        /*
+         * The database dump can be gzipped to decrease diskspace usage.
+         */
+        'gzip_database_dump' => false,
 
         'destination' => [
 
             /*
-             * The filesystems you on which the backups will be stored. Choose one or more
-             * of the filesystems you configured in app/config/filesystems.php
+             * The filename prefix used for the backup zip file.
              */
-            'filesystems' => [
-                's3_backup'
+            'filename_prefix' => '',
+
+            /*
+             * The disk names on which the backups will be stored.
+             */
+            'disks' => [
+                's3_backup',
             ],
         ],
     ],
 
-    'cleanup' => [
+    /*
+     * You can get notified when specific events occur. Out of the box you can use 'mail' and 'slack'.
+     * For Slack you need to install guzzlehttp/guzzle.
+     *
+     * You can also use your own notification classes, just make sure the class is named after one of
+     * the `Spatie\Backup\Events` classes.
+     */
+    'notifications' => [
+
+        'notifications' => [
+            \Spatie\Backup\Notifications\Notifications\BackupHasFailed::class         => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFound::class => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\CleanupHasFailed::class        => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessful::class     => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFound::class   => ['mail'],
+            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessful::class    => ['mail'],
+        ],
+
         /*
-         * The strategy that will be used to cleanup old backups.
-         * The youngest backup wil never be deleted.
+         * Here you can specify the notifiable to which the notifications should be sent. The default
+         * notifiable will use the variables specified in this config file.
          */
-        'strategy' => \Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy::class,
+        'notifiable' => \Spatie\Backup\Notifications\Notifiable::class,
 
-        'defaultStrategy' => [
+        'mail' => [
+            'to' => 'backups@limenet.ch',
+        ],
 
-            /*
-             * The amount of days that all daily backups must be kept.
-             */
-            'keepAllBackupsForDays' => 7,
-
-            /*
-             * The amount of days that all daily backups must be kept.
-             */
-            'keepDailyBackupsForDays' => 16,
+        'slack' => [
+            'webhook_url' => '',
 
             /*
-             * The amount of weeks of which one weekly backup must be kept.
+             * If this is set to null the default channel of the webhook will be used.
              */
-            'keepWeeklyBackupsForWeeks' => 8,
-
-            /*
-             * The amount of months of which one monthly backup must be kept.
-             */
-            'keepMonthlyBackupsForMonths' => 4,
-
-            /*
-             * The amount of years of which one yearly backup must be kept
-             */
-            'keepYearlyBackupsForYears' => 2,
-
-            /*
-             * After clean up the backups remove the oldest backup until
-             * this amount of megabytes is reached.
-             */
-            'deleteOldestBackupsWhenUsingMoreMegabytesThan' => 5000
-        ]
+            'channel' => null,
+        ],
     ],
 
-
     /*
-     *  In this array you can specify which backups should be monitored.
-     *  If a backup does not meet the specified requirements the
-     *  UnHealthyBackupWasFound-event will be fired.
+     * Here you can specify which backups should be monitored.
+     * If a backup does not meet the specified requirements the
+     * UnHealthyBackupWasFound event will be fired.
      */
     'monitorBackups' => [
         [
             'name' => env('APP_URL'),
-            'filesystems' => ['local'],
+            'disks' => ['s3_backup'],
             'newestBackupsShouldNotBeOlderThanDays' => 1,
             'storageUsedMayNotBeHigherThanMegabytes' => 5000,
         ],
@@ -112,50 +121,57 @@ return [
         /*
         [
             'name' => 'name of the second app',
-            'filesystems' => ['local', 's3'],
+            'disks' => ['local', 's3'],
             'newestBackupsShouldNotBeOlderThanDays' => 1,
             'storageUsedMayNotBeHigherThanMegabytes' => 5000,
         ],
         */
     ],
 
-    'notifications' => [
-
+    'cleanup' => [
         /*
-         * This class will be used to send all notifications.
-         */
-        'handler' => Spatie\Backup\Notifications\Notifier::class,
-
-        /*
-         * Here you can specify the ways you want to be notified when certain
-         * events take place. Possible values are "log", "mail" and "slack".
+         * The strategy that will be used to cleanup old backups. The default strategy
+         * will keep all backups for a certain amount of days. After that period only
+         * a daily backup will be kept. After that period only weekly backups will
+         * be kept and so on.
          *
-         * Slack requires the installation of the maknz/slack package
+         * No matter how you configure it the default strategy will never
+         * delete the newest backup.
          */
-        'events' => [
-            'whenBackupWasSuccessful'     => ['log', 'mail'],
-            'whenCleanupWasSuccessful'    => ['log', 'mail'],
-            'whenHealthyBackupWasFound'   => ['log'],
-            'whenBackupHasFailed'         => ['log', 'mail'],
-            'whenCleanupHasFailed'        => ['log', 'mail'],
-            'whenUnHealthyBackupWasFound' => ['log', 'mail']
-        ],
+        'strategy' => \Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy::class,
 
-        /*
-         * Here you can specify how mails should be sent.
-         */
-        'mail' => [
-            'from' => env('MAIL_FROM_ADDRESS'),
-            'to' => 'backups@limenet.ch',
-        ],
+        'defaultStrategy' => [
 
-        /*
-         * Here you can how messages should be sent to Slack.
-         */
-        'slack' => [
-            'channel'  => '#backups',
-            'username' => 'Backup bot',
-            'icon'     => ':robot:',
+            /*
+             * The number of days for which backups must be kept.
+             */
+            'keepAllBackupsForDays' => 7,
+
+            /*
+             * The number of days for which daily backups must be kept.
+             */
+            'keepDailyBackupsForDays' => 16,
+
+            /*
+             * The number of weeks for which one weekly backup must be kept.
+             */
+            'keepWeeklyBackupsForWeeks' => 8,
+
+            /*
+             * The number of months for which one monthly backup must be kept.
+             */
+            'keepMonthlyBackupsForMonths' => 4,
+
+            /*
+             * The number of years for which one yearly backup must be kept.
+             */
+            'keepYearlyBackupsForYears' => 2,
+
+            /*
+             * After cleaning up the backups remove the oldest backup until
+             * this amount of megabytes has been reached.
+             */
+            'deleteOldestBackupsWhenUsingMoreMegabytesThan' => 5000,
         ],
-    ]
+    ],
 ];
