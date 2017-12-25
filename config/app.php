@@ -162,6 +162,8 @@ return [
         Nwidart\Modules\LaravelModulesServiceProvider::class,
         Barryvdh\Cors\ServiceProvider::class,
         PragmaRX\Google2FALaravel\ServiceProvider::class,
+        Spatie\Backup\BackupServiceProvider::class,
+
 
         /*
          * Application Service Providers...
