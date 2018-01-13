@@ -113,7 +113,7 @@
             @endif
 
             @if ($vendor->private_notes)
-                <p><i>{{ $vendor->private_notes }}</i></p>
+                <p><i>{!! nl2br(e($vendor->private_notes)) !!}</i></p>
             @endif
 
   	        @if ($vendor->vendor_industry)
@@ -228,7 +228,7 @@
             };
 
             var map = new google.maps.Map(mapCanvas, mapOptions)
-            var address = "{{ "{$vendor->address1} {$vendor->address2} {$vendor->city} {$vendor->state} {$vendor->postal_code} " . ($vendor->country ? $vendor->country->name : '') }}";
+            var address = {!! json_encode(e("{$vendor->address1} {$vendor->address2} {$vendor->city} {$vendor->state} {$vendor->postal_code} " . ($vendor->country ? $vendor->country->name : ''))) !!};
 
             geocoder = new google.maps.Geocoder();
             geocoder.geocode( { 'address': address}, function(results, status) {

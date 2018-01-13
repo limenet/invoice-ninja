@@ -116,11 +116,11 @@
             <p/>
 
             @if ($client->public_notes)
-                <p><i>{{ $client->public_notes }}</i></p>
+                <p><i>{!! nl2br(e($client->public_notes)) !!}</i></p>
             @endif
 
             @if ($client->private_notes)
-                <p><i>{{ $client->private_notes }}</i></p>
+                <p><i>{!! nl2br(e($client->private_notes)) !!}</i></p>
             @endif
 
   	        @if ($client->client_industry)
@@ -371,7 +371,7 @@
             };
 
             var map = new google.maps.Map(mapCanvas, mapOptions)
-            var address = "{{ "{$client->address1} {$client->address2} {$client->city} {$client->state} {$client->postal_code} " . ($client->country ? $client->country->name : '') }}";
+            var address = {!! json_encode(e("{$client->address1} {$client->address2} {$client->city} {$client->state} {$client->postal_code} " . ($client->country ? $client->country->name : ''))) !!};
 
             geocoder = new google.maps.Geocoder();
             geocoder.geocode( { 'address': address}, function(results, status) {
