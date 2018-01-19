@@ -690,6 +690,15 @@ class Invoice extends EntityModel implements BalanceAffecting
         }
     }
 
+    public function activeUser()
+    {
+        if (! $this->user->trashed()) {
+            return $this->user;
+        }
+
+        return $this->account->users->first();
+    }
+
     /**
      * @return mixed
      */
@@ -964,6 +973,7 @@ class Invoice extends EntityModel implements BalanceAffecting
             'work_phone',
             'work_email',
             'country',
+            'country_id',
             'currency_id',
             'custom_label1',
             'custom_value1',
@@ -971,6 +981,8 @@ class Invoice extends EntityModel implements BalanceAffecting
             'custom_value2',
             'custom_client_label1',
             'custom_client_label2',
+            'custom_contact_label1',
+            'custom_contact_label2',
             'primary_color',
             'secondary_color',
             'hide_quantity',

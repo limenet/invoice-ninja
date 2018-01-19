@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "565f486f055e674ebd1b4a5739468898",
+    "content-hash": "450e2a1636440250a50d873db4f140a9",
     "packages": [
         {
             "name": "abdala/omnipay-pagseguro",
@@ -392,16 +392,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.48.13",
+            "version": "3.50.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "e083a4dae6f460df1d02dcd827cf547592f5dc29"
+                "reference": "ed3308588d5d8d8f7a96dc93ff297988cefa7b4a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e083a4dae6f460df1d02dcd827cf547592f5dc29",
-                "reference": "e083a4dae6f460df1d02dcd827cf547592f5dc29",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ed3308588d5d8d8f7a96dc93ff297988cefa7b4a",
+                "reference": "ed3308588d5d8d8f7a96dc93ff297988cefa7b4a",
                 "shasum": ""
             },
             "require": {
@@ -468,7 +468,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-01-12T21:20:32+00:00"
+            "time": "2018-01-18T01:08:26+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -792,16 +792,16 @@
         },
         {
             "name": "braintree/braintree_php",
-            "version": "3.26.1",
+            "version": "3.27.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/braintree/braintree_php.git",
-                "reference": "7f66ed17f38efd45904f920695b02603b091bae6"
+                "reference": "25e8fd2886240ee825860376a9c78b456d52b39c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/braintree/braintree_php/zipball/7f66ed17f38efd45904f920695b02603b091bae6",
-                "reference": "7f66ed17f38efd45904f920695b02603b091bae6",
+                "url": "https://api.github.com/repos/braintree/braintree_php/zipball/25e8fd2886240ee825860376a9c78b456d52b39c",
+                "reference": "25e8fd2886240ee825860376a9c78b456d52b39c",
                 "shasum": ""
             },
             "require": {
@@ -835,7 +835,7 @@
                 }
             ],
             "description": "Braintree PHP Client Library",
-            "time": "2017-12-14T00:08:17+00:00"
+            "time": "2018-01-18T21:43:00+00:00"
         },
         {
             "name": "cardgate/omnipay-cardgate",
@@ -874,7 +874,7 @@
             ],
             "authors": [
                 {
-                    "name": "CardGate",
+                    "name": "Cardgate",
                     "email": "tech@cardgate.com"
                 },
                 {
@@ -1026,7 +1026,7 @@
                 "laravel"
             ],
             "abandoned": "OpenSkill/Datatable",
-            "time": "2017-01-26T10:04:06+00:00"
+            "time": "2015-04-29T07:00:36+00:00"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -2436,16 +2436,16 @@
         },
         {
             "name": "fruitcakestudio/omnipay-sisow",
-            "version": "v2.0.3",
+            "version": "v2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fruitcake/omnipay-sisow.git",
-                "reference": "adbe7e9f0887a7d807917a7d6b61d6d8b6d98b88"
+                "reference": "b0a20a4f1ee5e08f3e5b0796748a15cbe1aed1b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fruitcake/omnipay-sisow/zipball/adbe7e9f0887a7d807917a7d6b61d6d8b6d98b88",
-                "reference": "adbe7e9f0887a7d807917a7d6b61d6d8b6d98b88",
+                "url": "https://api.github.com/repos/fruitcake/omnipay-sisow/zipball/b0a20a4f1ee5e08f3e5b0796748a15cbe1aed1b4",
+                "reference": "b0a20a4f1ee5e08f3e5b0796748a15cbe1aed1b4",
                 "shasum": ""
             },
             "require": {
@@ -2488,7 +2488,7 @@
                 "payment",
                 "sisow"
             ],
-            "time": "2017-07-12T13:28:11+00:00"
+            "time": "2018-01-03T09:47:20+00:00"
         },
         {
             "name": "fzaninotto/faker",
@@ -2554,7 +2554,8 @@
                 "reference": "origin/master",
                 "shasum": null
             },
-            "type": "library"
+            "type": "library",
+            "time": "2017-10-13T12:00:43+00:00"
         },
         {
             "name": "gocardless/gocardless-pro",
@@ -2669,16 +2670,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.41",
+            "version": "v0.42",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client-services.git",
-                "reference": "b3715dfaad3cd91304c84bf3ce36c5cade851b35"
+                "reference": "873421bf7cd0cab613da792124db04e203ff196b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/b3715dfaad3cd91304c84bf3ce36c5cade851b35",
-                "reference": "b3715dfaad3cd91304c84bf3ce36c5cade851b35",
+                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/873421bf7cd0cab613da792124db04e203ff196b",
+                "reference": "873421bf7cd0cab613da792124db04e203ff196b",
                 "shasum": ""
             },
             "require": {
@@ -2702,7 +2703,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-01-06T00:23:20+00:00"
+            "time": "2018-01-13T00:23:28+00:00"
         },
         {
             "name": "google/auth",
@@ -3370,61 +3371,6 @@
             "time": "2015-01-01T16:31:18+00:00"
         },
         {
-            "name": "incube8/omnipay-multicards",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/incube8/omnipay-multicards.git",
-                "reference": "712b4419ef604e88587098ba3a788eb4221144fd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/incube8/omnipay-multicards/zipball/712b4419ef604e88587098ba3a788eb4221144fd",
-                "reference": "712b4419ef604e88587098ba3a788eb4221144fd",
-                "shasum": ""
-            },
-            "require": {
-                "omnipay/common": "~2.0",
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "omnipay/dummy": "dev-master",
-                "omnipay/tests": "~2.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Omnipay\\Multicards\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Del",
-                    "email": "del@incube8.sg"
-                }
-            ],
-            "description": "MultiCards driver for the Omnipay payment processing library",
-            "homepage": "https://github.com/incube8/omnipay-multicards",
-            "keywords": [
-                "MultiCards",
-                "gateway",
-                "merchant",
-                "omnipay",
-                "pay",
-                "payment"
-            ],
-            "time": "2017-01-12T06:17:38+00:00"
-        },
-        {
             "name": "intervention/image",
             "version": "dev-master",
             "source": {
@@ -3496,16 +3442,16 @@
         },
         {
             "name": "invoiceninja/omnipay-collection",
-            "version": "v0.4",
+            "version": "v0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/invoiceninja/omnipay-collection.git",
-                "reference": "eb2d739440efdea418152a68c80fd7d9ca00140d"
+                "reference": "2ca215e97e3b436b26b0b8f52e865ed94eb61408"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/invoiceninja/omnipay-collection/zipball/eb2d739440efdea418152a68c80fd7d9ca00140d",
-                "reference": "eb2d739440efdea418152a68c80fd7d9ca00140d",
+                "url": "https://api.github.com/repos/invoiceninja/omnipay-collection/zipball/2ca215e97e3b436b26b0b8f52e865ed94eb61408",
+                "reference": "2ca215e97e3b436b26b0b8f52e865ed94eb61408",
                 "shasum": ""
             },
             "require": {
@@ -3525,7 +3471,6 @@
                 "dwolla/omnipay-dwolla": "dev-master",
                 "fotografde/omnipay-checkoutcom": "~2.0",
                 "fruitcakestudio/omnipay-sisow": "~2.0",
-                "incube8/omnipay-multicards": "dev-master",
                 "justinbusschau/omnipay-secpay": "~2.0",
                 "lokielse/omnipay-alipay": "~1.4",
                 "meebio/omnipay-creditcall": "dev-master",
@@ -3553,7 +3498,7 @@
                 }
             ],
             "description": "Collection of Omnipay drivers",
-            "time": "2017-11-11T19:43:09+00:00"
+            "time": "2018-01-17T13:51:24+00:00"
         },
         {
             "name": "jakoch/phantomjs-installer",
@@ -8180,16 +8125,16 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "3.7.1",
+            "version": "3.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "45cffe822057a09e05f7bd09ec5fb88eeecd2334"
+                "reference": "bba83ad77bb9deb6d3c352a7361b818e415b221d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/45cffe822057a09e05f7bd09ec5fb88eeecd2334",
-                "reference": "45cffe822057a09e05f7bd09ec5fb88eeecd2334",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/bba83ad77bb9deb6d3c352a7361b818e415b221d",
+                "reference": "bba83ad77bb9deb6d3c352a7361b818e415b221d",
                 "shasum": ""
             },
             "require": {
@@ -8201,7 +8146,7 @@
             },
             "require-dev": {
                 "apigen/apigen": "^4.1",
-                "codeception/aspect-mock": "^1.0 | ^2.0",
+                "codeception/aspect-mock": "^1.0 | ~2.0.0",
                 "doctrine/annotations": "~1.2.0",
                 "goaop/framework": "1.0.0-alpha.2 | ^1.0 | ^2.1",
                 "ircmaxell/random-lib": "^1.1",
@@ -8209,7 +8154,7 @@
                 "mockery/mockery": "^0.9.4",
                 "moontoast/math": "^1.1",
                 "php-mock/php-mock-phpunit": "^0.3|^1.1",
-                "phpunit/phpunit": "^4.7|>=5.0 <5.4",
+                "phpunit/phpunit": "^4.7|^5.0",
                 "satooshi/php-coveralls": "^0.6.1",
                 "squizlabs/php_codesniffer": "^2.3"
             },
@@ -8258,7 +8203,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2017-09-22T20:46:04+00:00"
+            "time": "2018-01-13T22:22:03+00:00"
         },
         {
             "name": "rize/uri-template",
@@ -8310,12 +8255,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "fe89fd2178cabef137b9a76fa91d64925474b956"
+                "reference": "402a514551804df5b4b2150f217e23a15408795a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/fe89fd2178cabef137b9a76fa91d64925474b956",
-                "reference": "fe89fd2178cabef137b9a76fa91d64925474b956",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/402a514551804df5b4b2150f217e23a15408795a",
+                "reference": "402a514551804df5b4b2150f217e23a15408795a",
                 "shasum": ""
             },
             "conflict": {
@@ -8329,9 +8274,10 @@
                 "codeigniter/framework": "<=3.0.6",
                 "composer/composer": "<=1.0.0-alpha11",
                 "contao-components/mediaelement": ">=2.14.2,<2.21.1",
-                "contao/core": ">=2,<3.5.31",
+                "contao/core": ">=2,<3.5.32",
                 "contao/core-bundle": ">=4,<4.4.8",
                 "contao/listing-bundle": ">=4,<4.4.8",
+                "contao/newsletter-bundle": ">=4,<4.1",
                 "doctrine/annotations": ">=1,<1.2.7",
                 "doctrine/cache": ">=1,<1.3.2|>=1.4,<1.4.2",
                 "doctrine/common": ">=2,<2.4.3|>=2.5,<2.5.1",
@@ -8398,7 +8344,7 @@
                 "symfony/web-profiler-bundle": ">=2,<2.3.19|>=2.4,<2.4.9|>=2.5,<2.5.4",
                 "symfony/yaml": ">=2,<2.0.22|>=2.1,<2.1.7",
                 "thelia/backoffice-default-template": ">=2.1,<2.1.2",
-                "thelia/thelia": ">=2.1.0-beta1,<2.1.3|>=2.1,<2.1.2",
+                "thelia/thelia": ">=2.1,<2.1.2|>=2.1.0-beta1,<2.1.3",
                 "twig/twig": "<1.20",
                 "typo3/cms": ">=6.2,<6.2.30|>=7,<7.6.22|>=8,<8.7.5",
                 "typo3/flow": ">=1,<1.0.4|>=1.1,<1.1.1|>=2,<2.0.1|>=2.3,<2.3.16|>=3,<3.0.10|>=3.1,<3.1.7|>=3.2,<3.2.7|>=3.3,<3.3.5",
@@ -8447,7 +8393,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-01-07T00:56:33+00:00"
+            "time": "2018-01-18T10:00:53+00:00"
         },
         {
             "name": "setasign/fpdi",
@@ -8504,12 +8450,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/simshaun/recurr.git",
-                "reference": "7679f92be8e6046c40668b34dbf87000e4ab430f"
+                "reference": "bff55c3baa5ab905c8f49c325daa6e9fcfccbfc1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simshaun/recurr/zipball/7679f92be8e6046c40668b34dbf87000e4ab430f",
-                "reference": "7679f92be8e6046c40668b34dbf87000e4ab430f",
+                "url": "https://api.github.com/repos/simshaun/recurr/zipball/bff55c3baa5ab905c8f49c325daa6e9fcfccbfc1",
+                "reference": "bff55c3baa5ab905c8f49c325daa6e9fcfccbfc1",
                 "shasum": ""
             },
             "require": {
@@ -8526,8 +8472,9 @@
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Recurr": "src/"
+                "psr-4": {
+                    "Recurr\\": "src/Recurr/",
+                    "Recurr\\Test\\": "tests/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -8550,7 +8497,7 @@
                 "recurring",
                 "rrule"
             ],
-            "time": "2017-11-13T18:18:52+00:00"
+            "time": "2018-01-17T18:53:01+00:00"
         },
         {
             "name": "softcommerce/omnipay-paytrace",
