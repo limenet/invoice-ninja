@@ -26,7 +26,7 @@ class TaskKanbanController extends BaseController
             ->orderBy('id')
             ->get();
 
-        $projects = Project::scope()->get();
+        $projects = Project::scope()->with('client')->get();
         $clients = Client::scope()->with(['contacts'])->get();
 
         // check initial statuses exist
@@ -118,7 +118,7 @@ class TaskKanbanController extends BaseController
         $origSortOrder = $status->sort_order;
         $newSortOrder = request('sort_order');
 
-        if ($newSortOrder && $newSortOrder != $origSortOrder) {
+        if ($newSortOrder != $origSortOrder) {
             TaskStatus::scope()
                 ->where('sort_order', '>', $origSortOrder)
                 ->decrement('sort_order');
