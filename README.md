@@ -10,6 +10,8 @@
 
 ## [Hosted](https://www.invoiceninja.com) | [Self-Hosted](https://www.invoiceninja.org) | [iPhone](https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=1220337560&mt=8) | [Android](https://play.google.com/store/apps/details?id=com.invoiceninja.invoiceninja)
 
+### We're on Slack, email contact@invoiceninja.com to be added to the group
+
 All Pro and Enterprise features from the hosted app are included in the open-source code. We offer a $20 per year white-label license to remove our branding for personal use.
 
 The self-host zip includes all third party libraries whereas downloading the code from GitHub requires using Composer to install the dependencies.
@@ -30,6 +32,7 @@ The self-host zip includes all third party libraries whereas downloading the cod
 ### Installation Options
 * [Self-Host Zip](http://docs.invoiceninja.com/en/latest/install.html)
 * [Docker File](https://github.com/invoiceninja/dockerfiles)
+* [Cloudron](https://cloudron.io/store/com.invoiceninja.cloudronapp.html)
 * [Softaculous](https://www.softaculous.com/apps/ecommerce/Invoice_Ninja)
 
 ## Recommended Providers
@@ -48,6 +51,7 @@ The self-host zip includes all third party libraries whereas downloading the cod
 * [Custom Module](http://docs.invoiceninja.com/en/latest/custom_modules.html) | [Watch Video](https://www.youtube.com/watch?v=8jJ-PYuq85k)
 
 ## Third Party Developers
+* [Some Techie](https://www.sometechie.com/customize-invoice-ninja/)
 * [theDevelopers](https://www.thedevelopers.ro/customisation-request-invoiceninja)
 
 Email us to be added to the list

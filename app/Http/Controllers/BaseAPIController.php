@@ -99,15 +99,17 @@ class BaseAPIController extends Controller
 
         $query->with($includes);
 
-        if ($updatedAt = intval(Input::get('updated_at'))) {
-            $query->where('updated_at', '>=', date('Y-m-d H:i:s', $updatedAt));
+        if (Input::get('updated_at') > 0) {
+                $updatedAt = intval(Input::get('updated_at'));
+                $query->where('updated_at', '>=', date('Y-m-d H:i:s', $updatedAt));
         }
 
-        if ($clientPublicId = Input::get('client_id')) {
-            $filter = function ($query) use ($clientPublicId) {
+        if (Input::get('client_id') > 0) {
+                $clientPublicId = Input::get('client_id');
+                $filter = function ($query) use ($clientPublicId) {
                 $query->where('public_id', '=', $clientPublicId);
-            };
-            $query->whereHas('client', $filter);
+             };
+             $query->whereHas('client', $filter);
         }
 
         if (! Utils::hasPermission('view_all')) {
@@ -211,6 +213,10 @@ class BaseAPIController extends Controller
         foreach ($included as $include) {
             if ($include == 'invoices') {
                 $data[] = 'invoices.invoice_items';
+                $data[] = 'invoices.client.contacts';
+            } elseif ($include == 'invoice') {
+                $data[] = 'invoice.invoice_items';
+                $data[] = 'invoice.client.contacts';
             } elseif ($include == 'client') {
                 $data[] = 'client.contacts';
             } elseif ($include == 'clients') {

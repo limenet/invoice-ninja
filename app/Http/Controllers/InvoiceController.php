@@ -110,6 +110,12 @@ class InvoiceController extends BaseController
             $invoice->invoice_status_id = 0;
             $invoice->invoice_date = date_create()->format('Y-m-d');
             $invoice->deleted_at = null;
+            while ($invoice->documents->count()) {
+                $invoice->documents->pop();
+            }
+            while ($invoice->expenses->count()) {
+                $invoice->expenses->pop();
+            }
             $method = 'POST';
             $url = "{$entityType}s";
         } else {
@@ -403,7 +409,11 @@ class InvoiceController extends BaseController
         }
 
         if (! Auth::user()->confirmed) {
-            $errorMessage = trans(Auth::user()->registered ? 'texts.confirmation_required' : 'texts.registration_required');
+            if (Auth::user()->registered) {
+                $errorMessage = trans('texts.confirmation_required', ['link' => link_to('/resend_confirmation', trans('texts.click_here'))]);
+            } else {
+                $errorMessage = trans('texts.registration_required');
+            }
             Session::flash('error', $errorMessage);
 
             return Redirect::to('invoices/'.$invoice->public_id.'/edit');

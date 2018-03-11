@@ -32,6 +32,10 @@ class AccountRepository
     public function create($firstName = '', $lastName = '', $email = '', $password = '', $company = false)
     {
         if (! $company) {
+            if (Utils::isNinja()) {
+                $this->checkForSpammer();
+            }
+
             $company = new Company();
             $company->utm_source = Input::get('utm_source');
             $company->utm_medium = Input::get('utm_medium');
@@ -122,6 +126,23 @@ class AccountRepository
         return $account;
     }
 
+    private function checkForSpammer()
+    {
+        $ip = Request::getClientIp();
+        $count = Account::whereIp($ip)->count();
+
+        if ($count > 1 && $errorEmail = env('ERROR_EMAIL')) {
+            \Mail::raw($ip, function ($message) use ($ip, $errorEmail) {
+                $message->to($errorEmail)
+                        ->from(CONTACT_EMAIL)
+                        ->subject('Duplicate company for IP: ' . $ip);
+            });
+            if ($count >= 5) {
+                abort();
+            }
+        }
+    }
+
     public function getSearchData($user)
     {
         $data = $this->getAccountSearchData($user);
@@ -144,25 +165,25 @@ class AccountRepository
 
         // include custom client fields in search
         if ($account->custom_client_label1) {
-            $data[$account->custom_client_label1] = [];
+            $data[$account->present()->customClientLabel1] = [];
         }
         if ($account->custom_client_label2) {
-            $data[$account->custom_client_label2] = [];
+            $data[$account->present()->customClientLabel2] = [];
         }
 
         if ($user->hasPermission('view_all')) {
             $clients = Client::scope()
                         ->with('contacts', 'invoices')
-                        ->withArchived()
+                        ->withTrashed()
                         ->with(['contacts', 'invoices' => function ($query) use ($user) {
-                            $query->withArchived();
+                            $query->withTrashed();
                         }])->get();
         } else {
             $clients = Client::scope()
                         ->where('user_id', '=', $user->id)
-                        ->withArchived()
+                        ->withTrashed()
                         ->with(['contacts', 'invoices' => function ($query) use ($user) {
-                            $query->withArchived()
+                            $query->withTrashed()
                                   ->where('user_id', '=', $user->id);
                         }])->get();
         }
@@ -177,14 +198,14 @@ class AccountRepository
             }
 
             if ($client->custom_value1) {
-                $data[$account->custom_client_label1][] = [
+                $data[$account->present()->customClientLabel1][] = [
                     'value' => "{$client->custom_value1}: " . $client->getDisplayName(),
                     'tokens' => $client->custom_value1,
                     'url' => $client->present()->url,
                 ];
             }
             if ($client->custom_value2) {
-                $data[$account->custom_client_label2][] = [
+                $data[$account->present()->customClientLabel2][] = [
                     'value' => "{$client->custom_value2}: " . $client->getDisplayName(),
                     'tokens' => $client->custom_value2,
                     'url' => $client->present()->url,
@@ -193,7 +214,7 @@ class AccountRepository
 
             foreach ($client->contacts as $contact) {
                 $data['contacts'][] = [
-                    'value' => $contact->getDisplayName(),
+                    'value' => $contact->getSearchName(),
                     'tokens' => implode(',', [$contact->first_name, $contact->last_name, $contact->email, $contact->phone]),
                     'url' => $client->present()->url,
                 ];
@@ -226,6 +247,7 @@ class AccountRepository
             ENTITY_PAYMENT,
             ENTITY_CREDIT,
             ENTITY_PROJECT,
+            ENTITY_PROPOSAL,
         ];
 
         foreach ($entityTypes as $entityType) {
