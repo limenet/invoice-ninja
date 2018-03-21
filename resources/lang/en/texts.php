@@ -2449,8 +2449,8 @@ $LANG = array(
     'purge_details' => 'The data in your company (:account) has been successfully purged.',
     'deleted_company' => 'Successfully canceled account',
     'deleted_account' => 'Successfully deleted company',
-    'deleted_company_details' => 'Your company (:account) has been successfully deleted.',
-    'deleted_account_details' => 'Your account (:account) has been successfully deleted.',
+    'deleted_company_details' => 'Your account (:account) has been successfully deleted.',
+    'deleted_account_details' => 'Your company (:account) has been successfully deleted.',
 
     'alipay' => 'Alipay',
     'sofort' => 'Sofort',
@@ -2656,7 +2656,7 @@ $LANG = array(
     'tax_amount' => 'Tax Amount',
     'tax_paid' => 'Tax Paid',
     'none' => 'None',
-
+    'proposal_message_button' => 'To view your proposal for :amount, click the button below.',
     'proposal' => 'Proposal',
     'proposals' => 'Proposals',
     'list_proposals' => 'List Proposals',

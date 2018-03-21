@@ -129,15 +129,17 @@ class AccountRepository
     private function checkForSpammer()
     {
         $ip = Request::getClientIp();
-        $count = Account::whereIp($ip)->count();
+        $count = Account::whereIp($ip)->whereHas('users', function ($query) {
+            $query->whereRegistered(true);
+        })->count();
 
-        if ($count > 1 && $errorEmail = env('ERROR_EMAIL')) {
+        if ($count > 10 && $errorEmail = env('ERROR_EMAIL')) {
             \Mail::raw($ip, function ($message) use ($ip, $errorEmail) {
                 $message->to($errorEmail)
                         ->from(CONTACT_EMAIL)
                         ->subject('Duplicate company for IP: ' . $ip);
             });
-            if ($count >= 5) {
+            if ($count >= 15) {
                 abort();
             }
         }

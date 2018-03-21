@@ -49,10 +49,9 @@
                         }
                     }
 
-                    if (NINJA.formIsSubmitted) {
+                    if ($form.find('button').is(':disabled')) {
                         return false;
                     }
-                    NINJA.formIsSubmitted = true;
 
                     // Disable the submit button to prevent repeated clicks
                     $form.find('button').prop('disabled', true);
@@ -73,7 +72,6 @@
                     // Show the errors on the form
                     var error = response.error.message;
                     $form.find('button').prop('disabled', false);
-                    NINJA.formIsSubmitted = false;
                     $('#js-error-message').html(error).fadeIn();
                 } else {
                     // response contains id and card, which contains additional card details
@@ -85,6 +83,7 @@
                         $form.get(0).submit();
                     } else {
                         $('#js-error-message').html('An error occurred').fadeIn();
+                        $form.find('button').prop('disabled', false);
                         logError('STRIPE_ERROR: ' + JSON.stringify(response));
                     }
                 }

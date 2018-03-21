@@ -549,7 +549,7 @@ class InvoiceRepository extends BaseRepository
                 if ($invoice->is_amount_discount) {
                     $lineTotal -= $discount;
                 } else {
-                    $lineTotal -= $lineTotal * $discount / 100;
+                    $lineTotal -= round($lineTotal * $discount / 100, 2);
                 }
             }
 
@@ -1194,7 +1194,7 @@ class InvoiceRepository extends BaseRepository
         }
 
         if (! count($dates)) {
-            return [];
+            return collect();
         }
 
         $sql = implode(' OR ', $dates);
