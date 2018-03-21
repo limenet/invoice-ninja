@@ -392,16 +392,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.52.23",
+            "version": "3.52.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3ce95b96c217a699168d937c4ed700e6a27ec783"
+                "reference": "51efd3a7cda92f245ccf39fea03227e0eb473c93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3ce95b96c217a699168d937c4ed700e6a27ec783",
-                "reference": "3ce95b96c217a699168d937c4ed700e6a27ec783",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/51efd3a7cda92f245ccf39fea03227e0eb473c93",
+                "reference": "51efd3a7cda92f245ccf39fea03227e0eb473c93",
                 "shasum": ""
             },
             "require": {
@@ -468,7 +468,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-03-08T22:51:35+00:00"
+            "time": "2018-03-20T21:15:39+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -792,16 +792,16 @@
         },
         {
             "name": "braintree/braintree_php",
-            "version": "3.29.0",
+            "version": "3.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/braintree/braintree_php.git",
-                "reference": "0cf12317ff49d5b60667d0009df96a54f7e99b8d"
+                "reference": "7053be17ec7cd3040d019779bdb5cd89a3b95a94"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/braintree/braintree_php/zipball/0cf12317ff49d5b60667d0009df96a54f7e99b8d",
-                "reference": "0cf12317ff49d5b60667d0009df96a54f7e99b8d",
+                "url": "https://api.github.com/repos/braintree/braintree_php/zipball/7053be17ec7cd3040d019779bdb5cd89a3b95a94",
+                "reference": "7053be17ec7cd3040d019779bdb5cd89a3b95a94",
                 "shasum": ""
             },
             "require": {
@@ -835,7 +835,7 @@
                 }
             ],
             "description": "Braintree PHP Client Library",
-            "time": "2018-02-27T22:51:38+00:00"
+            "time": "2018-03-20T20:14:04+00:00"
         },
         {
             "name": "cardgate/omnipay-cardgate",
@@ -2610,16 +2610,16 @@
         },
         {
             "name": "gocardless/gocardless-pro",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gocardless/gocardless-pro-php.git",
-                "reference": "303c66fcfd381e216144b8407022b91cb1b00521"
+                "reference": "ae6b33c65da40f68e4c86c0b45bae7bfddf3156e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gocardless/gocardless-pro-php/zipball/303c66fcfd381e216144b8407022b91cb1b00521",
-                "reference": "303c66fcfd381e216144b8407022b91cb1b00521",
+                "url": "https://api.github.com/repos/gocardless/gocardless-pro-php/zipball/ae6b33c65da40f68e4c86c0b45bae7bfddf3156e",
+                "reference": "ae6b33c65da40f68e4c86c0b45bae7bfddf3156e",
                 "shasum": ""
             },
             "require": {
@@ -2658,7 +2658,7 @@
                 "direct debit",
                 "gocardless"
             ],
-            "time": "2018-02-21T12:56:52+00:00"
+            "time": "2018-03-16T16:48:08+00:00"
         },
         {
             "name": "google/apiclient",
@@ -2721,16 +2721,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.49",
+            "version": "v0.51",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client-services.git",
-                "reference": "7552d7d1bb92e933fc93088014c8c2555c0feab6"
+                "reference": "c3d936baf3eacc002f6183530355fe4fba19b0fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/7552d7d1bb92e933fc93088014c8c2555c0feab6",
-                "reference": "7552d7d1bb92e933fc93088014c8c2555c0feab6",
+                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/c3d936baf3eacc002f6183530355fe4fba19b0fb",
+                "reference": "c3d936baf3eacc002f6183530355fe4fba19b0fb",
                 "shasum": ""
             },
             "require": {
@@ -2754,7 +2754,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-03-04T00:24:05+00:00"
+            "time": "2018-03-18T00:23:20+00:00"
         },
         {
             "name": "google/auth",
@@ -2805,21 +2805,21 @@
         },
         {
             "name": "google/cloud",
-            "version": "v0.56.0",
+            "version": "v0.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/GoogleCloudPlatform/google-cloud-php.git",
-                "reference": "7136c7e12596a3461840cac916937e24462b2ad1"
+                "reference": "4d2dbc7085bf0716a58c3a92c34cca45c15d611f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GoogleCloudPlatform/google-cloud-php/zipball/7136c7e12596a3461840cac916937e24462b2ad1",
-                "reference": "7136c7e12596a3461840cac916937e24462b2ad1",
+                "url": "https://api.github.com/repos/GoogleCloudPlatform/google-cloud-php/zipball/4d2dbc7085bf0716a58c3a92c34cca45c15d611f",
+                "reference": "4d2dbc7085bf0716a58c3a92c34cca45c15d611f",
                 "shasum": ""
             },
             "require": {
                 "google/gax": "^0.30",
-                "google/proto-client": "^0.33",
+                "google/proto-client": "^0.34",
                 "guzzlehttp/guzzle": "^5.3|^6.0",
                 "guzzlehttp/psr7": "^1.2",
                 "monolog/monolog": "~1",
@@ -2830,27 +2830,27 @@
             },
             "replace": {
                 "google/cloud-bigquery": "1.0.3",
-                "google/cloud-bigtable": "0.2.2",
-                "google/cloud-container": "0.2.2",
-                "google/cloud-core": "1.17.1",
-                "google/cloud-dataproc": "0.2.2",
+                "google/cloud-bigtable": "0.2.3",
+                "google/cloud-container": "0.2.3",
+                "google/cloud-core": "1.18.0",
+                "google/cloud-dataproc": "0.2.3",
                 "google/cloud-datastore": "1.3.1",
                 "google/cloud-debugger": "0.5.0",
-                "google/cloud-dlp": "0.5.3",
-                "google/cloud-error-reporting": "0.8.3",
-                "google/cloud-firestore": "0.5.1",
-                "google/cloud-language": "0.12.2",
-                "google/cloud-logging": "1.9.3",
-                "google/cloud-monitoring": "0.8.2",
-                "google/cloud-oslogin": "0.2.2",
-                "google/cloud-pubsub": "1.0.1",
-                "google/cloud-spanner": "1.2.0",
-                "google/cloud-speech": "0.11.2",
+                "google/cloud-dlp": "0.6.0",
+                "google/cloud-error-reporting": "0.8.4",
+                "google/cloud-firestore": "0.5.2",
+                "google/cloud-language": "0.12.3",
+                "google/cloud-logging": "1.9.4",
+                "google/cloud-monitoring": "0.8.3",
+                "google/cloud-oslogin": "0.2.3",
+                "google/cloud-pubsub": "1.0.2",
+                "google/cloud-spanner": "1.2.1",
+                "google/cloud-speech": "0.11.3",
                 "google/cloud-storage": "1.3.4",
-                "google/cloud-trace": "0.6.2",
+                "google/cloud-trace": "0.6.3",
                 "google/cloud-translate": "1.1.2",
-                "google/cloud-videointelligence": "0.9.2",
-                "google/cloud-vision": "0.10.1"
+                "google/cloud-videointelligence": "0.9.3",
+                "google/cloud-vision": "0.10.2"
             },
             "require-dev": {
                 "erusev/parsedown": "^1.6",
@@ -2933,20 +2933,20 @@
                 "translation",
                 "vision"
             ],
-            "time": "2018-02-26T20:57:20+00:00"
+            "time": "2018-03-16T18:56:38+00:00"
         },
         {
             "name": "google/gax",
-            "version": "0.30.0",
+            "version": "0.30.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/gax-php.git",
-                "reference": "c16fe4fd7d32e21ffbeaeae27a3ec08ee0bd6121"
+                "reference": "dda1f751734fb1ba4bf4f93c7f9335bf652c82bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/gax-php/zipball/c16fe4fd7d32e21ffbeaeae27a3ec08ee0bd6121",
-                "reference": "c16fe4fd7d32e21ffbeaeae27a3ec08ee0bd6121",
+                "url": "https://api.github.com/repos/googleapis/gax-php/zipball/dda1f751734fb1ba4bf4f93c7f9335bf652c82bb",
+                "reference": "dda1f751734fb1ba4bf4f93c7f9335bf652c82bb",
                 "shasum": ""
             },
             "require": {
@@ -2984,20 +2984,20 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-01-22T21:49:54+00:00"
+            "time": "2018-03-14T16:49:37+00:00"
         },
         {
             "name": "google/proto-client",
-            "version": "0.33.0",
+            "version": "0.34.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/proto-client-php.git",
-                "reference": "d2b60e84886ab9770cc3fb695a514e15afdc8d82"
+                "reference": "310be3490c91f24bde399902077e896e2a358794"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/proto-client-php/zipball/d2b60e84886ab9770cc3fb695a514e15afdc8d82",
-                "reference": "d2b60e84886ab9770cc3fb695a514e15afdc8d82",
+                "url": "https://api.github.com/repos/googleapis/proto-client-php/zipball/310be3490c91f24bde399902077e896e2a358794",
+                "reference": "310be3490c91f24bde399902077e896e2a358794",
                 "shasum": ""
             },
             "require": {
@@ -3024,7 +3024,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-02-26T17:01:46+00:00"
+            "time": "2018-03-14T22:53:07+00:00"
         },
         {
             "name": "google/protobuf",
@@ -3701,16 +3701,16 @@
         },
         {
             "name": "jaybizzle/crawler-detect",
-            "version": "v1.2.60",
+            "version": "v1.2.61",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JayBizzle/Crawler-Detect.git",
-                "reference": "6e9abfe7100f1c8febfa600b3568192989f10c2e"
+                "reference": "9f22764fa72f6a30211fe16cf28a1f43642136de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JayBizzle/Crawler-Detect/zipball/6e9abfe7100f1c8febfa600b3568192989f10c2e",
-                "reference": "6e9abfe7100f1c8febfa600b3568192989f10c2e",
+                "url": "https://api.github.com/repos/JayBizzle/Crawler-Detect/zipball/9f22764fa72f6a30211fe16cf28a1f43642136de",
+                "reference": "9f22764fa72f6a30211fe16cf28a1f43642136de",
                 "shasum": ""
             },
             "require": {
@@ -3746,7 +3746,7 @@
                 "crawlerdetect",
                 "php crawler detect"
             ],
-            "time": "2018-03-05T20:50:06+00:00"
+            "time": "2018-03-19T20:27:17+00:00"
         },
         {
             "name": "jaybizzle/laravel-crawler-detect",
@@ -5379,16 +5379,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "1.24.1",
+            "version": "1.25.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "ef12cbd8ba5ce624f0a6a95e0850c4cc13e71e41"
+                "reference": "cbcf13da0b531767e39eb86e9687f5deba9857b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/ef12cbd8ba5ce624f0a6a95e0850c4cc13e71e41",
-                "reference": "ef12cbd8ba5ce624f0a6a95e0850c4cc13e71e41",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/cbcf13da0b531767e39eb86e9687f5deba9857b4",
+                "reference": "cbcf13da0b531767e39eb86e9687f5deba9857b4",
                 "shasum": ""
             },
             "require": {
@@ -5428,7 +5428,7 @@
                 "datetime",
                 "time"
             ],
-            "time": "2018-03-09T15:49:34+00:00"
+            "time": "2018-03-19T15:50:49+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -8317,18 +8317,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "664836e89c7ecad3dbaabc1572ea752c0d532d80"
+                "reference": "6da6150c9fb568739c8508a9859e9d5d7a5e99e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/664836e89c7ecad3dbaabc1572ea752c0d532d80",
-                "reference": "664836e89c7ecad3dbaabc1572ea752c0d532d80",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/6da6150c9fb568739c8508a9859e9d5d7a5e99e9",
+                "reference": "6da6150c9fb568739c8508a9859e9d5d7a5e99e9",
                 "shasum": ""
             },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.6",
                 "amphp/artax": "<1.0.6|>=2,<2.0.6",
+                "amphp/http": "<1.0.1",
                 "asymmetricrypt/asymmetricrypt": ">=0,<9.9.99",
                 "aws/aws-sdk-php": ">=3,<3.2.1",
                 "bugsnag/bugsnag-laravel": ">=2,<2.0.2",
@@ -8394,7 +8395,7 @@
                 "simplesamlphp/simplesamlphp": "<1.15.2",
                 "simplesamlphp/simplesamlphp-module-infocard": "<1.0.1",
                 "socalnick/scn-social-auth": "<1.15.2",
-                "squizlabs/php_codesniffer": ">=1,<2.8.1",
+                "squizlabs/php_codesniffer": ">=1,<2.8.1|>=3,<3.0.1",
                 "stormpath/sdk": ">=0,<9.9.99",
                 "swiftmailer/swiftmailer": ">=4,<5.4.5",
                 "symfony/dependency-injection": ">=2,<2.0.17",
@@ -8423,11 +8424,13 @@
                 "typo3/neos": ">=1.1,<1.1.3|>=1.2,<1.2.13|>=2,<2.0.4",
                 "willdurand/js-translation-bundle": "<2.1.1",
                 "yiisoft/yii": ">=1.1.14,<1.1.15",
-                "yiisoft/yii2": "<2.0.14",
+                "yiisoft/yii2": "<2.0.15",
                 "yiisoft/yii2-bootstrap": "<2.0.4",
-                "yiisoft/yii2-dev": "<2.0.14",
+                "yiisoft/yii2-dev": "<2.0.15",
+                "yiisoft/yii2-elasticsearch": "<2.0.5",
                 "yiisoft/yii2-gii": "<2.0.4",
                 "yiisoft/yii2-jui": "<2.0.4",
+                "yiisoft/yii2-redis": "<2.0.8",
                 "zendframework/zend-cache": ">=2.4,<2.4.8|>=2.5,<2.5.3",
                 "zendframework/zend-captcha": ">=2,<2.4.9|>=2.5,<2.5.2",
                 "zendframework/zend-crypt": ">=2,<2.4.9|>=2.5,<2.5.2",
@@ -8465,7 +8468,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-03-07T15:45:44+00:00"
+            "time": "2018-03-20T15:54:02+00:00"
         },
         {
             "name": "sabre/uri",
@@ -8684,75 +8687,6 @@
                 "rrule"
             ],
             "time": "2018-01-17T18:53:01+00:00"
-        },
-        {
-            "name": "sly/notification-pusher",
-            "version": "v2.3.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Ph3nol/NotificationPusher.git",
-                "reference": "fc6ab3e72f3d93e7dd3b1e1df883946d206a12ec"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Ph3nol/NotificationPusher/zipball/fc6ab3e72f3d93e7dd3b1e1df883946d206a12ec",
-                "reference": "fc6ab3e72f3d93e7dd3b1e1df883946d206a12ec",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/inflector": "1.*",
-                "php": ">=5.6",
-                "symfony/console": ">=2.3,<5",
-                "symfony/debug": ">=2.3,<5",
-                "symfony/filesystem": ">=2.3,<5",
-                "symfony/options-resolver": ">=2.3,<5",
-                "symfony/process": ">=2.3,<5",
-                "zendframework/zendservice-apple-apns": "~1.0",
-                "zendframework/zendservice-google-gcm": "~2.0"
-            },
-            "require-dev": {
-                "atoum/atoum": "^3.1",
-                "atoum/stubs": "^2.5",
-                "atoum/visibility-extension": "^1.3",
-                "symfony/var-dumper": ">=2.3,<5"
-            },
-            "bin": [
-                "np"
-            ],
-            "type": "standalone",
-            "autoload": {
-                "psr-0": {
-                    "Sly": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Cédric Dugat",
-                    "email": "cedric@dugat.me"
-                },
-                {
-                    "name": "Contributors",
-                    "homepage": "https://github.com/Ph3nol/NotificationPusher/contributors"
-                }
-            ],
-            "description": "Standalone PHP library for easy devices notifications push.",
-            "homepage": "https://github.com/Ph3nol/NotificationPusher",
-            "keywords": [
-                "android",
-                "apns",
-                "apple",
-                "gcm",
-                "iphone",
-                "message",
-                "notification",
-                "push",
-                "pusher"
-            ],
-            "time": "2018-02-17T13:20:40+00:00"
         },
         {
             "name": "softcommerce/omnipay-paytrace",
@@ -9670,25 +9604,25 @@
         },
         {
             "name": "symfony/options-resolver",
-            "version": "v4.0.6",
+            "version": "v3.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
-                "reference": "371532a2cfe932f7a3766dd4c45364566def1dd0"
+                "reference": "f3109a6aedd20e35c3a33190e932c2b063b7b50e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/371532a2cfe932f7a3766dd4c45364566def1dd0",
-                "reference": "371532a2cfe932f7a3766dd4c45364566def1dd0",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/f3109a6aedd20e35c3a33190e932c2b063b7b50e",
+                "reference": "f3109a6aedd20e35c3a33190e932c2b063b7b50e",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1.3"
+                "php": "^5.5.9|>=7.0.8"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.0-dev"
+                    "dev-master": "3.4-dev"
                 }
             },
             "autoload": {
@@ -9720,7 +9654,7 @@
                 "configuration",
                 "options"
             ],
-            "time": "2018-01-18T22:19:33+00:00"
+            "time": "2018-01-11T07:56:07+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -10290,22 +10224,22 @@
         },
         {
             "name": "turbo124/laravel-push-notification",
-            "version": "2.0.3",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/turbo124/laravel-push-notification.git",
-                "reference": "96132aa4c7c8a6a3d411c4488f81aac50491a7bd"
+                "reference": "032c8327513b1619ced771beedf799bc8c79ede8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/turbo124/laravel-push-notification/zipball/96132aa4c7c8a6a3d411c4488f81aac50491a7bd",
-                "reference": "96132aa4c7c8a6a3d411c4488f81aac50491a7bd",
+                "url": "https://api.github.com/repos/turbo124/laravel-push-notification/zipball/032c8327513b1619ced771beedf799bc8c79ede8",
+                "reference": "032c8327513b1619ced771beedf799bc8c79ede8",
                 "shasum": ""
             },
             "require": {
                 "illuminate/support": "5.*",
                 "php": ">=5.3.0",
-                "sly/notification-pusher": "2.*"
+                "turbo124/notification-pusher": "3.*"
             },
             "type": "library",
             "autoload": {
@@ -10328,7 +10262,71 @@
                 "notification",
                 "push"
             ],
-            "time": "2018-02-22T10:05:05+00:00"
+            "time": "2018-03-19T11:58:36+00:00"
+        },
+        {
+            "name": "turbo124/notification-pusher",
+            "version": "v3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/turbo124/NotificationPusher.git",
+                "reference": "52e8298895ebbbaed3cd6b325057767f15c77b4c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/turbo124/NotificationPusher/zipball/52e8298895ebbbaed3cd6b325057767f15c77b4c",
+                "reference": "52e8298895ebbbaed3cd6b325057767f15c77b4c",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/inflector": "~1.0",
+                "php": ">=5.5",
+                "symfony/console": "~2.3|~3.0",
+                "symfony/options-resolver": "~2.3|~3.0",
+                "symfony/process": "~2.3|~3.0",
+                "zendframework/zendservice-apple-apns": "^1.1.0",
+                "zendframework/zendservice-google-gcm": "1.*"
+            },
+            "require-dev": {
+                "atoum/atoum": "dev-master"
+            },
+            "bin": [
+                "np"
+            ],
+            "type": "standalone",
+            "autoload": {
+                "psr-0": {
+                    "Sly": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Cédric Dugat",
+                    "email": "cedric@dugat.me"
+                },
+                {
+                    "name": "Contributors",
+                    "homepage": "https://github.com/Ph3nol/NotificationPusher/contributors"
+                }
+            ],
+            "description": "Standalone PHP library for easy devices notifications push.",
+            "homepage": "https://github.com/Ph3nol/NotificationPusher",
+            "keywords": [
+                "android",
+                "apns",
+                "apple",
+                "gcm",
+                "iphone",
+                "message",
+                "notification",
+                "push",
+                "pusher"
+            ],
+            "time": "2017-01-10T02:17:34+00:00"
         },
         {
             "name": "twbs/bootstrap",
@@ -10383,16 +10381,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.35.2",
+            "version": "v1.35.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "9c24f2cd39dc1906b76879e099970b7e53724601"
+                "reference": "b48680b6eb7d16b5025b9bfc4108d86f6b8af86f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/9c24f2cd39dc1906b76879e099970b7e53724601",
-                "reference": "9c24f2cd39dc1906b76879e099970b7e53724601",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/b48680b6eb7d16b5025b9bfc4108d86f6b8af86f",
+                "reference": "b48680b6eb7d16b5025b9bfc4108d86f6b8af86f",
                 "shasum": ""
             },
             "require": {
@@ -10400,8 +10398,8 @@
             },
             "require-dev": {
                 "psr/container": "^1.0",
-                "symfony/debug": "~2.7",
-                "symfony/phpunit-bridge": "~3.3@dev"
+                "symfony/debug": "^2.7",
+                "symfony/phpunit-bridge": "^3.3"
             },
             "type": "library",
             "extra": {
@@ -10444,7 +10442,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2018-03-03T16:21:29+00:00"
+            "time": "2018-03-20T04:25:58+00:00"
         },
         {
             "name": "vink/omnipay-komoju",
@@ -11182,30 +11180,31 @@
         },
         {
             "name": "zendframework/zendservice-google-gcm",
-            "version": "2.0.0",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/ZendService_Google_Gcm.git",
-                "reference": "617221cb04e75c05080ceec61f31c71566e0b999"
+                "reference": "86d16e9dcb4d41677e6f691642856b3eb95a1073"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/ZendService_Google_Gcm/zipball/617221cb04e75c05080ceec61f31c71566e0b999",
-                "reference": "617221cb04e75c05080ceec61f31c71566e0b999",
+                "url": "https://api.github.com/repos/zendframework/ZendService_Google_Gcm/zipball/86d16e9dcb4d41677e6f691642856b3eb95a1073",
+                "reference": "86d16e9dcb4d41677e6f691642856b3eb95a1073",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.5 || ^7.0",
-                "zendframework/zend-http": "^2.0",
-                "zendframework/zend-json": "^2.0"
+                "php": ">=5.3.3",
+                "zendframework/zend-http": ">=2.0.0",
+                "zendframework/zend-json": ">=2.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8"
+                "phpunit/phpunit": "3.7.*"
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "ZendService\\Google\\": "library/"
+                "psr-0": {
+                    "ZendService\\Google\\Gcm\\": "library/",
+                    "ZendService\\Google\\Exception\\": "library/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -11213,7 +11212,7 @@
                 "BSD-3-Clause"
             ],
             "description": "OOP wrapper for Google Cloud Messaging",
-            "homepage": "https://github.com/zendframework/zendservice-google-gcm",
+            "homepage": "http://packages.zendframework.com/",
             "keywords": [
                 "gcm",
                 "google",
@@ -11221,7 +11220,7 @@
                 "push",
                 "zf2"
             ],
-            "time": "2017-01-17T13:57:50+00:00"
+            "time": "2015-10-14T03:18:56+00:00"
         },
         {
             "name": "zircote/swagger-php",
