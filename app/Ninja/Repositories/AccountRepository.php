@@ -67,6 +67,8 @@ class AccountRepository
         $account->currency_id = DEFAULT_CURRENCY;
 
         // Set default language/currency based on IP
+        // TODO Disabled until GDPR implications are understood
+        /*
         if (\Cache::get('currencies')) {
             if ($data = unserialize(@file_get_contents('http://www.geoplugin.net/php.gp?ip=' . $account->ip))) {
                 $currencyCode = strtolower($data['geoplugin_currencyCode']);
@@ -94,6 +96,7 @@ class AccountRepository
                 }
             }
         }
+        */
 
         $account->save();
 
@@ -193,7 +196,7 @@ class AccountRepository
         foreach ($clients as $client) {
             if ($client->name) {
                 $data['clients'][] = [
-                    'value' => ($account->clientNumbersEnabled() && $client->id_number ? $client->id_number . ': ' : '') . $client->name,
+                    'value' => ($client->id_number ? $client->id_number . ': ' : '') . $client->name,
                     'tokens' => implode(',', [$client->name, $client->id_number, $client->vat_number, $client->work_phone]),
                     'url' => $client->present()->url,
                 ];

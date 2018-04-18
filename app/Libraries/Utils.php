@@ -182,6 +182,11 @@ class Utils
         return static::isNinja() ? NINJA_WEB_URL.'/terms' : NINJA_WEB_URL.'/self-hosting-the-invoice-ninja-platform';
     }
 
+    public static function getPrivacyLink()
+    {
+        return static::isNinja() ? NINJA_WEB_URL.'/terms' : NINJA_WEB_URL.'/self-hosting-the-invoice-ninja-platform';
+    }
+
     public static function isOAuthEnabled()
     {
         $providers = [
@@ -435,6 +440,7 @@ class Utils
             'url' => Input::get('url', Request::url()),
             'previous' => url()->previous(),
             'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+            'locale' => App::getLocale(),
             'ip' => Request::getClientIp(),
             'count' => Session::get('error_count', 0),
             'is_console' => App::runningInConsole() ? 'yes' : 'no',
@@ -498,6 +504,21 @@ class Utils
         });
 
         return $data->first();
+    }
+
+    public static function formatNumber($value, $currencyId = false, $precision = 0)
+    {
+        $value = floatval($value);
+
+        if (! $currencyId) {
+            $currencyId = Session::get(SESSION_CURRENCY, DEFAULT_CURRENCY);
+        }
+
+        $currency = self::getFromCache($currencyId, 'currencies');
+        $thousand = $currency->thousand_separator;
+        $decimal = $currency->decimal_separator;
+
+        return number_format($value, $precision, $decimal, $thousand);
     }
 
     public static function formatMoney($value, $currencyId = false, $countryId = false, $decorator = false)
@@ -1328,18 +1349,28 @@ class Utils
 
     public static function brewerColor($number) {
         $colors = [
-            '#1c9f77',
-            '#d95d02',
-            '#716cb1',
-            '#e62a8b',
-            '#5fa213',
-            '#e6aa04',
-            '#a87821',
-            '#676767',
+            '#0B629E',
+            '#43365B',
+            '#63A188',
+            '#F7BF6C',
+            '#D35746',
+            '#6CB4DD',
+            '#034C78',
+            '#30253E',
+            '#394648',
+            '#F89941',
+            '#F48568',
+            '#3495C6',
         ];
         $number = ($number-1) % count($colors);
 
         return $colors[$number];
+    }
+
+    public static function brewerColorRGB($number) {
+        $color = static::brewerColor($number);
+        list($r, $g, $b) = sscanf($color, "#%02x%02x%02x");
+        return "{$r},{$g},{$b}";
     }
 
     /**

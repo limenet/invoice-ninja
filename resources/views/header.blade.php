@@ -365,7 +365,7 @@
 
 </nav>
 
-<div id="wrapper" class='{!! session(SESSION_LEFT_SIDEBAR) ? 'toggled-left' : '' !!} {!! session(SESSION_RIGHT_SIDEBAR, true) ? 'toggled-right' : '' !!}'>
+<div id="wrapper" class='{{ session(SESSION_LEFT_SIDEBAR) ? 'toggled-left' : '' }} {{ session(SESSION_RIGHT_SIDEBAR, true) ? 'toggled-right' : '' }}'>
 
     <!-- Sidebar -->
     <div id="left-sidebar-wrapper" class="hide-phone">
@@ -469,7 +469,7 @@
           </div>
 
           @if (!isset($showBreadcrumbs) || $showBreadcrumbs)
-            {!! Form::breadcrumbs((isset($entity) && $entity->exists) ? $entity->present()->statusLabel : false) !!}
+            {!! Form::breadcrumbs((! empty($entity) && $entity->exists) ? $entity->present()->statusLabel : false) !!}
           @endif
 
           @yield('content')
@@ -500,6 +500,10 @@
 @include('partials.contact_us')
 @include('partials.sign_up')
 @include('partials.keyboard_shortcuts')
+
+@if (auth()->check() && ! auth()->user()->hasAcceptedLatestTerms())
+    @include('partials.accept_terms')
+@endif
 
 </div>
 

@@ -55,6 +55,11 @@ class StartupCheck
             return $next($request);
         }
 
+        // Check to prevent headless browsers from triggering activity
+        if (Utils::isNinja() && ! $request->phantomjs && strpos($request->header('User-Agent'), 'Headless') !== false) {
+            abort(403);
+        }
+
         // Check if a new version was installed
         if (! Utils::isNinja()) {
             $file = storage_path() . '/version.txt';
@@ -142,7 +147,7 @@ class StartupCheck
         if (Input::has('lang')) {
             $locale = Input::get('lang');
             App::setLocale($locale);
-            Session::set(SESSION_LOCALE, $locale);
+            session([SESSION_LOCALE => $locale]);
 
             if (Auth::check()) {
                 if ($language = Language::whereLocale($locale)->first()) {

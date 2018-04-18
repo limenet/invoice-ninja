@@ -116,14 +116,14 @@
 
         // http://t4t5.github.io/sweetalert/
         function sweetConfirm(successCallback, text, title, cancelCallback) {
-            title = title || "{!! trans("texts.are_you_sure") !!}";
+            title = title || {!! json_encode(trans("texts.are_you_sure")) !!};
             swal({
                 //type: "warning",
                 //confirmButtonColor: "#DD6B55",
                 title: title,
                 text: text,
-                cancelButtonText: "{!! trans("texts.no") !!}",
-                confirmButtonText: "{!! trans("texts.yes") !!}",
+                cancelButtonText: {!! json_encode(trans("texts.no")) !!},
+                confirmButtonText: {!! json_encode(trans("texts.yes")) !!},
                 showCancelButton: true,
                 closeOnConfirm: false,
                 allowOutsideClick: true,
@@ -210,6 +210,32 @@
     <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
 
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/cookieconsent.min.css') }}"/>
+    <script src="{{ asset('js/cookieconsent.min.js') }}"></script>
+    <script>
+    window.addEventListener("load", function(){
+        window.cookieconsent.initialise({
+            "palette": {
+                "popup": {
+                    "background": "#000"
+                },
+                "button": {
+                    "background": "#f1d600"
+                },
+            },
+            "cookie": {
+                "domain": "{{ App\Constants\Domain::getCookieDomain(request()->url) }}"
+            },
+            "content": {
+                "href": "{{ Utils::isNinja() ? Utils::getPrivacyLink() : (config('ninja.privacy_policy_url') ?: 'https://cookiesandyou.com/' ) }}",
+                "message": {!! json_encode(trans('texts.cookie_message')) !!},
+                "dismiss": {!! json_encode(trans('texts.got_it')) !!},
+                "link": {!! json_encode(trans('texts.learn_more')) !!},
+            }
+        })}
+    );
+    </script>
+
     @yield('head')
 
 </head>
@@ -217,30 +243,6 @@
 <body class="body">
 
 @if (request()->phantomjs)
-    <script>
-        function trackEvent(category, action) {
-        }
-    </script>
-@elseif (Utils::isNinjaProd() && isset($_ENV['TAG_MANAGER_KEY']) && $_ENV['TAG_MANAGER_KEY'])
-    <!-- Google Tag Manager -->
-    <noscript>
-        <iframe src="//www.googletagmanager.com/ns.html?id={{ $_ENV['TAG_MANAGER_KEY'] }}"
-                height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || [];
-            w[l].push({
-                'gtm.start': new Date().getTime(), event: 'gtm.js'
-            });
-            var f = d.getElementsByTagName(s)[0],
-                    j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
-            j.async = true;
-            j.src =
-                    '//www.googletagmanager.com/gtm.js?id=' + i + dl;
-            f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', '{{ $_ENV['TAG_MANAGER_KEY'] }}');</script>
-    <!-- End Google Tag Manager -->
-
     <script>
         function trackEvent(category, action) {
         }
@@ -260,7 +262,13 @@
         })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
         ga('create', '{{ $_ENV['ANALYTICS_KEY'] }}', 'auto');
-        ga('send', 'pageview');
+        ga('set', 'anonymizeIp', true);
+
+        @if (request()->invitation_key || request()->proposal_invitation_key || request()->contact_key)
+            ga('send', 'pageview', { 'page': '/client/portal' });
+        @else
+            ga('send', 'pageview');
+        @endif
 
         function trackEvent(category, action) {
             ga('send', 'event', category, action, this.src);
@@ -277,7 +285,6 @@
 
 <script type="text/javascript">
     NINJA.formIsChanged = {{ isset($formIsChanged) && $formIsChanged ? 'true' : 'false' }};
-    NINJA.formIsSubmitted = false;
 
     $(function () {
         $('form.warn-on-exit input, form.warn-on-exit textarea, form.warn-on-exit select').change(function () {

@@ -130,7 +130,7 @@ return [
         'Illuminate\Filesystem\FilesystemServiceProvider',
         'Illuminate\Foundation\Providers\FoundationServiceProvider',
         'Illuminate\Hashing\HashServiceProvider',
-        (isset($_ENV['POSTMARK_API_TOKEN']) ? 'Postmark\Adapters\LaravelMailProvider' : 'Illuminate\Mail\MailServiceProvider'),
+        'Illuminate\Mail\MailServiceProvider',
         'Illuminate\Pagination\PaginationServiceProvider',
         'Illuminate\Pipeline\PipelineServiceProvider',
         'Illuminate\Queue\QueueServiceProvider',
@@ -149,7 +149,6 @@ return [
         'Bootstrapper\BootstrapperL5ServiceProvider',
         'Former\FormerServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
-        'Chumper\Datatable\DatatableServiceProvider',
         'Intervention\Image\ImageServiceProvider',
         'Webpatser\Countries\CountriesServiceProvider',
         'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
@@ -163,7 +162,8 @@ return [
         Barryvdh\Cors\ServiceProvider::class,
         PragmaRX\Google2FALaravel\ServiceProvider::class,
         Spatie\Backup\BackupServiceProvider::class,
-
+        'Chumper\Datatable\DatatableServiceProvider',
+        Laravel\Tinker\TinkerServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -255,7 +255,6 @@ return [
         'Typeahead'       => 'Bootstrapper\Facades\Typeahead',
         'Typography'      => 'Bootstrapper\Facades\Typography',
         'Former'          => 'Former\Facades\Former',
-        'Datatable'       => 'Chumper\Datatable\Facades\DatatableFacade',
         'Omnipay'         => 'Omnipay\Omnipay',
         'CreditCard'      => 'Omnipay\Common\CreditCard',
         'Image'           => 'Intervention\Image\Facades\Image',
@@ -266,6 +265,7 @@ return [
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
         'PushNotification' => 'Davibennun\LaravelPushNotification\Facades\PushNotification',
         'Crawler'   => 'Jaybizzle\LaravelCrawlerDetect\Facades\LaravelCrawlerDetect',
+        'Datatable' => 'Chumper\Datatable\Facades\DatatableFacade',
         'Updater' => Codedge\Updater\UpdaterFacade::class,
         'Module' => Nwidart\Modules\Facades\Module::class,
 

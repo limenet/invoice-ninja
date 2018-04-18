@@ -17,6 +17,7 @@
 	{!! Former::open($url)
             ->addClass('warn-on-exit main-form')
             ->onsubmit('return onFormSubmit(event)')
+            ->autocomplete('off')
             ->method($method) !!}
     <div style="display:none">
         {!! Former::text('action') !!}
@@ -271,7 +272,7 @@
 
         function onFormSubmit(event) {
             if (window.countUploadingDocuments > 0) {
-                swal("{!! trans('texts.wait_for_upload') !!}");
+                swal({!! json_encode(trans('texts.wait_for_upload')) !!});
                 return false;
             }
 
@@ -287,6 +288,7 @@
             var client = clientMap[clientId];
             if (client) {
                 model.invoice_currency_id(client.currency_id);
+                model.updateExchangeRate();
             }
         }
 

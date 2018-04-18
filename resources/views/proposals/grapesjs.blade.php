@@ -7,6 +7,7 @@ $(function() {
         components: {!! json_encode($entity ? $entity->html : '') !!},
         style: {!! json_encode($entity ? $entity->css : '') !!},
         showDevices: false,
+        noticeOnUnload: false,
         plugins: ['gjs-preset-newsletter'],
         pluginsOpts: {
             'gjs-preset-newsletter': {
@@ -14,7 +15,13 @@ $(function() {
             }
         },
         storageManager: {
-            type: 'none'
+            type: 'none',
+            autosave: false,
+            autoload: false,
+            storeComponents: false,
+            storeStyles: false,
+            storeHtml: false,
+            storeCss: false,
         },
         assetManager: {
             assets: {!! json_encode($documents) !!},
@@ -30,11 +37,25 @@ $(function() {
             @endif
             uploadName: 'files',
             params: {
-                '_token': '{{ Session::getToken() }}',
+                '_token': '{{ Session::token() }}',
                 'grapesjs': true,
             }
         }
     });
+
+    var panelManager = grapesjsEditor.Panels;
+    panelManager.addButton('options', [{
+        id: 'undo',
+        className: 'fa fa-undo',
+        command: 'undo',
+        attributes: { title: 'Undo (CTRL/CMD + Z)'}
+    },{
+        id: 'redo',
+        className: 'fa fa-repeat',
+        attributes: {title: 'Redo'},
+        command: 'redo',
+        attributes: { title: 'Redo (CTRL/CMD + SHIFT + Z)' }
+    }]);
 
     var blockManager = grapesjsEditor.BlockManager;
 
