@@ -71,6 +71,14 @@
             @if ($project->present()->defaultTaskRate)
                 {{ trans('texts.task_rate') . ': ' . $project->present()->defaultTaskRate }}<br/>
             @endif
+
+            @if ($account->customLabel('project1') && $project->custom_value1)
+                {{ $account->present()->customLabel('project1') . ': ' }} {!! nl2br(e($project->custom_value1)) !!}<br/>
+            @endif
+            @if ($account->customLabel('project2') && $project->custom_value2)
+                {{ $account->present()->customLabel('project2') . ': ' }} {!! nl2br(e($project->custom_value2)) !!}<br/>
+            @endif
+
         </div>
 
         <div class="col-md-3">
@@ -118,6 +126,7 @@
                 'datatable' => new \App\Ninja\Datatables\ProjectTaskDatatable(true, true),
                 'projectId' => $project->public_id,
                 'clientId' => $project->client->public_id,
+                'url' => url('api/tasks/' . $project->client->public_id . '/' . $project->public_id),
             ])
         </div>
     </div>

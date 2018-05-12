@@ -40,7 +40,10 @@ class Mailer
         $toEmail = strtolower($toEmail);
         $replyEmail = $fromEmail;
         $fromEmail = CONTACT_EMAIL;
-        //\Log::info("{$toEmail} | {$replyEmail} | $fromEmail");
+
+        if (Utils::isSelfHost() && config('app.debug')) {
+            \Log::info("Sending email - To: {$toEmail} | Reply: {$replyEmail} | From: $fromEmail");
+        }
 
         // Optionally send for alternate domain
         if (! empty($data['fromEmail'])) {
@@ -76,7 +79,14 @@ class Mailer
                             config(['mail.' . $field => $value]);
                         }
                     }
-                    (new \Illuminate\Mail\MailServiceProvider(app()))->register();
+
+                    $fromEmail = config('mail.from.address');
+                    $app = \App::getInstance();
+                    $app->singleton('swift.transport', function ($app) {
+                        return new \Illuminate\Mail\TransportManager($app);
+                    });
+                    $mailer = new \Swift_Mailer($app['swift.transport']->driver());
+                    Mail::setSwiftMailer($mailer);
                 }
             }
         }
@@ -151,7 +161,7 @@ class Mailer
             $client = new PostmarkClient(config('services.postmark'));
             $message = [
                 'To' => $toEmail,
-                'From' => $fromEmail,
+                'From' => sprintf('"%s" <%s>', addslashes($fromName), $fromEmail),
                 'ReplyTo' => $replyEmail,
                 'Subject' => $subject,
                 'TextBody' => $textBody,

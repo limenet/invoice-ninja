@@ -18,6 +18,7 @@
     @parent
 
     @include('accounts.nav', ['selected' => ACCOUNT_PAYMENTS])
+	@include('partials.email_templates')
 
     <div class="panel panel-default">
     <div class="panel-heading">
@@ -58,6 +59,7 @@
     @else
         {!! Former::populateField('show_address', 1) !!}
         {!! Former::populateField('update_address', 1) !!}
+        {!! Former::populateField(GATEWAY_SAGE_PAY_DIRECT . '_referrerId', '2C02C252-0F8A-1B84-E10D-CF933EFCAA99') !!}
 
         @if (Utils::isNinjaDev())
             @include('accounts.partials.payment_credentials')
@@ -105,9 +107,13 @@
                     {!! Former::checkbox($gateway->id.'_'.$field)->label(ucwords(Utils::toSpaceCase($field)))->text('enable')->value(1) !!}
                 @elseif ($field == 'username' || $field == 'password')
                     {!! Former::text($gateway->id.'_'.$field)->label('API '. ucfirst(Utils::toSpaceCase($field))) !!}
-                @elseif ($gateway->isCustom() && $field == 'text')
-                    {!! Former::textarea($gateway->id.'_'.$field)->label(trans('texts.text'))->rows(6) !!}
-                @else
+                @elseif ($gateway->isCustom())
+					@if ($field == 'text')
+                    	{!! Former::textarea($gateway->id.'_'.$field)->label(trans('texts.text'))->rows(6) !!}
+					@else
+						{!! Former::text($gateway->id.'_'.$field)->label('name')->appendIcon('question-sign')->addGroupClass('custom-text') !!}
+					@endif
+				@else
                     {!! Former::text($gateway->id.'_'.$field)->label($gateway->id == GATEWAY_STRIPE ? trans('texts.secret_key') : ucwords(Utils::toSpaceCase($field))) !!}
                 @endif
 
@@ -132,10 +138,15 @@
                            ->value(1) !!}
                 @endif
 			@elseif ($gateway->id == GATEWAY_GOCARDLESS)
-				{!! Former::text('webhook_url')
-						->readonly(true)
-						->value(url(env('WEBHOOK_PREFIX','') . 'payment_hook/' . $account->account_key . '/' . GATEWAY_GOCARDLESS))
-						->help('gocardless_webhook_help_link_text') !!}
+				<div class="form-group">
+		            <label class="control-label col-lg-4 col-sm-4">{{ trans('texts.webhook_url') }}</label>
+		            <div class="col-lg-8 col-sm-8 help-block">
+		                <input type="text"  class="form-control" onfocus="$(this).select()" readonly value="{{ URL::to(env('WEBHOOK_PREFIX','').'payment_hook/'.$account->account_key.'/'.GATEWAY_GOCARDLESS) }}">
+		                <div class="help-block"><strong>{!! trans('texts.stripe_webhook_help', [
+		                'link'=>'<a href="https://manage.gocardless.com/developers" target="_blank">'.trans('texts.gocardless_webhook_help_link_text').'</a>'
+		            ]) !!}</strong></div>
+		            </div>
+		        </div>
             @endif
 
             @if ($gateway->getHelp())
@@ -257,16 +268,6 @@
                     ->help(trans('texts.plaid_environment_help')) !!}
             </div>
         </div>
-    @elseif (! $accountGateway || $accountGateway->gateway_id == GATEWAY_GOCARDLESS)
-        <div class="form-group">
-            <label class="control-label col-lg-4 col-sm-4">{{ trans('texts.webhook_url') }}</label>
-            <div class="col-lg-8 col-sm-8 help-block">
-                <input type="text"  class="form-control" onfocus="$(this).select()" readonly value="{{ URL::to(env('WEBHOOK_PREFIX','').'payment_hook/'.$account->account_key.'/'.GATEWAY_GOCARDLESS) }}">
-                <div class="help-block"><strong>{!! trans('texts.stripe_webhook_help', [
-                'link'=>'<a href="https://manage.gocardless.com/developers" target="_blank">'.trans('texts.gocardless_webhook_help_link_text').'</a>'
-            ]) !!}</strong></div>
-            </div>
-        </div>
     @elseif ($accountGateway && $accountGateway->gateway_id == GATEWAY_WEPAY)
             {!! Former::checkbox('enable_ach')
                         ->label(trans('texts.ach'))
@@ -350,6 +351,10 @@
         $('.stripe-ach-options').toggle(enableAch && {{ $accountGateway && $accountGateway->getPlaidClientId() ? 'true' : 'false' }});
 		$('.verification-file').toggle(enableApplePay);
     }
+
+	$('.custom-text .input-group-addon').click(function() {
+		$('#templateHelpModal').modal('show');
+	});
 
     var gateways = {!! Cache::get('gateways') !!};
 

@@ -53,7 +53,7 @@
                   @if ( ! $vendor->trashed())
                       @can('create', ENTITY_EXPENSE)
                           {!! Button::primary(trans("texts.new_expense"))
-                                  ->asLinkTo(URL::to("/expenses/create/{$vendor->public_id}"))
+                                  ->asLinkTo(URL::to("/expenses/create/0/{$vendor->public_id}"))
                                   ->appendIcon(Icon::create('plus-sign')) !!}
                       @endcan
                   @endif
@@ -87,6 +87,14 @@
             @if ($vendor->vat_number)
 		  	   <p><i class="fa fa-vat-number" style="width: 20px"></i>{{ trans('texts.vat_number').': '.$vendor->vat_number }}</p>
             @endif
+
+            @if ($vendor->account->customLabel('vendor1') && $vendor->custom_value1)
+                {{ $vendor->account->present()->customLabel('vendor1') . ': ' }} {!! nl2br(e($vendor->custom_value1)) !!}<br/>
+            @endif
+            @if ($vendor->account->customLabel('vendor2') && $vendor->custom_value2)
+                {{ $vendor->account->present()->customLabel('vendor2') . ': ' }} {!! nl2br(e($vendor->custom_value2)) !!}<br/>
+            @endif
+
 
             @if ($vendor->address1)
                 {{ $vendor->address1 }}<br/>
@@ -182,6 +190,7 @@
                 'entityType' => ENTITY_EXPENSE,
                 'datatable' => new \App\Ninja\Datatables\ExpenseDatatable(true, true),
                 'vendorId' => $vendor->public_id,
+                'url' => url('api/vendor_expenses/' . $vendor->public_id),
             ])
         </div>
     </div>
@@ -193,9 +202,6 @@
 	$(function() {
 		$('.normalDropDown:not(.dropdown-toggle)').click(function(event) {
             openUrlOnClick('{{ URL::to('vendors/' . $vendor->public_id . '/edit') }}', event)
-		});
-		$('.primaryDropDown:not(.dropdown-toggle)').click(function(event) {
-			openUrlOnClick('{{ URL::to('expenses/create/' . $vendor->public_id ) }}', event);
 		});
 
         $('.nav-tabs a[href="#expenses"]').tab('show');

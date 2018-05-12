@@ -116,7 +116,7 @@ class ClientController extends BaseController
         }
 
         if ($user->can('create', ENTITY_EXPENSE)) {
-            $actionLinks[] = ['label' => trans('texts.enter_expense'), 'url' => URL::to('/expenses/create/0/'.$client->public_id)];
+            $actionLinks[] = ['label' => trans('texts.enter_expense'), 'url' => URL::to('/expenses/create/'.$client->public_id)];
         }
 
         $token = $client->getGatewayToken();
@@ -197,8 +197,8 @@ class ClientController extends BaseController
             'data' => Input::old('data'),
             'account' => Auth::user()->account,
             'sizes' => Cache::get('sizes'),
-            'customLabel1' => Auth::user()->account->custom_client_label1,
-            'customLabel2' => Auth::user()->account->custom_client_label2,
+            'customLabel1' => Auth::user()->account->customLabel('client1'),
+            'customLabel2' => Auth::user()->account->customLabel('client2'),
         ];
     }
 

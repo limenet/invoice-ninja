@@ -1,53 +1,53 @@
 <script type="text/javascript">
 
-  $(function() {
+$(function() {
 
-      validateSignUp();
+    validateSignUp();
 
-      $('#signUpModal').on('shown.bs.modal', function () {
+    $('#signUpModal').on('shown.bs.modal', function () {
         trackEvent('/account', '/view_sign_up');
         // change the type after page load to prevent errors in Chrome console
         $('#new_password').attr('type', 'password');
         $(['first_name','last_name','email','password']).each(function(i, field) {
-          var $input = $('form.signUpForm #new_'+field);
-          if (!$input.val()) {
-            $input.focus();
-            return false;
-          }
+            var $input = $('form.signUpForm #new_'+field);
+            if (!$input.val()) {
+                $input.focus();
+                return false;
+            }
         });
-      })
+    })
 
-      @if (Auth::check() && !Utils::isNinja() && ! Auth::user()->registered)
-        $('#closeSignUpButton').hide();
-        showSignUp();
-      @elseif(Session::get('sign_up') || Input::get('sign_up'))
-        showSignUp();
-      @endif
+    @if (Auth::check() && !Utils::isNinja() && ! Auth::user()->registered)
+    $('#closeSignUpButton').hide();
+    showSignUp();
+    @elseif(Session::get('sign_up') || Input::get('sign_up'))
+    showSignUp();
+    @endif
 
-      // Ensure terms is checked for sign up form
-      @if (Auth::check())
-          setSignupEnabled(false);
-          $("#terms_checkbox").change(function() {
-              setSignupEnabled(this.checked);
-          });
-      @endif
+    // Ensure terms is checked for sign up form
+    @if (Auth::check())
+    setSignupEnabled(false);
+    $("#terms_checkbox, #privacy_checkbox").change(function() {
+        setSignupEnabled($('#terms_checkbox').is(':checked') && $('#privacy_checkbox').is(':checked'));
+    });
+    @endif
 
-  });
+});
 
 
-  function showSignUp() {
+function showSignUp() {
     if (location.href.indexOf('/dashboard') == -1) {
         location.href = "{{ url('/dashboard') }}?sign_up=true";
     } else {
         $('#signUpModal').modal('show');
     }
-  }
+}
 
-  function hideSignUp() {
+function hideSignUp() {
     $('#signUpModal').modal('hide');
-  }
+}
 
-  function setSignupEnabled(enabled) {
+function setSignupEnabled(enabled) {
     $('.signup-form input[type=text]').prop('disabled', !enabled);
     $('.signup-form input[type=password]').prop('disabled', !enabled);
     if (enabled) {
@@ -55,100 +55,108 @@
     } else {
         $('.signup-form a.btn').addClass('disabled');
     }
-  }
+}
 
-  function validateSignUp(showError)
-  {
+function validateSignUp(showError) {
     var isFormValid = true;
     $(['first_name','last_name','email','password']).each(function(i, field) {
-      var $input = $('form.signUpForm #new_'+field),
-      val = $.trim($input.val());
-      var isValid = val && val.length >= (field == 'password' ? 6 : 1);
-      if (isValid && field == 'email') {
-        isValid = isValidEmailAddress(val);
-      }
-      if (isValid) {
-        $input.closest('div.form-group').removeClass('has-error').addClass('has-success');
-      } else {
-        isFormValid = false;
-        $input.closest('div.form-group').removeClass('has-success');
-        if (showError) {
-          $input.closest('div.form-group').addClass('has-error');
+        var $input = $('form.signUpForm #new_'+field),
+        val = $.trim($input.val());
+        var isValid = val && val.length >= (field == 'password' ? 8 : 1);
+
+        if (field == 'password') {
+            var score = scorePassword(val);
+            if (isValid) {
+                isValid = score > 50;
+            }
+
+            showPasswordStrength(val, score);
         }
-      }
+
+        if (isValid && field == 'email') {
+            isValid = isValidEmailAddress(val);
+        }
+        if (isValid) {
+            $input.closest('div.form-group').removeClass('has-error').addClass('has-success');
+        } else {
+            isFormValid = false;
+            $input.closest('div.form-group').removeClass('has-success');
+            if (showError) {
+                $input.closest('div.form-group').addClass('has-error');
+            }
+        }
     });
 
-    if (!$('#terms_checkbox').is(':checked')) {
-      isFormValid = false;
+    if (! $('#terms_checkbox').is(':checked') || ! $('#privacy_checkbox').is(':checked')) {
+        isFormValid = false;
     }
 
     $('#saveSignUpButton').prop('disabled', !isFormValid);
 
     return isFormValid;
-  }
+}
 
-  function validateServerSignUp()
-  {
+function validateServerSignUp() {
     if (!validateSignUp(true)) {
-      return;
+        return;
     }
 
     $('#signUpDiv, #signUpFooter').hide();
     $('#working').show();
 
     $.ajax({
-      type: 'POST',
-      url: '{{ URL::to('signup/validate') }}',
-      data: 'email=' + $('form.signUpForm #new_email').val(),
-      success: function(result) {
-        if (result == 'available') {
-          submitSignUp();
-        } else {
-          $('#errorTaken').show();
-          $('form.signUpForm #new_email').closest('div.form-group').removeClass('has-success').addClass('has-error');
-          $('#signUpDiv, #signUpFooter').show();
-          $('#working').hide();
+        type: 'POST',
+        url: '{{ URL::to('signup/validate') }}',
+        data: 'email=' + $('form.signUpForm #new_email').val(),
+        success: function(result) {
+            if (result == 'available') {
+                submitSignUp();
+            } else {
+                $('#errorTaken').show();
+                $('form.signUpForm #new_email').closest('div.form-group').removeClass('has-success').addClass('has-error');
+                $('#signUpDiv, #signUpFooter').show();
+                $('#working').hide();
+            }
         }
-      }
     });
-  }
+}
 
-  function submitSignUp() {
+function submitSignUp() {
     $.ajax({
-      type: 'POST',
-      url: '{{ URL::to('signup/submit') }}',
-      data: 'new_email=' + encodeURIComponent($('form.signUpForm #new_email').val()) +
-      '&new_password=' + encodeURIComponent($('form.signUpForm #new_password').val()) +
-      '&new_first_name=' + encodeURIComponent($('form.signUpForm #new_first_name').val()) +
-      '&new_last_name=' + encodeURIComponent($('form.signUpForm #new_last_name').val()) +
-      '&go_pro=' + $('#go_pro').val(),
-      success: function(result) {
-        if (result) {
-          @if (Auth::user()->registered)
-              hideSignUp();
-              NINJA.formIsChanged = false;
-              location.href = "{{ url('/dashboard') }}";
-          @else
-              handleSignedUp();
-              NINJA.isRegistered = true;
-              $('#gettingStartedIframe').attr('src', '{{ str_replace('watch?v=', 'embed/', config('ninja.video_urls.getting_started')) }}');
-              $('#signUpButton').hide();
-              $('#myAccountButton').html(result);
-              $('#signUpSuccessDiv, #signUpFooter, #closeSignUpButton').show();
-              $('#working, #saveSignUpButton').hide();
-          @endif
+        type: 'POST',
+        url: '{{ URL::to('signup/submit') }}',
+        data: 'new_email=' + encodeURIComponent($('form.signUpForm #new_email').val()) +
+        '&new_password=' + encodeURIComponent($('form.signUpForm #new_password').val()) +
+        '&new_first_name=' + encodeURIComponent($('form.signUpForm #new_first_name').val()) +
+        '&new_last_name=' + encodeURIComponent($('form.signUpForm #new_last_name').val()) +
+        '&go_pro=' + $('#go_pro').val(),
+        success: function(result) {
+            if (result) {
+                @if (Auth::user()->registered)
+                hideSignUp();
+                NINJA.formIsChanged = false;
+                location.href = "{{ url('/dashboard') }}";
+                @else
+                handleSignedUp();
+                NINJA.isRegistered = true;
+                $('#gettingStartedIframe').attr('src', '{{ str_replace('watch?v=', 'embed/', config('ninja.video_urls.getting_started')) }}');
+                $('#signUpButton').hide();
+                $('#myAccountButton').html(result);
+                $('#signUpSuccessDiv, #signUpFooter, #closeSignUpButton').show();
+                $('#working, #saveSignUpButton').hide();
+                @endif
+            }
         }
-      }
     });
-  }
+}
 
-  function handleSignedUp() {
-      if (isStorageSupported()) {
-          localStorage.setItem('guest_key', '');
-      }
-      fbq('track', 'CompleteRegistration');
-      trackEvent('/account', '/signed_up');
-  }
+function handleSignedUp() {
+    if (isStorageSupported()) {
+        localStorage.setItem('guest_key', '');
+    }
+    fbq('track', 'CompleteRegistration');
+    trackEvent('/account', '/signed_up');
+}
 
 </script>
 
@@ -185,10 +193,16 @@
                     ->label(' ')
                     ->value(1)
                     ->text(trans('texts.agree_to_terms', [
-                        'terms' => link_to(Utils::getTermsLink(), trans('texts.terms_of_service'), ['target' => '_blank']),
-                        'privacy' => link_to(Utils::getTermsLink(), trans('texts.privacy_policy'), ['target' => '_blank']),
+                        'terms' => link_to(config('ninja.terms_of_service_url.' . (Utils::isSelfHost() ? 'selfhost' : 'hosted')), trans('texts.terms_of_service'), ['target' => '_blank']),
                     ]))
                     ->raw() !!}
+                    {!! Former::checkbox('privacy_checkbox')
+                        ->label(' ')
+                        ->value(1)
+                        ->text(trans('texts.agree_to_terms', [
+                            'terms' => link_to(config('ninja.privacy_policy_url.' . (Utils::isSelfHost() ? 'selfhost' : 'hosted')), trans('texts.privacy_policy'), ['target' => '_blank']),
+                        ]))
+                        ->raw() !!}
                 <br/>
             </div>
             <br/>&nbsp;<br/>
@@ -234,7 +248,8 @@
                         ->placeholder(trans('texts.password'))
                         ->autocomplete('new-password')
                         ->data_lpignore('true')
-                        ->label(' ') !!}
+                        ->label(' ')
+                        ->help('<span id="passwordStrength">&nbsp;</span>') !!}
 
                 {{ Former::setOption('TwitterBootstrap3.labelWidths.large', 4) }}
                 {{ Former::setOption('TwitterBootstrap3.labelWidths.small', 4) }}
