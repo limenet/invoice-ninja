@@ -44,15 +44,15 @@ class Kernel extends ConsoleKernel
         $logFile = storage_path() . '/logs/cron.log';
 
         $schedule
-            ->command('ninja:send-invoices --force')
+            ->command('ninja:send-invoices')
             ->sendOutputTo($logFile)
             ->withoutOverlapping()
             ->hourly();
 
         $schedule
-            ->command('ninja:send-reminders --force')
+            ->command('ninja:send-reminders')
             ->sendOutputTo($logFile)
-            ->daily();
+            ->dailyAt('07:30');
 
         $schedule
             ->command('backup:run')
