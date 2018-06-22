@@ -392,16 +392,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.59.0",
+            "version": "3.62.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "91149ea885f951eac91563a56263cfa4a8f48f6c"
+                "reference": "2c9b27be62dce8a2b84918229d98f4eeb7f75056"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/91149ea885f951eac91563a56263cfa4a8f48f6c",
-                "reference": "91149ea885f951eac91563a56263cfa4a8f48f6c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2c9b27be62dce8a2b84918229d98f4eeb7f75056",
+                "reference": "2c9b27be62dce8a2b84918229d98f4eeb7f75056",
                 "shasum": ""
             },
             "require": {
@@ -468,7 +468,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-05-31T01:08:17+00:00"
+            "time": "2018-06-21T23:31:06+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -883,16 +883,16 @@
         },
         {
             "name": "cardgate/omnipay-cardgate",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cardgate/omnipay-cardgate.git",
-                "reference": "21b8ff0c3e65006eb2d9e0f9374955492b5a029a"
+                "reference": "7b040a2aaefcfffdc2cfd8ddaeb9dc918eb3669a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cardgate/omnipay-cardgate/zipball/21b8ff0c3e65006eb2d9e0f9374955492b5a029a",
-                "reference": "21b8ff0c3e65006eb2d9e0f9374955492b5a029a",
+                "url": "https://api.github.com/repos/cardgate/omnipay-cardgate/zipball/7b040a2aaefcfffdc2cfd8ddaeb9dc918eb3669a",
+                "reference": "7b040a2aaefcfffdc2cfd8ddaeb9dc918eb3669a",
                 "shasum": ""
             },
             "require": {
@@ -918,7 +918,7 @@
             ],
             "authors": [
                 {
-                    "name": "CardGate",
+                    "name": "Cardgate",
                     "email": "tech@cardgate.com"
                 },
                 {
@@ -935,7 +935,7 @@
                 "pay",
                 "payment"
             ],
-            "time": "2015-06-05T14:50:44+00:00"
+            "time": "2018-05-30T08:53:51+00:00"
         },
         {
             "name": "cedricziel/flysystem-gcs",
@@ -2701,7 +2701,8 @@
                 "reference": "origin/master",
                 "shasum": null
             },
-            "type": "library"
+            "type": "library",
+            "time": "2017-12-08T12:01:09+00:00"
         },
         {
             "name": "gocardless/gocardless-pro",
@@ -2757,16 +2758,16 @@
         },
         {
             "name": "google/apiclient",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client.git",
-                "reference": "b69b8ac4bf6501793c389d4e013a79d09c85c5f2"
+                "reference": "4e0fd83510e579043e10e565528b323b7c2b3c81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client/zipball/b69b8ac4bf6501793c389d4e013a79d09c85c5f2",
-                "reference": "b69b8ac4bf6501793c389d4e013a79d09c85c5f2",
+                "url": "https://api.github.com/repos/google/google-api-php-client/zipball/4e0fd83510e579043e10e565528b323b7c2b3c81",
+                "reference": "4e0fd83510e579043e10e565528b323b7c2b3c81",
                 "shasum": ""
             },
             "require": {
@@ -2781,7 +2782,7 @@
             },
             "require-dev": {
                 "cache/filesystem-adapter": "^0.3.2",
-                "phpunit/phpunit": "~4",
+                "phpunit/phpunit": "~4.8.36",
                 "squizlabs/php_codesniffer": "~2.3",
                 "symfony/css-selector": "~2.1",
                 "symfony/dom-crawler": "~2.1"
@@ -2812,20 +2813,20 @@
             "keywords": [
                 "google"
             ],
-            "time": "2017-11-03T01:19:53+00:00"
+            "time": "2018-06-20T15:52:20+00:00"
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.61",
+            "version": "v0.63",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client-services.git",
-                "reference": "f7221039fda179b3f5096a6272b38706f2a6fcd0"
+                "reference": "a009a33246e90bf1f60f745f8e47039ac5a87fdf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/f7221039fda179b3f5096a6272b38706f2a6fcd0",
-                "reference": "f7221039fda179b3f5096a6272b38706f2a6fcd0",
+                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/a009a33246e90bf1f60f745f8e47039ac5a87fdf",
+                "reference": "a009a33246e90bf1f60f745f8e47039ac5a87fdf",
                 "shasum": ""
             },
             "require": {
@@ -2849,7 +2850,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-05-26T00:23:39+00:00"
+            "time": "2018-06-07T00:22:54+00:00"
         },
         {
             "name": "google/auth",
@@ -2900,21 +2901,20 @@
         },
         {
             "name": "google/cloud",
-            "version": "v0.67.0",
+            "version": "v0.69.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/GoogleCloudPlatform/google-cloud-php.git",
-                "reference": "2750d58c0b5a57a90d0d6c340a2a7ae53b30ec39"
+                "reference": "d72d8a8f8edbc1bce836586b0028af0fa7d3d7a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GoogleCloudPlatform/google-cloud-php/zipball/2750d58c0b5a57a90d0d6c340a2a7ae53b30ec39",
-                "reference": "2750d58c0b5a57a90d0d6c340a2a7ae53b30ec39",
+                "url": "https://api.github.com/repos/GoogleCloudPlatform/google-cloud-php/zipball/d72d8a8f8edbc1bce836586b0028af0fa7d3d7a9",
+                "reference": "d72d8a8f8edbc1bce836586b0028af0fa7d3d7a9",
                 "shasum": ""
             },
             "require": {
-                "google/gax": "^0.33",
-                "google/proto-client": "^0.40",
+                "google/gax": "^0.34",
                 "guzzlehttp/guzzle": "^5.3|^6.0",
                 "guzzlehttp/psr7": "^1.2",
                 "monolog/monolog": "~1",
@@ -2924,32 +2924,32 @@
                 "rize/uri-template": "~0.3"
             },
             "replace": {
-                "google/cloud-bigquery": "1.2.2",
-                "google/cloud-bigquerydatatransfer": "0.5.1",
-                "google/cloud-bigtable": "0.4.1",
-                "google/cloud-container": "0.4.1",
-                "google/cloud-core": "1.20.4",
-                "google/cloud-dataproc": "0.4.1",
-                "google/cloud-datastore": "1.5.3",
-                "google/cloud-debugger": "0.10.0",
-                "google/cloud-dialogflow": "0.2.1",
-                "google/cloud-dlp": "0.9.1",
-                "google/cloud-error-reporting": "0.10.1",
-                "google/cloud-firestore": "0.10.1",
-                "google/cloud-iot": "0.2.1",
-                "google/cloud-language": "0.14.1",
-                "google/cloud-logging": "1.11.1",
-                "google/cloud-monitoring": "0.10.1",
-                "google/cloud-oslogin": "0.4.1",
-                "google/cloud-pubsub": "1.2.1",
-                "google/cloud-redis": "0.2.1",
-                "google/cloud-spanner": "1.5.2",
-                "google/cloud-speech": "0.14.1",
-                "google/cloud-storage": "1.5.1",
-                "google/cloud-trace": "0.9.0",
-                "google/cloud-translate": "1.2.1",
-                "google/cloud-videointelligence": "0.11.1",
-                "google/cloud-vision": "0.13.0"
+                "google/cloud-bigquery": "1.2.3",
+                "google/cloud-bigquerydatatransfer": "0.6.0",
+                "google/cloud-bigtable": "0.5.0",
+                "google/cloud-container": "0.5.0",
+                "google/cloud-core": "1.20.5",
+                "google/cloud-dataproc": "0.5.0",
+                "google/cloud-datastore": "1.5.4",
+                "google/cloud-debugger": "0.12.0",
+                "google/cloud-dialogflow": "0.3.0",
+                "google/cloud-dlp": "0.10.0",
+                "google/cloud-error-reporting": "0.11.0",
+                "google/cloud-firestore": "0.11.0",
+                "google/cloud-iot": "0.3.0",
+                "google/cloud-language": "0.15.0",
+                "google/cloud-logging": "1.12.1",
+                "google/cloud-monitoring": "0.11.0",
+                "google/cloud-oslogin": "0.5.0",
+                "google/cloud-pubsub": "1.3.0",
+                "google/cloud-redis": "0.3.0",
+                "google/cloud-spanner": "1.6.0",
+                "google/cloud-speech": "0.15.0",
+                "google/cloud-storage": "1.5.2",
+                "google/cloud-trace": "0.10.0",
+                "google/cloud-translate": "1.2.2",
+                "google/cloud-videointelligence": "1.0.0",
+                "google/cloud-vision": "0.14.0"
             },
             "require-dev": {
                 "erusev/parsedown": "^1.6",
@@ -3012,7 +3012,28 @@
                     "Google\\Cloud\\Trace\\": "Trace/src",
                     "Google\\Cloud\\Translate\\": "Translate/src",
                     "Google\\Cloud\\VideoIntelligence\\": "VideoIntelligence/src",
-                    "Google\\Cloud\\Vision\\": "Vision/src"
+                    "Google\\Cloud\\Vision\\": "Vision/src",
+                    "GPBMetadata\\Google\\Bigtable\\": "Bigtable/metadata",
+                    "GPBMetadata\\Google\\Container\\": "Container/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Bigquery\\Datatransfer\\": "BigQueryDataTransfer/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Dataproc\\": "Dataproc/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Dialogflow\\": "Dialogflow/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Iot\\": "Iot/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Language\\": "Language/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Oslogin\\": "OsLogin/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Redis\\": "Redis/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Speech\\": "Speech/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Videointelligence\\": "VideoIntelligence/metadata",
+                    "GPBMetadata\\Google\\Cloud\\Vision\\": "Vision/metadata",
+                    "GPBMetadata\\Google\\Devtools\\Clouddebugger\\": "Debugger/metadata",
+                    "GPBMetadata\\Google\\Devtools\\Clouderrorreporting\\": "ErrorReporting/metadata",
+                    "GPBMetadata\\Google\\Devtools\\Cloudtrace\\": "Trace/metadata",
+                    "GPBMetadata\\Google\\Firestore\\": "Firestore/metadata",
+                    "GPBMetadata\\Google\\Logging\\": "Logging/metadata",
+                    "GPBMetadata\\Google\\Monitoring\\": "Monitoring/metadata",
+                    "GPBMetadata\\Google\\Privacy\\Dlp\\": "Dlp/metadata",
+                    "GPBMetadata\\Google\\Pubsub\\": "PubSub/metadata",
+                    "GPBMetadata\\Google\\Spanner\\": "Spanner/metadata"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3057,20 +3078,20 @@
                 "translation",
                 "vision"
             ],
-            "time": "2018-05-31T17:51:58+00:00"
+            "time": "2018-06-20T16:07:22+00:00"
         },
         {
             "name": "google/gax",
-            "version": "0.33.0",
+            "version": "0.34.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/gax-php.git",
-                "reference": "9f975d6ebf2b7c7a064c22e3f7fc6818052fd387"
+                "reference": "faddb0bd14e63b2470fd71d5a66cf6a1416c6717"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/gax-php/zipball/9f975d6ebf2b7c7a064c22e3f7fc6818052fd387",
-                "reference": "9f975d6ebf2b7c7a064c22e3f7fc6818052fd387",
+                "url": "https://api.github.com/repos/googleapis/gax-php/zipball/faddb0bd14e63b2470fd71d5a66cf6a1416c6717",
+                "reference": "faddb0bd14e63b2470fd71d5a66cf6a1416c6717",
                 "shasum": ""
             },
             "require": {
@@ -3083,6 +3104,7 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "^4.8.36",
+                "sami/sami": "*",
                 "squizlabs/php_codesniffer": "2.*"
             },
             "type": "library",
@@ -3108,60 +3130,20 @@
             "keywords": [
                 "google"
             ],
-            "time": "2018-05-24T17:47:50+00:00"
-        },
-        {
-            "name": "google/proto-client",
-            "version": "0.40.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/googleapis/proto-client-php.git",
-                "reference": "69470e8d34a1d5c676c731ad738b3d4473fccb04"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/proto-client-php/zipball/69470e8d34a1d5c676c731ad738b3d4473fccb04",
-                "reference": "69470e8d34a1d5c676c731ad738b3d4473fccb04",
-                "shasum": ""
-            },
-            "require": {
-                "google/protobuf": "^3.4",
-                "php": ">=5.5"
-            },
-            "require-dev": {
-                "google/gax": ">=0.25.0",
-                "phpunit/phpunit": "^4.8.36"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Google\\": "src/Google/",
-                    "GPBMetadata\\": "src/GPBMetadata/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Generated proto and gRPC classes for Google Cloud Platform in PHP",
-            "homepage": "https://github.com/googleapis/proto-client-php",
-            "keywords": [
-                "google"
-            ],
-            "time": "2018-05-29T20:18:42+00:00"
+            "time": "2018-06-08T22:24:35+00:00"
         },
         {
             "name": "google/protobuf",
-            "version": "v3.5.2",
+            "version": "v3.6.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/protobuf.git",
-                "reference": "b5fbb742af122b565925987e65c08957739976a7"
+                "reference": "ce044817c7ba0aea27c3fd8e496635d94d20a755"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/protobuf/zipball/b5fbb742af122b565925987e65c08957739976a7",
-                "reference": "b5fbb742af122b565925987e65c08957739976a7",
+                "url": "https://api.github.com/repos/google/protobuf/zipball/ce044817c7ba0aea27c3fd8e496635d94d20a755",
+                "reference": "ce044817c7ba0aea27c3fd8e496635d94d20a755",
                 "shasum": ""
             },
             "require": {
@@ -3189,7 +3171,7 @@
             "keywords": [
                 "proto"
             ],
-            "time": "2018-03-06T03:54:18+00:00"
+            "time": "2018-06-08T01:16:44+00:00"
         },
         {
             "name": "grpc/grpc",
@@ -4385,16 +4367,16 @@
         },
         {
             "name": "laravel/socialite",
-            "version": "v3.0.11",
+            "version": "v3.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/socialite.git",
-                "reference": "4d29ba66fdb38ec994b778e5e51657555cc10511"
+                "reference": "b5f465847b1d637efa86bbfe2fc1c9d2bd12f60f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/socialite/zipball/4d29ba66fdb38ec994b778e5e51657555cc10511",
-                "reference": "4d29ba66fdb38ec994b778e5e51657555cc10511",
+                "url": "https://api.github.com/repos/laravel/socialite/zipball/b5f465847b1d637efa86bbfe2fc1c9d2bd12f60f",
+                "reference": "b5f465847b1d637efa86bbfe2fc1c9d2bd12f60f",
                 "shasum": ""
             },
             "require": {
@@ -4443,7 +4425,7 @@
                 "laravel",
                 "oauth"
             ],
-            "time": "2018-05-12T17:44:53+00:00"
+            "time": "2018-06-01T15:06:47+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -5604,16 +5586,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "1.29.2",
+            "version": "1.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "ed6aa898982f441ccc9b2acdec51490f2bc5d337"
+                "reference": "863a1a651ea324e1838da3a52753a4239b9d4bea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/ed6aa898982f441ccc9b2acdec51490f2bc5d337",
-                "reference": "ed6aa898982f441ccc9b2acdec51490f2bc5d337",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/863a1a651ea324e1838da3a52753a4239b9d4bea",
+                "reference": "863a1a651ea324e1838da3a52753a4239b9d4bea",
                 "shasum": ""
             },
             "require": {
@@ -5648,20 +5630,20 @@
                 "datetime",
                 "time"
             ],
-            "time": "2018-05-29T15:23:46+00:00"
+            "time": "2018-06-15T11:52:26+00:00"
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.0.1",
+            "version": "v4.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "e4a54fa90a5cd8e8dd3fb4099942681731c5cdd3"
+                "reference": "35b8caf75e791ba1b2d24fec1552168d72692b12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/e4a54fa90a5cd8e8dd3fb4099942681731c5cdd3",
-                "reference": "e4a54fa90a5cd8e8dd3fb4099942681731c5cdd3",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/35b8caf75e791ba1b2d24fec1552168d72692b12",
+                "reference": "35b8caf75e791ba1b2d24fec1552168d72692b12",
                 "shasum": ""
             },
             "require": {
@@ -5699,7 +5681,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2018-03-25T17:35:16+00:00"
+            "time": "2018-06-03T11:33:10+00:00"
         },
         {
             "name": "nwidart/laravel-modules",
@@ -7643,16 +7625,16 @@
         },
         {
             "name": "paragonie/random_compat",
-            "version": "v2.0.12",
+            "version": "v2.0.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paragonie/random_compat.git",
-                "reference": "258c89a6b97de7dfaf5b8c7607d0478e236b04fb"
+                "reference": "10bcb46e8f3d365170f6de9d05245aa066b81f09"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/258c89a6b97de7dfaf5b8c7607d0478e236b04fb",
-                "reference": "258c89a6b97de7dfaf5b8c7607d0478e236b04fb",
+                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/10bcb46e8f3d365170f6de9d05245aa066b81f09",
+                "reference": "10bcb46e8f3d365170f6de9d05245aa066b81f09",
                 "shasum": ""
             },
             "require": {
@@ -7684,10 +7666,11 @@
             "description": "PHP 5.x polyfill for random_bytes() and random_int() from PHP 7",
             "keywords": [
                 "csprng",
+                "polyfill",
                 "pseudorandom",
                 "random"
             ],
-            "time": "2018-04-04T21:24:14+00:00"
+            "time": "2018-06-08T15:26:40+00:00"
         },
         {
             "name": "patricktalmadge/bootstrapper",
@@ -8620,16 +8603,16 @@
         },
         {
             "name": "psy/psysh",
-            "version": "v0.9.4",
+            "version": "v0.9.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bobthecow/psysh.git",
-                "reference": "4d969a0e08e1e05e7207c07cb4207017ecc9a331"
+                "reference": "4a2ce86f199d51b6e2524214dc06835e872f4fce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/4d969a0e08e1e05e7207c07cb4207017ecc9a331",
-                "reference": "4d969a0e08e1e05e7207c07cb4207017ecc9a331",
+                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/4a2ce86f199d51b6e2524214dc06835e872f4fce",
+                "reference": "4a2ce86f199d51b6e2524214dc06835e872f4fce",
                 "shasum": ""
             },
             "require": {
@@ -8688,7 +8671,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2018-05-22T06:48:07+00:00"
+            "time": "2018-06-10T17:57:20+00:00"
         },
         {
             "name": "rackspace/php-opencloud",
@@ -8877,12 +8860,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "4d93302eb93402083f5abe72002fe8dc35e12dae"
+                "reference": "0e4ea9f9e1fd3c6a563524f8f399696d98c7c85a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/4d93302eb93402083f5abe72002fe8dc35e12dae",
-                "reference": "4d93302eb93402083f5abe72002fe8dc35e12dae",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/0e4ea9f9e1fd3c6a563524f8f399696d98c7c85a",
+                "reference": "0e4ea9f9e1fd3c6a563524f8f399696d98c7c85a",
                 "shasum": ""
             },
             "conflict": {
@@ -8950,6 +8933,7 @@
                 "propel/propel1": ">=1,<=1.7.1",
                 "pusher/pusher-php-server": "<2.2.1",
                 "sabre/dav": ">=1.6,<1.6.99|>=1.7,<1.7.11|>=1.8,<1.8.9",
+                "sensiolabs/connect": "<4.2.3",
                 "shopware/shopware": "<5.3.7",
                 "silverstripe/cms": ">=3,<=3.0.11|>=3.1,<3.1.11",
                 "silverstripe/forum": "<=0.6.1|>=0.7,<=0.7.3",
@@ -8972,7 +8956,7 @@
                 "symfony/routing": ">=2,<2.0.19",
                 "symfony/security": ">=2,<2.7.48|>=2.8,<2.8.41|>=3,<3.3.17|>=3.4,<3.4.11|>=4,<4.0.11",
                 "symfony/security-bundle": ">=2,<2.7.48|>=2.8,<2.8.41|>=3,<3.3.17|>=3.4,<3.4.11|>=4,<4.0.11",
-                "symfony/security-core": ">=2.4,<2.6.13|>=2.7,<2.7.9|>=2.7.30,<2.7.32|>=2.8,<2.8.41|>=3,<3.3.17|>=3.4,<3.4.11|>=4,<4.0.11",
+                "symfony/security-core": ">=2.4,<2.6.13|>=2.7,<2.7.9|>=2.7.30,<2.7.32|>=2.8,<2.8.37|>=3,<3.3.17|>=3.4,<3.4.7|>=4,<4.0.7",
                 "symfony/security-csrf": ">=2.4,<2.7.48|>=2.8,<2.8.41|>=3,<3.3.17|>=3.4,<3.4.11|>=4,<4.0.11",
                 "symfony/security-guard": ">=2.8,<2.8.41|>=3,<3.3.17|>=3.4,<3.4.11|>=4,<4.0.11",
                 "symfony/security-http": ">=2.3,<2.3.41|>=2.4,<2.7.48|>=2.8,<2.8.41|>=3,<3.3.17|>=3.4,<3.4.11|>=4,<4.0.11",
@@ -9035,7 +9019,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-05-30T02:58:56+00:00"
+            "time": "2018-06-08T09:55:50+00:00"
         },
         {
             "name": "sabre/uri",
@@ -12185,16 +12169,16 @@
         },
         {
             "name": "codeception/phpunit-wrapper",
-            "version": "6.0.9",
+            "version": "6.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/phpunit-wrapper.git",
-                "reference": "450f1cfc5f49539c421061e64338f5edb8baad6a"
+                "reference": "7057e599d97b02b4efb009681a43b327dbce138a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/phpunit-wrapper/zipball/450f1cfc5f49539c421061e64338f5edb8baad6a",
-                "reference": "450f1cfc5f49539c421061e64338f5edb8baad6a",
+                "url": "https://api.github.com/repos/Codeception/phpunit-wrapper/zipball/7057e599d97b02b4efb009681a43b327dbce138a",
+                "reference": "7057e599d97b02b4efb009681a43b327dbce138a",
                 "shasum": ""
             },
             "require": {
@@ -12227,7 +12211,7 @@
                 }
             ],
             "description": "PHPUnit classes used by Codeception",
-            "time": "2018-03-31T18:50:01+00:00"
+            "time": "2018-06-20T20:08:14+00:00"
         },
         {
             "name": "codeception/stub",
@@ -12378,16 +12362,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.8.0",
+            "version": "1.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "478465659fd987669df0bd8a9bf22a8710e5f1b6"
+                "reference": "3e01bdad3e18354c3dce54466b7fbe33a9f9f7f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/478465659fd987669df0bd8a9bf22a8710e5f1b6",
-                "reference": "478465659fd987669df0bd8a9bf22a8710e5f1b6",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/3e01bdad3e18354c3dce54466b7fbe33a9f9f7f8",
+                "reference": "3e01bdad3e18354c3dce54466b7fbe33a9f9f7f8",
                 "shasum": ""
             },
             "require": {
@@ -12422,7 +12406,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2018-05-29T17:25:09+00:00"
+            "time": "2018-06-11T23:09:50+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -12603,7 +12587,8 @@
             "authors": [
                 {
                     "name": "Chris Boulton",
-                    "homepage": "http://github.com/chrisboulton"
+                    "homepage": "http://github.com/chrisboulton",
+                    "role": "Original developer"
                 }
             ],
             "description": "A comprehensive library for generating differences between two hashable objects (strings or arrays).",
