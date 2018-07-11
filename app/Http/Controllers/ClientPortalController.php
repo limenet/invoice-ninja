@@ -69,7 +69,7 @@ class ClientPortalController extends BaseController
 
         if (request()->silent) {
             session(['silent:' . $client->id => true]);
-            return redirect(request()->url());
+            return redirect(request()->url() . '?borderless=' . request()->borderless);
         }
 
         if (! $account->checkSubdomain(Request::server('HTTP_HOST'))) {
@@ -182,7 +182,7 @@ class ClientPortalController extends BaseController
             }
         }
 
-        return View::make('invoices.view', $data);
+        return View::make(request()->borderless ? 'invoices.view_borderless' : 'invoices.view', $data);
     }
 
     private function getPaymentTypes($account, $client, $invitation)

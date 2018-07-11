@@ -68,7 +68,7 @@
 
                 @if ($client->trashed())
                     @can('edit', $client)
-                        @if (auth()->user()->is_admin)
+                        @if (auth()->user()->is_admin && $client->is_deleted)
                             {!! Button::danger(trans('texts.purge_client'))
                                     ->appendIcon(Icon::create('warning-sign'))
                                     ->withAttributes(['onclick' => 'onPurgeClick()']) !!}
@@ -434,7 +434,7 @@
 		sweetConfirm(function() {
 			$('#action').val('purge');
 			$('.mainForm').submit();
-		}, "{{ trans('texts.purge_client_warning') . "\\n\\n" . trans('texts.no_undo') }}");
+		}, "{{ trans('texts.purge_client_warning') . "\\n\\n" . trans('texts.mobile_refresh_warning') . "\\n\\n" . trans('texts.no_undo') }}");
 	}
 
     function showEmailHistory(email) {
