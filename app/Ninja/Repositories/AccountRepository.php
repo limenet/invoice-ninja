@@ -132,6 +132,12 @@ class AccountRepository
     private function checkForSpammer()
     {
         $ip = Request::getClientIp();
+
+        // Apple's IP for their test accounts
+        if ($ip == '17.200.11.44') {
+            return;
+        }
+
         $count = Account::whereIp($ip)->whereHas('users', function ($query) {
             $query->whereRegistered(true);
         })->count();
@@ -174,6 +180,12 @@ class AccountRepository
         }
         if ($account->customLabel('client2')) {
             $data[$account->present()->customLabel('client2')] = [];
+        }
+        if ($account->customLabel('invoice_text1')) {
+            $data[$account->present()->customLabel('invoice_text1')] = [];
+        }
+        if ($account->customLabel('invoice_text2')) {
+            $data[$account->present()->customLabel('invoice_text2')] = [];
         }
 
         if ($user->hasPermission(['view_client', 'view_invoice'], true)) {

@@ -87,7 +87,7 @@ class CheckData extends Command
         $this->checkClientBalances();
         $this->checkContacts();
         $this->checkUserAccounts();
-        $this->checkLogoFiles();
+        //$this->checkLogoFiles();
 
         if (! $this->option('client_id')) {
             $this->checkOAuth();
@@ -107,7 +107,7 @@ class CheckData extends Command
                         ->subject("Check-Data: " . strtoupper($this->isValid ? RESULT_SUCCESS : RESULT_FAILURE) . " [{$database}]");
             });
         } elseif (! $this->isValid) {
-            throw new Exception('Check data failed!!');
+            throw new Exception("Check data failed!!\n" . $this->log);
         }
     }
 
