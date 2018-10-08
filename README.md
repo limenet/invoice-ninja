@@ -29,11 +29,12 @@ The self-host zip includes all third party libraries whereas downloading the cod
 	* Self-Hosted: Contact us for volume license pricing
 
 ## Mobile Apps
-* Current
-    * [iPhone](https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=1220337560&mt=8)
+* Current: [github.com/invoiceninja/flutter-mobile](https://github.com/invoiceninja/flutter-mobile)
+    * [iPhone](https://itunes.apple.com/us/app/invoice-ninja/id1435514417?ls=1&mt=8)
+    * [Android](https://play.google.com/store/apps/details?id=com.invoiceninja.flutter)
+* Legacy
+    * [iPhone](https://itunes.apple.com/us/app/invoice-ninja/id1220337560?ls=1&mt=8)
     * [Android](https://play.google.com/store/apps/details?id=com.invoiceninja.invoiceninja)
-* Upcoming
-    * [iPhone/Android](https://github.com/invoiceninja/flutter-mobile)
 
 ## Installation Options
 * [Ansible](https://github.com/invoiceninja/ansible-installer)
@@ -84,6 +85,7 @@ For information on how contribute to Invoice Ninja, please see our [contributing
 * [Samuel Laulhau](https://github.com/lalop) - [Lalop](http://lalop.co/)
 * [Alexander Zamponi](https://github.com/alexz707)
 * [Matthieu Calie](https://github.com/Matth--)
+* [Suhas Sunil Gaikwad](https://github.com/Suhas-Gaikwad) - (Security)
 
 ## License
 Invoice Ninja is released under the Attribution Assurance License.  
