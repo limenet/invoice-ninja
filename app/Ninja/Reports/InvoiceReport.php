@@ -87,6 +87,20 @@ class InvoiceReport extends AbstractReport
             exit;
         }
 
+        if ($this->isExport && $exportFormat == 'zip-invoices') {
+            if (! extension_loaded('GMP')) {
+                die(trans('texts.gmp_required'));
+            }
+            $zip = Archive::instance_by_useragent(date('Y-m-d') . '_' . str_replace(' ', '_', trans('texts.invoices')));
+            foreach ($clients->get() as $client) {
+                foreach ($client->invoices as $invoice) {
+                      $zip->add_file($invoice->getFileName(), $invoice->getPDFString());
+                }
+            }
+            $zip->finish();
+            exit;
+        }
+
         foreach ($clients->get() as $client) {
             foreach ($client->invoices as $invoice) {
                 $isFirst = true;
@@ -95,13 +109,13 @@ class InvoiceReport extends AbstractReport
                     $row = [
                         $this->isExport ? $client->getDisplayName() : $client->present()->link,
                         $this->isExport ? $invoice->invoice_number : $invoice->present()->link,
-                        $invoice->present()->invoice_date,
+                        $this->isExport ? $invoice->invoice_date : $invoice->present()->invoice_date,
                         $isFirst ? $account->formatMoney($invoice->amount, $client) : '',
                         $invoice->statusLabel(),
-                        $payment ? $payment->present()->payment_date : '',
+                        $payment ? ($this->isExport ? $payment->payment_date : $payment->present()->payment_date) : '',
                         $payment ? $account->formatMoney($payment->getCompletedAmount(), $client) : '',
                         $payment ? $payment->present()->method : '',
-                        $invoice->present()->due_date,
+                        $this->isExport ? $invoice->due_date : $invoice->present()->due_date,
                         $invoice->po_number,
                         $invoice->private_notes,
                         $client->vat_number,
