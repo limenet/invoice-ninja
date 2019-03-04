@@ -96,6 +96,7 @@
 						{!! Former::text('postal_code')
 								->oninput(config('ninja.google_maps_api_key') ? 'lookupPostalCode()' : '') !!}
 						{!! Former::select('country_id')->addOption('','')
+							->autocomplete('off')
 							->fromQuery($countries, 'name', 'id') !!}
 
 						<div class="form-group" id="copyShippingDiv" style="display:none;">
@@ -115,6 +116,7 @@
 								->oninput(config('ninja.google_maps_api_key') ? 'lookupPostalCode(true)' : '')
 								->label('postal_code') !!}
 						{!! Former::select('shipping_country_id')->addOption('','')
+							->autocomplete('off')
 							->fromQuery($countries, 'name', 'id')->label('country_id') !!}
 
 						<div class="form-group" id="copyBillingDiv" style="display:none;">
@@ -217,7 +219,7 @@
 				<div class="tab-content" style="padding-top:24px;">
 					<div role="tabpanel" class="tab-pane active" id="settings">
 						{!! Former::select('currency_id')->addOption('','')
-			                ->placeholder($account->currency ? trans('texts.currency_'.Str::slug($account->currency->name, '_')) : '')
+			                ->placeholder($account->currency ? $account->currency->getTranslatedName() : '')
 			                ->fromQuery($currencies, 'name', 'id') !!}
 			            {!! Former::select('language_id')->addOption('','')
 			                ->placeholder($account->language ? trans('texts.lang_'.$account->language->name) : '')

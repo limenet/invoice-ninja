@@ -30,6 +30,7 @@ class UserAccountTransformer extends EntityTransformer
      * @SWG\Property(property="invoice_labels", type="string", example="Labels")
      * @SWG\Property(property="show_item_taxes", type="boolean", example=false)
      * @SWG\Property(property="military_time", type="boolean", example=false)
+     * @SWG\Property(property="fill_products", type="boolean", example=false)
      * @SWG\Property(property="tax_name1", type="string", example="VAT")
      * @SWG\Property(property="tax_name2", type="string", example="Upkeep")
      * @SWG\Property(property="tax_rate1", type="number", format="float", example="17.5")
@@ -62,6 +63,7 @@ class UserAccountTransformer extends EntityTransformer
         'expense_categories',
         'account_email_settings',
         'custom_payment_terms',
+		'task_statuses',
     ];
 
     protected $tokenName;
@@ -104,6 +106,18 @@ class UserAccountTransformer extends EntityTransformer
         return $this->includeCollection($this->account->users, $transformer, 'users');
     }
 
+	/**
+     * @param Account $account
+     *
+     * @return \League\Fractal\Resource\Collection
+     */
+    public function includeTaskStatuses(User $user)
+    {
+        $transformer = new TaskStatusTransformer($this->account, $this->serializer);
+
+        return $this->includeCollection($this->account->task_statuses, $transformer, 'task_statuses');
+    }
+
     /**
      * @param Account $account
      *
@@ -143,6 +157,7 @@ class UserAccountTransformer extends EntityTransformer
     public function transform(User $user)
     {
         $account = $user->account;
+        $company = $account->company;
 
         return [
             'account_key' => $account->account_key,
@@ -150,7 +165,7 @@ class UserAccountTransformer extends EntityTransformer
             'name' => $account->present()->name ?: '',
             'token' => $account->getToken($user->id, $this->tokenName),
             'default_url' => SITE_URL,
-            'plan' => $account->company->plan ?: '',
+            'plan' => $company->hasActivePlan() && $company->plan ? $company->plan : '',
             'logo' => $account->logo ?: '',
             'logo_url' => $account->getLogoURL() ?: '',
             'currency_id' => (int) $account->currency_id,
@@ -168,6 +183,7 @@ class UserAccountTransformer extends EntityTransformer
             'invoice_labels' => $account->invoice_labels ?: '',
             'show_item_taxes' => (bool) $account->show_item_taxes,
             'military_time' => (bool) $account->military_time,
+            'fill_products' => (bool) $account->fill_products,
             'tax_name1' => $account->tax_name1 ?: '',
             'tax_rate1' => (float) $account->tax_rate1,
             'tax_name2' => $account->tax_name2 ?: '',
@@ -201,6 +217,10 @@ class UserAccountTransformer extends EntityTransformer
             'email_template_reminder1' => $account->getEmailTemplate('reminder1'),
             'email_template_reminder2' => $account->getEmailTemplate('reminder2'),
             'email_template_reminder3' => $account->getEmailTemplate('reminder3'),
+			'has_custom_design1' => (bool) $account->custom_design1,
+			'has_custom_design2' => (bool) $account->custom_design2,
+			'has_custom_design3' => (bool) $account->custom_design3,
+			'enable_portal_password' => (bool) $account->enable_portal_password,
         ];
     }
 }

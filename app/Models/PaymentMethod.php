@@ -135,7 +135,7 @@ class PaymentMethod extends EntityModel
     public function scopeClientId($query, $clientId)
     {
         $query->whereHas('contact', function ($query) use ($clientId) {
-            $query->whereClientId($clientId);
+            $query->withTrashed()->whereClientId($clientId);
         });
     }
 
@@ -173,7 +173,7 @@ class PaymentMethod extends EntityModel
             return $cached == false ? null : $cached;
         }
 
-        $dataPath = base_path('vendor/gatepay/FedACHdir/FedACHdir.txt');
+        $dataPath = base_path('app/Ninja/PaymentDrivers/FedACHdir.txt');
 
         if (! file_exists($dataPath) || ! $size = filesize($dataPath)) {
             return 'Invalid data file';

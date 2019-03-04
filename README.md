@@ -19,14 +19,9 @@ The self-host zip includes all third party libraries whereas downloading the cod
 * [Videos](https://www.youtube.com/channel/UCXAHcBvhW05PDtWYIq7WDFA/videos)
 * [User Guide](https://invoice-ninja.readthedocs.io/en/latest/)
 * [Support Forum](https://www.invoiceninja.com/forums/forum/support/)
-* [Roadmap](https://trello.com/b/63BbiVVe/)
 
-## Affiliates Programs
-* Referral Program (we pay you)
-	* $100 per sign up paid over 3 years - [Learn more](https://www.invoiceninja.com/referral-program/)
-* White-Label Reseller (you pay us)
-	* Hosted: $500 annually and either 10% of revenue or $1/user/month
-	* Self-Hosted: Contact us for volume license pricing
+## Referral Program
+* Earn 50% of Pro & Enterprise Plans up to 4 years - [Learn more](https://www.invoiceninja.com/referral-program/)
 
 ## Mobile Apps
 * Current: [github.com/invoiceninja/flutter-mobile](https://github.com/invoiceninja/flutter-mobile)
@@ -65,7 +60,7 @@ The self-host zip includes all third party libraries whereas downloading the cod
 * [Shopping Cart](https://github.com/Scifabric/invoiceninjashoppingcart)
 
 ## Third Party Developers
-* [Some Techie](https://www.sometechie.com/customize-invoice-ninja/)
+* [Bold Compass](https://boldcompass.com/customize-invoice-ninja/)
 
 ## Contributing
 All contributors are welcome!  
