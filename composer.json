@@ -30,20 +30,20 @@
         "collizo4sky/omnipay-wepay": "dev-address-fix",
         "digitickets/omnipay-gocardlessv2": "dev-payment-fix",
         "doctrine/dbal": "2.5.x",
+        "dompdf/dompdf": "0.6.2",
         "ezyang/htmlpurifier": "~v4.7",
         "fzaninotto/faker": "^1.5",
-        "gatepay/FedACHdir": "dev-master@dev",
         "google/apiclient": "^2.0",
         "guzzlehttp/guzzle": "^6.3",
         "intervention/image": "dev-master",
-        "invoiceninja/omnipay-collection": "^0.9.0",
+        "invoiceninja/omnipay-collection": "^0.10.0",
         "jaybizzle/laravel-crawler-detect": "1.*",
         "jlapp/swaggervel": "master-dev",
         "jonnyw/php-phantomjs": "dev-fixes",
         "laracasts/presenter": "dev-master",
         "laravel/framework": "5.4.*",
         "laravel/legacy-encrypter": "^1.0",
-        "laravel/socialite": "~3.0",
+        "laravel/socialite": "3.0.x-dev",
         "laravel/tinker": "^1.0",
         "laravelcollective/html": "5.4.*",
         "league/csv": "^9.1",
@@ -54,15 +54,15 @@
         "mpdf/mpdf": "7.1.0",
         "nesbot/carbon": "^1.25",
         "nwidart/laravel-modules": "1.*",
-        "omnipay/authorizenet": "^2.5",
-        "omnipay/stripe": "2.4.7 as dev-master",
+        "omnipay/authorizenet": "dev-solution-id as 2.5.0",
+        "omnipay/firstdata": "^2.4",
+        "omnipay/payfast": "dev-master",
         "patricktalmadge/bootstrapper": "5.5.x",
-        "php-http/curl-client": "^1.7",
         "pragmarx/google2fa-laravel": "^0.1.2",
         "predis/predis": "^1.1",
         "roave/security-advisories": "dev-master",
         "simshaun/recurr": "dev-master",
-        "spatie/laravel-backup": "^4.0",
+        "spatie/laravel-backup": "4.19.2",
         "symfony/css-selector": "~3.1",
         "turbo124/laravel-push-notification": "2.*",
         "webpatser/laravel-countries": "dev-master#75992ad",
@@ -128,22 +128,6 @@
     },
     "repositories": [
         {
-            "type": "package",
-            "package": {
-                "name": "gatepay/FedACHdir",
-                "version": "dev-master",
-                "dist": {
-                    "url": "https://github.com/gatepay/FedACHdir/archive/master.zip",
-                    "type": "zip"
-                },
-                "source": {
-                    "url": "https://github.com/gatepay/FedACHdir.git",
-                    "type": "git",
-                    "reference": "origin/master"
-                }
-            }
-        },
-        {
             "type": "vcs",
             "url": "https://github.com/hillelcoren/l5-google-cloud-storage"
         },
@@ -162,6 +146,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/hillelcoren/php-phantomjs"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/davidbankes/omnipay-firstdata.git"
         }
     ]
 }
