@@ -373,14 +373,6 @@ class InvoiceRepository extends BaseRepository
         /** @var Account $account */
         $account = $invoice ? $invoice->account : \Auth::user()->account;
         $publicId = isset($data['public_id']) ? $data['public_id'] : false;
-
-        if (Utils::isNinjaProd() && ! Utils::isReseller()) {
-            $copy = json_decode( json_encode($data), true);
-            $copy['data'] = false;
-            $logMessage = date('r') . ' account_id: ' . $account->id . ' ' . json_encode($copy) . "\n\n";
-            @file_put_contents(storage_path('logs/invoice-repo.log'), $logMessage, FILE_APPEND);
-        }
-
         $isNew = ! $publicId || intval($publicId) < 0;
 
         if ($invoice) {
@@ -940,6 +932,7 @@ class InvoiceRepository extends BaseRepository
 
         if ($quoteId) {
             $clone->invoice_type_id = INVOICE_TYPE_STANDARD;
+            $clone->invoice_design_id = $account->invoice_design_id;
             $clone->quote_id = $quoteId;
             if ($account->invoice_terms) {
                 $clone->terms = $account->invoice_terms;
@@ -1330,6 +1323,11 @@ class InvoiceRepository extends BaseRepository
 
         $data = $invoice->toArray();
         $fee = $invoice->calcGatewayFee($gatewayTypeId);
+
+        if ($fee == 0) {
+            return;
+        }
+
         $date = $account->getDateTime()->format($account->getCustomDateFormat());
         $feeItemLabel = $account->getLabel('gateway_fee_item') ?: ($fee >= 0 ? trans('texts.surcharge') : trans('texts.discount'));
 

@@ -21,6 +21,10 @@ class ExpenseReport extends AbstractReport
             'public_notes' => ['columnSelector-false'],
             'private_notes' => ['columnSelector-false'],
             'user' => ['columnSelector-false'],
+            'payment_date' => ['columnSelector-false'],
+            'payment_type' => ['columnSelector-false'],
+            'payment_reference' => ['columnSelector-false'],
+
         ];
 
         $user = auth()->user();
@@ -93,6 +97,9 @@ class ExpenseReport extends AbstractReport
                 $expense->public_notes,
                 $expense->private_notes,
                 $expense->user->getDisplayName(),
+                $expense->present()->payment_date(),
+                $expense->present()->payment_type(),
+                $expense->transaction_reference,
             ];
 
             if ($account->customLabel('expense1')) {
