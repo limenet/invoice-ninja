@@ -202,7 +202,7 @@ if (! defined('APP_NAME')) {
     define('IMPORT_PANCAKE', 'Pancake');
 
     define('MAX_NUM_CLIENTS', 100);
-    define('MAX_NUM_CLIENTS_PRO', 20000);
+    define('MAX_NUM_CLIENTS_PRO', 40000);
     define('MAX_NUM_CLIENTS_LEGACY', 500);
     define('MAX_INVOICE_AMOUNT', 1000000000);
     define('LEGACY_CUTOFF', 57800);
@@ -361,7 +361,7 @@ if (! defined('APP_NAME')) {
     define('NINJA_APP_URL', env('NINJA_APP_URL', 'https://app.invoiceninja.com'));
     define('NINJA_DOCS_URL', env('NINJA_DOCS_URL', 'https://invoice-ninja.readthedocs.io/en/latest'));
     define('NINJA_DATE', '2000-01-01');
-    define('NINJA_VERSION', '4.5.13' . env('NINJA_VERSION_SUFFIX'));
+    define('NINJA_VERSION', '4.5.15' . env('NINJA_VERSION_SUFFIX'));
     define('NINJA_TERMS_VERSION', '1.0.1');
 
     define('SOCIAL_LINK_FACEBOOK', env('SOCIAL_LINK_FACEBOOK', 'https://www.facebook.com/invoiceninja'));
