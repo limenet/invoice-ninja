@@ -67,7 +67,7 @@ class CheckData extends Command
     protected $log = '';
     protected $isValid = true;
 
-    public function fire()
+    public function handle()
     {
         $this->logMessage(date('Y-m-d h:i:s') . ' Running CheckData...');
 
@@ -130,6 +130,7 @@ class CheckData extends Command
                     $this->logMessage($language->locale . ' is invalid: ' . $text);
                 }
 
+                /*
                 preg_match('/(.script)/', strtolower($text), $matches);
                 if (count($matches)) {
                     foreach ($matches as $match) {
@@ -141,6 +142,7 @@ class CheckData extends Command
                         break;
                     }
                 }
+                */
             }
         }
 
